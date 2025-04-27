@@ -2,16 +2,21 @@
 using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 using MediatR;
+using Core.CrossCuttingConcerns.Exceptions;
 
 namespace ETicaret.Application.Features.Categories.Commands.Update;
 
-public class CategoryUpdateCommand : IRequest<string>
+public class CategoryUpdateCommand : IRequest<CategoryUpdateResponseDto>
 {
     public int Id { get; set; }
-    public string? Name { get; set; }
+    public string Name { get; set; } = string.Empty;
     public int? ParentId { get; set; }
 
-    public class CategoryUpdateCommandHandler : IRequestHandler<CategoryUpdateCommand, string>
+    // Yeni eklenen alanlar
+    public string? Description { get; set; }
+    public bool IsActive { get; set; }
+
+    public class CategoryUpdateCommandHandler : IRequestHandler<CategoryUpdateCommand, CategoryUpdateResponseDto>
     {
         private readonly ICategoryRepository _categoryRepository;
         private readonly IMapper _mapper;
@@ -22,18 +27,22 @@ public class CategoryUpdateCommand : IRequest<string>
             _mapper = mapper;
         }
 
-        public async Task<string> Handle(CategoryUpdateCommand request, CancellationToken cancellationToken)
+        public async Task<CategoryUpdateResponseDto> Handle(CategoryUpdateCommand request, CancellationToken cancellationToken)
         {
-            var category = await _categoryRepository.GetAsync(c => c.Id == request.Id, cancellationToken: cancellationToken);
+            var categoryToUpdate = await _categoryRepository.GetAsync(c => c.Id == request.Id, cancellationToken: cancellationToken);
 
-            if (category == null)
-                return "Kategori bulunamadı.";
+            if (categoryToUpdate == null)
+            {
+                throw new NotFoundException($"Category with Id {request.Id} not found.");
+            }
 
-            category.Name = request.Name ?? category.Name;
-            category.ParentId = request.ParentId;
+            _mapper.Map(request, categoryToUpdate);
 
-            await _categoryRepository.UpdateAsync(category, cancellationToken);
-            return "Kategori güncellendi.";
+            await _categoryRepository.UpdateAsync(categoryToUpdate, cancellationToken);
+
+            CategoryUpdateResponseDto response = _mapper.Map<CategoryUpdateResponseDto>(categoryToUpdate);
+            response.Message = "Kategori başarıyla güncellendi.";
+            return response;
         }
     }
 }

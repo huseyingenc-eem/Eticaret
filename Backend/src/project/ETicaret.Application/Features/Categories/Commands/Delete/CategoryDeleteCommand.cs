@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using ETicaret.Application.Services.Repositories;
-using ETicaret.Domain.Entities;
 using MediatR;
 
 namespace ETicaret.Application.Features.Categories.Commands.Update;

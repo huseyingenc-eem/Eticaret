@@ -21,8 +21,8 @@ public class GetCategoryWithProductsQuery : IRequest<GetCategoryWithProductsResp
 
         public async Task<GetCategoryWithProductsResponseDto> Handle(GetCategoryWithProductsQuery request, CancellationToken cancellationToken)
         {
-            var category = await _categoryRepository.GetAsync(filter: x =>
-                x.Id == request.Id,
+            var category = await _categoryRepository.GetAsync(
+                filter: c => c.Id == request.Id,
                 cancellationToken: cancellationToken
             );
             var response = _mapper.Map<GetCategoryWithProductsResponseDto>(category);

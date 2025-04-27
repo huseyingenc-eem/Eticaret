@@ -4,7 +4,7 @@ public class GetCategoryTreeResponseDto
 {
     public int Id { get; set; }
     public string? Name { get; set; }
-
     public int? ParentId { get; set; }
+    public bool IsActive { get; set; }
     public List<GetCategoryTreeResponseDto> Children { get; set; } = new();
 }

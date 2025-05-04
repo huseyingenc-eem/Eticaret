@@ -5,7 +5,7 @@ using ETicaret.Application.Features.Suppliers.Queries.GetById; // GetById Query 
 using ETicaret.Application.Features.Suppliers.Queries.GetList; // GetList Query ve DTO
 // using Core.Application.Requests; // Sayfalama için PageRequest
 // using Core.Application.Responses; // Sayfalama için GetListResponse
-using MediatR; // IMediator için
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ETicaret.Presentation.Controllers;
@@ -51,7 +51,7 @@ public class SuppliersController : ControllerBase
         SupplierAddResponseDto result = await _mediator.Send(supplierAddCommand);
         // Oluşturulan kaynağın URI'si ile 201 Created döndürmek daha RESTful olabilir:
         // return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
-        return Ok(result); // Şimdilik Ok(200) döndürelim
+        return Ok(result);
     }
 
     [HttpPut]

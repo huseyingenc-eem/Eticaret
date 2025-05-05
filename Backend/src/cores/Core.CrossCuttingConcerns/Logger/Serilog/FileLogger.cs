@@ -13,19 +13,34 @@ public class FileLogger : LoggerServiceBase
         _configuration = configuration;
 
         FileLogConfiguration logConfiguration = configuration.GetSection("SerilogLogConfigurations:FileLogConfiguration").Get<FileLogConfiguration>();
-        //Yeni kodlar
-        string baseDirectory = AppDomain.CurrentDomain.BaseDirectory; // Kök dizin alınıyor
-        string filepath = Path.Combine(baseDirectory, logConfiguration.FolderPath, DateTime.Now.ToString("yyyy-MM-dd") + logConfiguration.FileExtension);//Dosya yolu ayarlanıyor.
-        //Eski kodlar
-        //string filepath = string.Format(format: "{0}{1}", arg0: Directory.GetCurrentDirectory() + logConfiguration.FolderPath, arg1: ".txt");
 
+        // İki klasör yukarı çık
+        string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+        string twoLevelsUpDirectory = Path.GetDirectoryName(Path.GetDirectoryName(baseDirectory));
 
-        Logger = new LoggerConfiguration().WriteTo.File(
-            filepath,
-            rollingInterval: RollingInterval.Day,
-            retainedFileTimeLimit: null,
-            fileSizeLimitBytes: 5000000,
-             outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level}] {Message}{NewLine}{Exception}"
-            ).CreateLogger();
+        // ETicaret.Presentation klasörünün yolunu oluştur
+        string presentationDirectory = Path.Combine(twoLevelsUpDirectory, "..", "..");
+
+        // Log dosyasının yolunu oluştur
+        string logFolderPath = Path.Combine(presentationDirectory, logConfiguration.FolderPath);
+
+        // Eğer klasör yoksa oluştur
+        if (!Directory.Exists(logFolderPath))
+        {
+            Directory.CreateDirectory(logFolderPath);
+        }
+
+        // Dosya adını ve yolunu oluştur
+        string filepath = Path.Combine(logFolderPath, DateTime.Now.ToString("yyyy-MM-dd") + logConfiguration.FileExtension);
+
+        Logger = new LoggerConfiguration()
+            .WriteTo.File(
+                filepath,
+                rollingInterval: RollingInterval.Day,
+                retainedFileTimeLimit: null,
+                fileSizeLimitBytes: logConfiguration.FileSizeLimitBytes,
+                outputTemplate: logConfiguration.OutputTemplate
+            )
+            .CreateLogger();
     }
 }

@@ -1,9 +1,0 @@
-2025-05-05 19:11:00.856 +03:00 [Information] Kategori ekleme metodu başlatıldı.
-2025-05-05 19:11:01.168 +03:00 [Information] Kategori ekleme metodu bitti.
-2025-05-05 19:12:48.088 +03:00 [Information] Kategori ekleme metodu başlatıldı.
-2025-05-05 19:17:50.837 +03:00 [Information] Kategori ekleme metodu başlatıldı.
-2025-05-05 19:17:50.865 +03:00 [Information] AuthorizationPipeline Handle metodu başladı.
-2025-05-05 19:17:50.865 +03:00 [Information] Token kontrol ediliyor
-2025-05-05 19:17:50.866 +03:00 [Information] Kullanıcının rolleri bulundu.
-2025-05-05 19:17:50.866 +03:00 [Information] Kullanıcının rolleri yetkilerle karşılaştırılıyor.
-2025-05-05 19:17:50.870 +03:00 [Error] Yetki yetersiz.

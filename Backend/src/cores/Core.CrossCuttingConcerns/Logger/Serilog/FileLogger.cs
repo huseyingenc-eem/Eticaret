@@ -12,12 +12,13 @@ public class FileLogger : LoggerServiceBase
     {
         _configuration = configuration;
 
-
-
         FileLogConfiguration logConfiguration = configuration.GetSection("SerilogLogConfigurations:FileLogConfiguration").Get<FileLogConfiguration>();
+        //Yeni kodlar
+        string baseDirectory = AppDomain.CurrentDomain.BaseDirectory; // Kök dizin alınıyor
+        string filepath = Path.Combine(baseDirectory, logConfiguration.FolderPath, DateTime.Now.ToString("yyyy-MM-dd") + logConfiguration.FileExtension);//Dosya yolu ayarlanıyor.
+        //Eski kodlar
+        //string filepath = string.Format(format: "{0}{1}", arg0: Directory.GetCurrentDirectory() + logConfiguration.FolderPath, arg1: ".txt");
 
-
-        string filepath = string.Format(format: "{0}{1}", arg0: Directory.GetCurrentDirectory() + logConfiguration.FolderPath, arg1: ".txt");
 
         Logger = new LoggerConfiguration().WriteTo.File(
             filepath,

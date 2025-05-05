@@ -1,16 +1,19 @@
 ﻿using Core.CrossCuttingConcerns.Logger.Serilog.ConfigurationModels;
 using Microsoft.Extensions.Configuration;
 using Serilog;
+using Serilog.Events;
 using Serilog.Sinks.MSSqlServer;
 
 namespace Core.CrossCuttingConcerns.Logger.Serilog;
 
 public class MsSqlLogger : LoggerServiceBase
 {
+    private readonly LoggingConfiguration _loggingConfiguration;
 
-    public MsSqlLogger(IConfiguration configuration)
+    public MsSqlLogger(LoggingConfiguration loggingConfiguration)
     {
-        MsSqlConfiguration logConfig = configuration.GetSection("SerilogLogConfigurations:MsSqlConfiguration").Get<MsSqlConfiguration>();
+        _loggingConfiguration = loggingConfiguration;
+        MsSqlConfiguration logConfig = _loggingConfiguration.MsSqlConfiguration;
 
         MSSqlServerSinkOptions options = new MSSqlServerSinkOptions()
         {
@@ -20,11 +23,12 @@ public class MsSqlLogger : LoggerServiceBase
 
         var columnOptions = new ColumnOptions();
 
-        global::Serilog.Core.Logger serilogConfig = new LoggerConfiguration().WriteTo
-            .MSSqlServer(logConfig.ConnectionString, sinkOptions: options, columnOptions: columnOptions)
+        Logger = new LoggerConfiguration()
+            .Enrich.FromLogContext()
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+            .MinimumLevel.Override("System", LogEventLevel.Warning)
+            .MinimumLevel.Is((LogEventLevel)Enum.Parse(typeof(LogEventLevel), _loggingConfiguration.MinimumLogLevel))
+            .WriteTo.MSSqlServer(logConfig.ConnectionString, sinkOptions: options, columnOptions: columnOptions)
             .CreateLogger();
-
-
-        Logger = serilogConfig;
     }
 }

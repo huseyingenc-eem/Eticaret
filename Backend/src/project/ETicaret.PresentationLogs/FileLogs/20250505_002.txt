@@ -1,0 +1,18 @@
+2025-05-05 19:21:43.295 +03:00 [Information] Kategori ekleme metodu başlatıldı.
+2025-05-05 19:21:43.307 +03:00 [Information] AuthorizationPipeline Handle metodu başladı.
+2025-05-05 19:21:43.307 +03:00 [Information] Token kontrol ediliyor
+2025-05-05 19:21:43.307 +03:00 [Information] Kullanıcının rolleri bulundu.
+2025-05-05 19:21:43.307 +03:00 [Information] Kullanıcının rolleri yetkilerle karşılaştırılıyor.
+2025-05-05 19:21:43.307 +03:00 [Error] Yetki yetersiz.
+2025-05-05 19:22:15.332 +03:00 [Information] Kategori ekleme metodu başlatıldı.
+2025-05-05 19:22:15.364 +03:00 [Information] AuthorizationPipeline Handle metodu başladı.
+2025-05-05 19:22:15.368 +03:00 [Information] Token kontrol ediliyor
+2025-05-05 19:22:15.369 +03:00 [Information] Kullanıcının rolleri bulundu.
+2025-05-05 19:22:15.369 +03:00 [Information] Kullanıcının rolleri yetkilerle karşılaştırılıyor.
+2025-05-05 19:22:15.369 +03:00 [Error] Yetki yetersiz.
+2025-05-05 19:23:09.350 +03:00 [Information] Kategori ekleme metodu başlatıldı.
+2025-05-05 19:23:09.386 +03:00 [Information] AuthorizationPipeline Handle metodu başladı.
+2025-05-05 19:23:09.387 +03:00 [Information] Token kontrol ediliyor
+2025-05-05 19:23:09.387 +03:00 [Information] Kullanıcının rolleri bulundu.
+2025-05-05 19:23:09.388 +03:00 [Information] Kullanıcının rolleri yetkilerle karşılaştırılıyor.
+2025-05-05 19:23:09.388 +03:00 [Error] Yetki yetersiz.

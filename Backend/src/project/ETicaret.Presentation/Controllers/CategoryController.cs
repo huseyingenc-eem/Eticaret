@@ -1,4 +1,5 @@
-﻿using ETicaret.Application.Features.Categories.Commands.Create;
+﻿using Core.CrossCuttingConcerns.Logger;
+using ETicaret.Application.Features.Categories.Commands.Create;
 using ETicaret.Application.Features.Categories.Commands.Update;
 using ETicaret.Application.Features.Categories.Queries.GetCategoryTree;
 using ETicaret.Application.Features.Categories.Queries.GetCategoryWithProducts;
@@ -7,21 +8,23 @@ using ETicaret.Application.Features.Categories.Queries.GetParentCategories;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-
 namespace ETicaret.Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CategoryController(IMediator mediator) : ControllerBase
+    public class CategoryController(IMediator mediator, ILoggerService loggerService) : ControllerBase
     {
+
         [HttpPost("add")]
-        public async Task<IActionResult> Add(CategoryAddCommand command)
+        public async Task<IActionResult> Add([FromBody] CategoryAddCommand command)
         {
+            loggerService.Info("Kategori ekleme metodu başlatıldı.");
             var result = await mediator.Send(command);
-            return Ok(result);
+            loggerService.Info("Kategori ekleme metodu bitti.");
+            return Created("", result);
         }
 
-        
+
 
         [HttpDelete("delete")]
         public async Task<IActionResult> Delete(int id)

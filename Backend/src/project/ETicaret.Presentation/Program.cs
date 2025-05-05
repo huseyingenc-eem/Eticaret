@@ -1,3 +1,5 @@
+using Core.CrossCuttingConcerns.Logger.Serilog;
+using Core.CrossCuttingConcerns.Logger;
 using ETicaret.Application;
 using ETicaret.Application.Services.JwtServices;
 using ETicaret.Domain.Entities;
@@ -8,8 +10,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-var builder = WebApplication.CreateBuilder(args);
+using Core.CrossCuttingConcerns.Logger;
+using Core.CrossCuttingConcerns.Logger.Serilog;
+using Core.Application;
+using ETicaret.Application.Services.RedisServices;
 
+var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 string ReactCors = "ReactCors";
@@ -29,10 +35,14 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddApplicationServices();
 
+builder.Services.AddSingleton<CachingConfiguration>();
+builder.Services.AddSingleton<LoggingConfiguration>();
+builder.Services.AddScoped<ILoggerService, FileLogger>();
+builder.Services.AddScoped<IRedisService, RedisCasheService>();
+
 
 builder.Services.AddPersistenceServices(builder.Configuration);
 builder.Services.Configure<CustomTokenOptions>(builder.Configuration.GetSection("TokenOptions"));
-
 
 builder.Services.AddExceptionHandler<HttpExceptionHandler>();
 builder.Services.AddStackExchangeRedisCache(opt=>
@@ -84,14 +94,10 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 
-
-
-
-
-//p.UseExceptionHandler(_ => { });
+app.UseExceptionHandler(_ => { });
 if (app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage(); // ?? hatayý görürsün0
+    app.UseDeveloperExceptionPage();
 }
 app.MapControllers();
 

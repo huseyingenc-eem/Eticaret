@@ -1,5 +1,6 @@
 ﻿using Core.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using System.Linq.Expressions;
 
 namespace Core.Persistence.Repositories;
@@ -40,10 +41,6 @@ public class EfRepositoryBase<TEntity, TId, TContext> : IRepository<TEntity, TId
         foreach(TEntity entity in entities)
         {
             entity.CreatedTime = DateTime.UtcNow;
-            //_context.Entry(entity).State = EntityState.Added;
-            //await _context.SaveChangesAsync(cancellationToken);
-            //yield return entity;
-            // en kötü yöntem.
         }
         await _context.Set<TEntity>().AddRangeAsync(entities, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
@@ -170,5 +167,40 @@ public class EfRepositoryBase<TEntity, TId, TContext> : IRepository<TEntity, TId
         await _context.SaveChangesAsync();
 
         return entity;
+    }
+    public IQueryable<TEntity> Query() => _context.Set<TEntity>();
+    public virtual List<TEntity> GetList(
+       Expression<Func<TEntity, bool>>? filter = null,
+       Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+       Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
+       bool enableTracking = true)
+    {
+        IQueryable<TEntity> queryable = Query();
+        if (!enableTracking)
+            queryable = queryable.AsNoTracking();
+        if (include != null)
+            queryable = include(queryable);
+        if (filter != null)
+            queryable = queryable.Where(filter);
+        if (orderBy != null)
+            return orderBy(queryable).ToList();
+        return queryable.ToList();
+    }
+
+    public async Task<List<TEntity>> GetListAsync(Expression<Func<TEntity, bool>>? filter = null, Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null, Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null, bool enableTracking = true, CancellationToken cancellationToken = default)
+    {
+        IQueryable<TEntity> queryable = Query();
+
+        if (!enableTracking)
+            queryable = queryable.AsNoTracking();
+        if (include != null)
+            queryable = include(queryable);
+
+        if (filter != null)
+            queryable = queryable.Where(filter);
+        if (orderBy != null)
+            return await orderBy(queryable).ToListAsync(cancellationToken);
+
+        return await queryable.ToListAsync(cancellationToken);
     }
 }

@@ -17,10 +17,10 @@ namespace ETicaret.Presentation.Controllers
     [ApiController]
     public class ProductsController(IMediator mediator) : ControllerBase
     {
-        [HttpPost]
+        [HttpPost("add")]
         public async Task<IActionResult> Add(ProductAddCommand command)
         {
-            string result = await mediator.Send(command);
+            ProductAddResponseDto result = await mediator.Send(command);
             return Ok(result);
         }
         [HttpDelete("delete")]
@@ -63,7 +63,6 @@ namespace ETicaret.Presentation.Controllers
             return Ok(result);
         }
 
-        
 
         [HttpGet("getallbycategory")]
         public async Task<IActionResult> GetAllByCategoryId(int categoryId)

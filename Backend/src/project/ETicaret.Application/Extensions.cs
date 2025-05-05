@@ -2,6 +2,7 @@
 using Core.Application.Pipelines.Performance;
 using ETicaret.Application.Services.JwtServices;
 using ETicaret.Application.Services.RedisServices;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
@@ -13,6 +14,9 @@ public static class Extensions
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
         services.AddScoped<IRedisService, RedisCasheService>();
+
+        services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
         services.AddScoped<IJwtService, JwtService>();
         services.AddAutoMapper(Assembly.GetExecutingAssembly());
         services.AddMediatR(opt=>

@@ -23,8 +23,8 @@ public class GetListProductPriceRangeQuery: IRequest<List<GetListProductPriceRan
 
         public async Task<List<GetListProductPriceRangeResponseDto>> Handle(GetListProductPriceRangeQuery request, CancellationToken cancellationToken)
         {
-            double min = request.Min;
-            double max = request.Max;
+            decimal min = (decimal)request.Min;
+            decimal max = (decimal)request.Max;
             var products = await _productRepository.GetAllAsync
                 ( filter: x=>
                     x.Price<=max && x.Price>=min ,

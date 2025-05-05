@@ -11,7 +11,7 @@ namespace ETicaret.Application.Features.Addresses.Commands.Create;
 /// </summary>
 public class AddressAddCommand : IRequest<AddressAddResponseDto>
 {
-    public Guid UserId { get; set; } // Bu alan handler'a gelmeden önce controller'da set edilmeli.
+    public string? UserId { get; set; } // Bu alan handler'a gelmeden önce controller'da set edilmeli.
 
     public string AddressTitle { get; set; } = string.Empty;
 

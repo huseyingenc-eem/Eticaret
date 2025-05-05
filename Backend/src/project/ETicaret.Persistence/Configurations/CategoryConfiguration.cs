@@ -29,17 +29,14 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
                .WithMany(c => c.Children)
                .HasForeignKey(c => c.ParentId)
                .IsRequired(false)
-               // Dikkat: Cascade delete, üst kategori silindiğinde TÜM alt kategorileri veritabanından SİLER.
-               // Bu işlem geri alınamaz. Uyarı mekanizması frontend/backend'de KURULMALIDIR.
-               .OnDelete(DeleteBehavior.Cascade); // Davranış Cascade olarak değiştirildi.
+               .OnDelete(DeleteBehavior.Restrict);
 
         // 2. Product İlişkisi (Category -> Products)
-        builder.HasMany(c => c.Products) // Bir kategorinin birden çok ürünü olabilir
-               .WithOne(p => p.Category) // Bir ürünün bir tane kategorisi olur
-               .HasForeignKey(p => p.CategoryID) // Product entity'sindeki foreign key alanı CategoryID'dir
-               .IsRequired() // Her ürünün bir kategorisi olmak zorunda (Product.CategoryID non-nullable olduğu için)
-                             // Kategori silinirse ürünlerin silinmesini engelle:
-               .OnDelete(DeleteBehavior.Restrict); // Davranış Restrict olarak ayarlandı.
+        builder.HasMany(c => c.Products)
+               .WithOne(p => p.Category)
+               .HasForeignKey(p => p.CategoryID)
+               .IsRequired()
+               .OnDelete(DeleteBehavior.Restrict);
 
     }
 }

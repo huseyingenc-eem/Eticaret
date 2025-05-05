@@ -9,8 +9,8 @@ namespace ETicaret.Application.Features.Authentication.Command.Login;
 
 public class LoginCommand : IRequest<AccessTokenDto>
 {
-    public string Email { get; set; }
-    public string Password { get; set; }
+    public string? Email { get; set; }
+    public string? Password { get; set; }
 
     public class LoginCommandHandler : IRequestHandler<LoginCommand, AccessTokenDto>
     {

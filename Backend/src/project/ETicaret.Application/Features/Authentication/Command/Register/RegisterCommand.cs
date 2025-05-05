@@ -8,6 +8,8 @@ namespace ETicaret.Application.Features.Authentication.Command.Register;
 
 public class RegisterCommand : IRequest<AccessTokenDto>
 {
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
     public string? UserName { get; set; }
     public string? Email { get; set; }
     public string? City { get; set; }
@@ -29,17 +31,20 @@ public class RegisterCommand : IRequest<AccessTokenDto>
         {
             User user = new User()
             {
+                FirstName = request.FirstName,
+                LastName = request.LastName,
                 City = request.City,
                 UserName = request.UserName,
                 Email = request.Email,
 
             };
             var emailUserCheck = await _userManager.FindByEmailAsync(request.Email);
-
             if (emailUserCheck is not null)
-            {
                 throw new BusinessException("Kullanıcı Emaili benzersiz olmalıdır.");
-            }
+
+            var userNameCheck = await _userManager.FindByNameAsync(request.UserName);
+            if (userNameCheck is not null)
+                throw new BusinessException("Bu kullanıcı adı zaten kullanılıyor.");
 
 
             IdentityResult result = await _userManager.CreateAsync(user, request.Password);

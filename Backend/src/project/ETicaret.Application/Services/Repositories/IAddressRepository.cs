@@ -1,5 +1,5 @@
 ﻿using Core.Persistence.Repositories;
-using ETicaret.Domain.Entities; // Address için
+using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Services.Repositories;
 

@@ -19,13 +19,8 @@ public class AuthorizationPipeline<TRequest, TResponse> : IPipelineBehavior<TReq
     {
         var httpContext = _accessor.HttpContext;
 
-        if (httpContext.User.Identity.IsAuthenticated)
+        if (!httpContext.User.Identity.IsAuthenticated)
             throw new AuthorizationException("Giriş Yapmadınız.");
-
-        var userClaims = httpContext.User.Claims;
-
-        if (userClaims ==null || userClaims.Any())
-            throw new AuthorizationException("Yetkniz yok.");
 
         var userRoles = httpContext.User.Claims
             .Where(x => x.Type == ClaimTypes.Role)

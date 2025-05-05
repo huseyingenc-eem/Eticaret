@@ -26,9 +26,9 @@ public class GetListSupplierQuery : IRequest<List<GetListSupplierResponseDto>> /
         public async Task<List<GetListSupplierResponseDto>> Handle(GetListSupplierQuery request, CancellationToken cancellationToken)
         {
             // Sayfalama olmadan basit liste çekme:
-            var suppliers = await _supplierRepository.GetAsync(
-                filter: s => s.IsActive, // Örneğin sadece aktif olanları çekmek için
-                orderBy: q => q.OrderBy(s => s.Name), // İsim'e göre sırala
+            var suppliers = await _supplierRepository.GetListAsync(
+                filter: s => s.IsActive,
+                orderBy: q => q.OrderBy(s => s.Name),
                 cancellationToken: cancellationToken
             );
 

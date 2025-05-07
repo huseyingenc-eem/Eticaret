@@ -18,27 +18,27 @@ namespace ETicaret.Presentation.Controllers
     public class ProductsController(IMediator mediator) : ControllerBase
     {
         [HttpPost("add")]
-        public async Task<IActionResult> Add(ProductAddCommand command)
+        public async Task<IActionResult> Add(CreateProductCommand command)
         {
-            ProductAddResponseDto result = await mediator.Send(command);
+            CreateProductResponseDto result = await mediator.Send(command);
             return Ok(result);
         }
         [HttpDelete("delete")]
         public async Task<IActionResult> Delete(int id)
         {
-            ProductDeleteCommand command = new ProductDeleteCommand { Id = id };
+            DeleteProductCommand command = new DeleteProductCommand { Id = id };
             var result = await mediator.Send(command);
             return Ok(result);
         }
 
         [HttpPut("update")]
-        public async Task<IActionResult> Update(ProductUpdateCommand command)
+        public async Task<IActionResult> Update(UpdateProductCommand command)
         {
             var result = await mediator.Send(command);
             return Ok(result);
         }
 
-        [HttpGet]
+        [HttpGet("getall")]
         public async Task<IActionResult> GetAll()
         {
             GetlistProductQuery query = new GetlistProductQuery();
@@ -73,7 +73,7 @@ namespace ETicaret.Presentation.Controllers
         }
 
         [HttpGet("getallpricerange")]
-        public async Task<IActionResult> GetAllByPriceRange(double min ,double max)
+        public async Task<IActionResult> GetAllByPriceRange([FromQuery] decimal min, [FromQuery] decimal max)
         {
             var query = new GetListProductPriceRangeQuery() 
             { 

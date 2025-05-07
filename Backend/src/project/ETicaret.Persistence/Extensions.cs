@@ -1,4 +1,5 @@
-﻿using ETicaret.Application.Services.Repositories;
+﻿using ETicaret.Application.Services.Authorization;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Persistence.Contexts;
 using ETicaret.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +20,9 @@ public static class Extensions
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ISupplierRepository, SupplierRepository>();
         services.AddScoped<IAddressRepository, AddressRepository>();
-
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IAuthorizationRuleService, AuthorizationRuleService>();
+        services.AddScoped<IOperationClaimRepository, OperationClaimRepository>();
         return services;
     }
 }

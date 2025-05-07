@@ -12,7 +12,6 @@ public class RedisCasheService : IRedisService
     private readonly IDistributedCache _distributedCache;
     private readonly CachingConfiguration _cachingConfiguration;
     private readonly ILoggerService _loggerService;
-    private readonly ILogger _logger = Log.Logger;
 
     public RedisCasheService(IDistributedCache distributedCache, CachingConfiguration cachingConfiguration, ILoggerService loggerService)
     {

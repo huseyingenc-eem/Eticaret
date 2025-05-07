@@ -8,7 +8,6 @@ namespace ETicaret.Application.Features.Addresses.Queries.GetById;
 public class GetByIdAddressResponseDto
 {
     public int Id { get; set; }
-    public Guid UserId { get; set; } // Güvenlik açısından döndürülmeyebilir
     public string AddressTitle { get; set; } = string.Empty;
     public string Country { get; set; } = string.Empty;
     public string City { get; set; } = string.Empty;

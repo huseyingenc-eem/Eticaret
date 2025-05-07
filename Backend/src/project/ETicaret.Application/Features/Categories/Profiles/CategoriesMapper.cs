@@ -3,6 +3,10 @@ using ETicaret.Application.Features.Categories.Commands.Create;
 using ETicaret.Application.Features.Categories.Commands.Update;
 using ETicaret.Application.Features.Categories.Queries.GetCategoryTree;
 using ETicaret.Application.Features.Categories.Queries.GetCategoryWithProducts;
+using ETicaret.Application.Features.Categories.Queries.GetChildCategories;
+using ETicaret.Application.Features.Categories.Queries.GetParentCategories;
+
+
 // Diğer using'ler...
 using ETicaret.Domain.Entities;
 
@@ -26,6 +30,8 @@ public class CategoriesMapper : Profile
         CreateMap<Category, GetCategoryWithProductsResponseDto>()
             .ForMember(dest => dest.Products, opt => opt.Ignore());
 
+        CreateMap<Category, GetChildCategoriesResponseDto>();
+        CreateMap<Category, GetParentCategoriesResponseDto>();
 
         // Entity -> Command Response DTO Mappings
         CreateMap<Category, CategoryAddResponseDto>();

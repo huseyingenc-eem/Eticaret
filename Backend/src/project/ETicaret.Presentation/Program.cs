@@ -78,7 +78,25 @@ builder.Services.AddAuthentication(opt =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// --- OperationClaim Seeding Baþlangýcý ---
+// Uygulama baþlarken OperationClaims tablosunu doldurmak için Seeder'ý çalýþtýr.
+// using ifadesi scope'un doðru þekilde dispose edilmesini saðlar.
+using (var scope = app.Services.CreateScope())
+{
+    var serviceProvider = scope.ServiceProvider;
+    try
+    {
+        var seeder = serviceProvider.GetRequiredService<ETicaret.Application.Services.Authorization.IOperationClaimSeeder>();
+
+        await seeder.SeedOperationClaimsAsync();
+
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"OperationClaim seeding sýrasýnda bir hata oluþtu: {ex.ToString()}");
+    }
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

@@ -14,6 +14,8 @@ public class AddressConfiguration : IEntityTypeConfiguration<Address>
         // Tablo adı (isteğe bağlı, varsayılan: "Addresses")
         builder.ToTable("Addresses");
 
+        builder.Navigation(a => a.User).AutoInclude();
+
         // Alan Konfigürasyonları
         builder.Property(a => a.UserId)
                .IsRequired(); // Kullanıcı ID'si zorunlu

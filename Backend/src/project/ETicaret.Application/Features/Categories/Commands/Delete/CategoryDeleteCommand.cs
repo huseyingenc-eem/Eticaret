@@ -10,24 +10,30 @@ public class CategoryDeleteCommand : IRequest<string>
 
     public class CategoryDeleteCommandHandler : IRequestHandler<CategoryDeleteCommand, string>
     {
-        private readonly ICategoryRepository _categoryRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public CategoryDeleteCommandHandler(ICategoryRepository categoryRepository, IMapper mapper)
+        public CategoryDeleteCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            _categoryRepository = categoryRepository;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
 
         public async Task<string> Handle(CategoryDeleteCommand request, CancellationToken cancellationToken)
         {
-            var category = await _categoryRepository.GetAsync(x => x.Id == request.Id, cancellationToken: cancellationToken);
+            var category = await _unitOfWork.CategoryRepository.GetAsync(
+                 filter: x => x.Id == request.Id,
+                 include: false,
+                 enableTracking: true,
+                 cancellationToken: cancellationToken
+             );
 
             if (category == null)
-                return "Kategori bulunamadı.";
+                return $"Silinecek kategori bulunamadı (ID: {request.Id}).";
 
-            await _categoryRepository.DeleteAsync(category, cancellationToken: cancellationToken);
-            return "Kategori silindi.";
+            await _unitOfWork.CategoryRepository.DeleteAsync(category, cancellationToken);
+            await _unitOfWork.CompleteAsync(cancellationToken);
+            return "Kategori başarıyla silindi.";
         }
     }
 }

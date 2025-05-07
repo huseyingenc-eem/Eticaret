@@ -17,9 +17,9 @@ public class ProductsMapper : Profile
     public ProductsMapper()
     {
         // Command -> Entity Mappings
-        CreateMap<ProductAddCommand, Product>(); // Yeni alanlar otomatik maplenebilir veya .ForMember ile konfigüre edilebilir
-        CreateMap<ProductUpdateCommand, Product>()
-            .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null)); // Null değerleri maplemeyi atla (opsiyonel)
+        CreateMap<CreateProductCommand, Product>();
+        CreateMap<UpdateProductCommand, Product>()
+            .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null)); 
 
         // Entity -> DTO Mappings
         CreateMap<Product, GetListProductResponseDto>(); 
@@ -40,8 +40,8 @@ public class ProductsMapper : Profile
              .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name)); // Mevcut
 
         // Entity -> Command Response DTO Mappings (Eklendi)
-        CreateMap<Product, ProductAddResponseDto>();
-        CreateMap<Product, ProductUpdateResponseDto>();
-        CreateMap<Product, ProductDeleteResponseDto>();
+        CreateMap<Product, CreateProductResponseDto>();
+        CreateMap<Product, UpdateProductResponseDto>();
+        CreateMap<Product, DeleteProductResponseDto>();
     }
 }

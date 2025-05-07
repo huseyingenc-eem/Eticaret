@@ -25,9 +25,8 @@ namespace ETicaret.Presentation.Controllers
         }
 
 
-
-        [HttpDelete("delete")]
-        public async Task<IActionResult> Delete(int id)
+        [HttpDelete("delete/{id:int}")]
+        public async Task<IActionResult> Delete([FromRoute] int id)
         {
             CategoryDeleteCommand command = new CategoryDeleteCommand { Id = id };
             var result = await mediator.Send(command);
@@ -84,7 +83,7 @@ namespace ETicaret.Presentation.Controllers
         /// <param name="parentId">Üst kategori ID'si</param>
         /// <returns>Alt kategorilerin listesi</returns>
         [HttpGet("GetChildCategories/{parentId}")]
-        public async Task<IActionResult> GetChildCategories(int parentId)
+        public async Task<IActionResult> GetChildCategories([FromRoute] int parentId)
         {
             var query = new GetChildCategoriesQuery
             {

@@ -5,28 +5,22 @@ using Core.CrossCuttingConcerns.Exceptions;
 
 namespace ETicaret.Application.Features.Addresses.Commands.Delete;
 
-/// <summary>
-/// Mevcut bir adresi silmek için kullanılan komut nesnesi.
-/// </summary>
 public class AddressDeleteCommand : IRequest<AddressDeleteResponseDto>
 {
-
     public int Id { get; set; }
-
     public string? UserId { get; set; }
 
     public class AddressDeleteCommandHandler : IRequestHandler<AddressDeleteCommand, AddressDeleteResponseDto>
     {
-        private readonly IAddressRepository _addressRepository;
-
-        public AddressDeleteCommandHandler(IAddressRepository addressRepository)
+        private readonly IUnitOfWork _unitOfWork;
+        public AddressDeleteCommandHandler(IUnitOfWork unitOfWork)
         {
-            _addressRepository = addressRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<AddressDeleteResponseDto> Handle(AddressDeleteCommand request, CancellationToken cancellationToken)
         {
-            Address? addressToDelete = await _addressRepository.GetAsync(
+            Address? addressToDelete = await _unitOfWork.AddressRepository.GetAsync(
                 filter: a => a.Id == request.Id,
                 cancellationToken: cancellationToken);
 
@@ -40,8 +34,8 @@ public class AddressDeleteCommand : IRequest<AddressDeleteResponseDto>
                 throw new AuthorizationException("Bu adresi silme yetkiniz yok.");
             }
 
-            await _addressRepository.DeleteAsync(addressToDelete, cancellationToken);
-
+            await _unitOfWork.AddressRepository.DeleteAsync(addressToDelete, cancellationToken);
+            await _unitOfWork.CompleteAsync(cancellationToken);
             return new AddressDeleteResponseDto { Id = request.Id, Message = "Adres başarıyla silindi." };
         }
     }

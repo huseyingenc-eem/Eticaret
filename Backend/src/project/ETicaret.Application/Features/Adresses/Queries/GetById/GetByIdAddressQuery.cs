@@ -13,7 +13,7 @@ public class GetByIdAddressQuery : IRequest<GetByIdAddressResponseDto>
 {
     public int Id { get; set; }
 
-    public string? UserId { get; set; } // Controller'dan set edilecek
+    public string? UserId { get; set; }
 
     public class GetByIdAddressQueryHandler : IRequestHandler<GetByIdAddressQuery, GetByIdAddressResponseDto>
     {

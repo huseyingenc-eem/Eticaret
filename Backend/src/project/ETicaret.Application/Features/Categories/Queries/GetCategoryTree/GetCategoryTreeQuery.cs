@@ -19,7 +19,9 @@ public class GetCategoryTreeQuery : IRequest<List<GetCategoryTreeResponseDto>>
 
         public async Task<List<GetCategoryTreeResponseDto>> Handle(GetCategoryTreeQuery request, CancellationToken cancellationToken)
         {
-            var allCategories = await _categoryRepository.GetAllAsync(cancellationToken: cancellationToken);
+            var allCategories = await _categoryRepository.GetAllAsync(
+                include: true,
+                cancellationToken: cancellationToken);
 
             var categoryDtos = _mapper.Map<List<GetCategoryTreeResponseDto>>(allCategories);
 

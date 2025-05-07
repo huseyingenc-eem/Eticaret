@@ -11,6 +11,8 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
         // Tablo adı (isteğe bağlı)
         // builder.ToTable("Kategoriler");
 
+        //builder.Navigation(c => c.Parent).AutoInclude();
+
         // Alan Konfigürasyonları
         builder.Property(c => c.Name)
                .IsRequired()
@@ -22,7 +24,6 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.Property(c => c.IsActive)
                .HasDefaultValue(true);
 
-        // İlişkiler
 
         // 1. Kendi Kendine İlişki (Hiyerarşi: Parent/Children)
         builder.HasOne(c => c.Parent)

@@ -1,8 +1,7 @@
 ﻿using AutoMapper;
-using ETicaret.Application.Services.Repositories;
+using ETicaret.Application.Services.Repositories; 
 using ETicaret.Domain.Entities;
 using MediatR;
-using System;
 using Core.CrossCuttingConcerns.Exceptions;
 
 namespace ETicaret.Application.Features.Addresses.Commands.Update;
@@ -10,7 +9,6 @@ namespace ETicaret.Application.Features.Addresses.Commands.Update;
 public class AddressUpdateCommand : IRequest<AddressUpdateResponseDto>
 {
     public int Id { get; set; }
-
     public string? UserId { get; set; }
     public string AddressTitle { get; set; } = string.Empty;
     public string Country { get; set; } = string.Empty;
@@ -24,18 +22,18 @@ public class AddressUpdateCommand : IRequest<AddressUpdateResponseDto>
 
     public class AddressUpdateCommandHandler : IRequestHandler<AddressUpdateCommand, AddressUpdateResponseDto>
     {
-        private readonly IAddressRepository _addressRepository;
         private readonly IMapper _mapper;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public AddressUpdateCommandHandler(IAddressRepository addressRepository, IMapper mapper)
+        public AddressUpdateCommandHandler(IMapper mapper, IUnitOfWork unitOfWork)
         {
-            _addressRepository = addressRepository;
             _mapper = mapper;
+            _unitOfWork = unitOfWork;
         }
         public async Task<AddressUpdateResponseDto> Handle(AddressUpdateCommand request, CancellationToken cancellationToken)
         {
-            Address? addressToUpdate = await _addressRepository.GetAsync(
-                filter: a => a.Id == request.Id, 
+            Address? addressToUpdate = await _unitOfWork.AddressRepository.GetAsync(
+                filter: a => a.Id == request.Id,
                 cancellationToken: cancellationToken);
 
             if (addressToUpdate == null)
@@ -43,17 +41,15 @@ public class AddressUpdateCommand : IRequest<AddressUpdateResponseDto>
                 throw new NotFoundException($"Address with Id {request.Id} not found.");
             }
 
-            // ÖNEMLİ: Adresin isteği yapan kullanıcıya ait olup olmadığını kontrol et!
             if (addressToUpdate.UserId != request.UserId)
             {
                 throw new AuthorizationException("Bu adresi güncelleme yetkiniz yok.");
             }
 
-            // Gelen isteği mevcut entity üzerine map'le
             _mapper.Map(request, addressToUpdate);
-            // addressToUpdate.UpdateTime base repo'da atanmalı
 
-            await _addressRepository.UpdateAsync(addressToUpdate, cancellationToken);
+            await _unitOfWork.AddressRepository.UpdateAsync(addressToUpdate, cancellationToken);
+            await _unitOfWork.CompleteAsync(cancellationToken);
 
             AddressUpdateResponseDto response = _mapper.Map<AddressUpdateResponseDto>(addressToUpdate);
             response.Message = "Adres başarıyla güncellendi.";

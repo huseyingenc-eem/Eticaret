@@ -22,9 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Features\Adresses\Queries\NewFolder\" />
     <Folder Include="Features\Roles\Rules\" />
-    <Folder Include="Features\Roles\Profiles\" />
     <Folder Include="Features\UserRoles\Queries\a\" />
   </ItemGroup>
 

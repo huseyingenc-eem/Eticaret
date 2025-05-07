@@ -1,49 +1,40 @@
 ﻿using AutoMapper;
-using ETicaret.Application.Services.Repositories; // IAddressRepository için
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 using MediatR;
-using System; // Guid için
 
 namespace ETicaret.Application.Features.Addresses.Commands.Create;
 
-/// <summary>
-/// Yeni bir adres eklemek için kullanılan komut nesnesi.
-/// </summary>
 public class AddressAddCommand : IRequest<AddressAddResponseDto>
 {
-    public string? UserId { get; set; } // Bu alan handler'a gelmeden önce controller'da set edilmeli.
-
+    public string? UserId { get; set; }
     public string AddressTitle { get; set; } = string.Empty;
-
     public string Country { get; set; } = string.Empty;
-
     public string City { get; set; } = string.Empty;
     public string District { get; set; } = string.Empty;
     public string Street { get; set; } = string.Empty;
-
     public string FullAddress { get; set; } = string.Empty;
-
     public string? PostalCode { get; set; }
     public bool IsBillingAddress { get; set; } = false;
     public bool IsShippingAddress { get; set; } = false;
 
     public class AddressAddCommandHandler : IRequestHandler<AddressAddCommand, AddressAddResponseDto>
     {
-        private readonly IAddressRepository _addressRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public AddressAddCommandHandler(IAddressRepository addressRepository, IMapper mapper)
+        public AddressAddCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            _addressRepository = addressRepository;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
+
         public async Task<AddressAddResponseDto> Handle(AddressAddCommand request, CancellationToken cancellationToken)
         {
-            // Validation burada veya pipeline'da yapılmalı (örn: UserId boş mu kontrolü)
             Address address = _mapper.Map<Address>(request);
-            // address.CreatedTime base repo'da atanmalı
 
-            Address addedAddress = await _addressRepository.AddAsync(address, cancellationToken);
+            Address addedAddress = await _unitOfWork.AddressRepository.AddAsync(address, cancellationToken);
+            await _unitOfWork.CompleteAsync(cancellationToken);
 
             AddressAddResponseDto response = _mapper.Map<AddressAddResponseDto>(addedAddress);
             response.Message = "Adres başarıyla eklendi.";

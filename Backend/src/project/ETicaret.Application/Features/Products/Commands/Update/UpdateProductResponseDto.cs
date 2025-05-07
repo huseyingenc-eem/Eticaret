@@ -1,7 +1,6 @@
-﻿namespace ETicaret.Application.Features.Products.Commands.Create;
+﻿namespace ETicaret.Application.Features.Products.Commands.Update;
 
-// Yeni Response DTO (Örnek)
-public class ProductAddResponseDto
+public class UpdateProductResponseDto
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;

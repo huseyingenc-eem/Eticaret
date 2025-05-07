@@ -22,14 +22,14 @@ public class AuthorizationPipeline<TRequest, TResponse> : IPipelineBehavior<TReq
         {
             return await next();
         }
-        _loggerService.Info("AuthorizationPipeline Handle metodu başladı."); //Log ekleme
+        _loggerService.Info("AuthorizationPipeline Handle metodu başladı.");
 
         var httpContext = _httpContextAccessor.HttpContext;
 
-        _loggerService.Info("Token kontrol ediliyor"); //Log ekleme
+        _loggerService.Info("Token kontrol ediliyor");
         if (!httpContext.User.Identity.IsAuthenticated)
         {
-            _loggerService.Error("Token geçersiz."); //Log ekleme
+            _loggerService.Error("Token geçersiz.");
             throw new AuthorizationException("Yetkiniz yok.");
         }
 

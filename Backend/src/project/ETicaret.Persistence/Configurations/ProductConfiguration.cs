@@ -8,9 +8,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 {
     public void Configure(EntityTypeBuilder<Product> builder)
     {
-        // Mevcut AutoInclude
         builder.Navigation(x => x.Category).AutoInclude();
-        // Yeni Eklenen AutoInclude (Tedarikçi bilgisi sıkça gerekiyorsa)
         builder.Navigation(x => x.Supplier).AutoInclude();
 
         // Alan Konfigürasyonları
@@ -19,8 +17,8 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
                .HasMaxLength(200); // Maksimum uzunluk
 
         builder.Property(p => p.Price)
-               .IsRequired() // Zorunlu alan
-               .HasColumnType("decimal(18,2)"); // Veritabanı tipi ve hassasiyet
+               .IsRequired()
+               .HasColumnType("decimal(18,2)");
 
         builder.Property(p => p.Stock)
                .IsRequired(); // Zorunlu alan

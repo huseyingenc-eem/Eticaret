@@ -29,8 +29,6 @@ public class AddCachePipeline<TRequest, TResponse> : IPipelineBehavior<TRequest,
             return await next();
         }
 
-
-
         TResponse response;
 
         byte[]? cachedResponse = await _cache.GetAsync(request.CacheKey);

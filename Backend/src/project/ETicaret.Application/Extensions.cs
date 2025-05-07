@@ -2,6 +2,7 @@
 using Core.Application.Pipelines.Caching;
 using Core.Application.Pipelines.Loging;
 using Core.Application.Pipelines.Performance;
+using ETicaret.Application.Services.Authorization;
 using ETicaret.Application.Services.JwtServices;
 using ETicaret.Application.Services.RedisServices;
 using FluentValidation;
@@ -21,6 +22,7 @@ public static class Extensions
 
         services.AddScoped<IJwtService, JwtService>();
         services.AddAutoMapper(Assembly.GetExecutingAssembly());
+        services.AddScoped<IOperationClaimSeeder, OperationClaimSeeder>();
         services.AddMediatR(opt=>
         {
             opt.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
@@ -30,6 +32,7 @@ public static class Extensions
             opt.AddOpenBehavior(typeof(LogingPipeline<,>));
             opt.AddOpenBehavior(typeof(CacheRemovePipeline<,>));
             opt.AddOpenBehavior(typeof(AddCachePipeline<,>));
+
         });
 
         return services;

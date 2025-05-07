@@ -16,7 +16,7 @@ public interface IRepository<TEntity, TId> where TEntity : Entity<TId>
     List<TEntity> GetList(
         Expression<Func<TEntity, bool>>? filter = null,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
+        bool include = false,
         bool enableTracking = true);
     IQueryable<TEntity> Query(); // Bu metot zaten vardı ve çok önemli
 }

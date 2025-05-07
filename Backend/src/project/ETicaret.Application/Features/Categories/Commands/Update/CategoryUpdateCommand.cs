@@ -29,7 +29,10 @@ public class CategoryUpdateCommand : IRequest<CategoryUpdateResponseDto>
 
         public async Task<CategoryUpdateResponseDto> Handle(CategoryUpdateCommand request, CancellationToken cancellationToken)
         {
-            var categoryToUpdate = await _categoryRepository.GetAsync(c => c.Id == request.Id, cancellationToken: cancellationToken);
+            var categoryToUpdate = await _categoryRepository.GetAsync(
+                c => c.Id == request.Id,
+                include: false,
+                cancellationToken: cancellationToken);
 
             if (categoryToUpdate == null)
             {

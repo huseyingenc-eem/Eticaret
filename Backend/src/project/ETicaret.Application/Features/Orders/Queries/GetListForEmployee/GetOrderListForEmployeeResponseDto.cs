@@ -1,6 +1,4 @@
-﻿// using Core.Application.Pipelines.Authorization; // Gerekirse yetkilendirme için
-
-namespace ETicaret.Application.Features.Orders.Queries.GetListForEmployee;
+﻿namespace ETicaret.Application.Features.Orders.Queries.GetListForEmployee;
 
 public class GetOrderListForEmployeeResponseDto
 {
@@ -9,7 +7,7 @@ public class GetOrderListForEmployeeResponseDto
     public string Status { get; set; } = string.Empty;
     public decimal TotalAmount { get; set; }
 
-    public string? CustomerId { get; set; } // UserId
+    public string? CustomerId { get; set; }
     public string? CustomerFirstName { get; set; }
     public string? CustomerLastName { get; set; }
     public string? CustomerEmail { get; set; }

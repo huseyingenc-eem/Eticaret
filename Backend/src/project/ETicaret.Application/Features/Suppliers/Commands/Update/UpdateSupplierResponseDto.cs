@@ -1,7 +1,7 @@
 ﻿namespace ETicaret.Application.Features.Suppliers.Commands.Update;
 
 // Response DTO
-public class SupplierUpdateResponseDto
+public class UpdateSupplierResponseDto
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;

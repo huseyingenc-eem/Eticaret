@@ -46,18 +46,18 @@ public class SuppliersController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Add([FromBody] SupplierAddCommand supplierAddCommand)
+    public async Task<IActionResult> Add([FromBody] CreateSupplierCommand supplierAddCommand)
     {
-        SupplierAddResponseDto result = await _mediator.Send(supplierAddCommand);
+        CreateSupplierResponseDto result = await _mediator.Send(supplierAddCommand);
         // Oluşturulan kaynağın URI'si ile 201 Created döndürmek daha RESTful olabilir:
         // return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         return Ok(result);
     }
 
     [HttpPut]
-    public async Task<IActionResult> Update([FromBody] SupplierUpdateCommand supplierUpdateCommand)
+    public async Task<IActionResult> Update([FromBody] UpdateSupplierCommand supplierUpdateCommand)
     {
-        SupplierUpdateResponseDto result = await _mediator.Send(supplierUpdateCommand);
+        UpdateSupplierResponseDto result = await _mediator.Send(supplierUpdateCommand);
         return Ok(result);
         // Alternatif olarak sadece başarı durumu için NoContent(204) döndürülebilir.
         // return NoContent();

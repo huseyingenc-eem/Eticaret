@@ -14,8 +14,8 @@ public class SuppliersMapper : Profile
     public SuppliersMapper()
     {
         // Command -> Entity Mappings
-        CreateMap<SupplierAddCommand, Supplier>();
-        CreateMap<SupplierUpdateCommand, Supplier>();
+        CreateMap<CreateSupplierCommand, Supplier>();
+        CreateMap<UpdateSupplierCommand, Supplier>();
 
         // Entity -> Query Response DTO Mappings
         CreateMap<Supplier, GetListSupplierResponseDto>();
@@ -23,8 +23,8 @@ public class SuppliersMapper : Profile
         // CreateMap<Supplier, GetSupplierWithProductsResponseDto>();
 
         // Entity -> Command Response DTO Mappings
-        CreateMap<Supplier, SupplierAddResponseDto>();
-        CreateMap<Supplier, SupplierUpdateResponseDto>();
+        CreateMap<Supplier, CreateSupplierResponseDto>();
+        CreateMap<Supplier, UpdateSupplierResponseDto>();
 
         // Product -> SupplierProductDto Mapping (İleride GetSupplierWithProducts için)
         // CreateMap<Product, SupplierProductDto>();

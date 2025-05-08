@@ -2,19 +2,28 @@
 using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 using MediatR;
-
+using Core.Persistence.Paging;
+using Core.Application.Pipelines.Caching;
+using ETicaret.Application.Features.Suppliers.Constants;
 
 namespace ETicaret.Application.Features.Suppliers.Queries.GetList;
 
-// Sayfalama isteniyorsa IRequest<GetListResponse<GetListSupplierResponseDto>> ve PageRequest eklenir
-public class GetListSupplierQuery : IRequest<List<GetListSupplierResponseDto>> // Şimdilik basit liste döndürelim
+public class GetListSupplierQuery : IRequest<IPaginate<GetListSupplierResponseDto>>, ICachableRequest
 {
-    // Sayfalama için: public PageRequest PageRequest { get; set; }
+    public int PageIndex { get; set; } = 0;
+    public int PageSize { get; set; } = 10;
 
-    // --- Handler ---
-    public class GetListSupplierQueryHandler : IRequestHandler<GetListSupplierQuery, List<GetListSupplierResponseDto>> // Dönüş tipi GetListResponse<> olabilir
+    public bool ByPassCache { get; set; }
+
+    public string CacheKey => $"supplier-list_page_{PageIndex}_size_{PageSize}";
+    public string? CacheGroupKey => SupplierConstants.SuppliersCacheGroup;
+    public TimeSpan? SlidingExpiration { get; set; }
+
+    
+
+    public class GetListSupplierQueryHandler : IRequestHandler<GetListSupplierQuery, IPaginate<GetListSupplierResponseDto>>
     {
-        private readonly ISupplierRepository _supplierRepository; // Henüz oluşturulmadı
+        private readonly ISupplierRepository _supplierRepository;
         private readonly IMapper _mapper;
 
         public GetListSupplierQueryHandler(ISupplierRepository supplierRepository, IMapper mapper)
@@ -23,29 +32,19 @@ public class GetListSupplierQuery : IRequest<List<GetListSupplierResponseDto>> /
             _mapper = mapper;
         }
 
-        public async Task<List<GetListSupplierResponseDto>> Handle(GetListSupplierQuery request, CancellationToken cancellationToken)
+        public async Task<IPaginate<GetListSupplierResponseDto>> Handle(GetListSupplierQuery request, CancellationToken cancellationToken)
         {
-            // Sayfalama olmadan basit liste çekme:
-            var suppliers = await _supplierRepository.GetListAsync(
-                filter: s => s.IsActive,
-                orderBy: q => q.OrderBy(s => s.Name),
+            IPaginate<Supplier> suppliersPage = await _supplierRepository.GetListAsync(
+                //filter: s => s.IsActive,
+                orderBy: q => q.OrderBy(s => s.Name), 
+                index: request.PageIndex,
+                size: request.PageSize,
+                enableTracking: false,
                 cancellationToken: cancellationToken
             );
+            IPaginate<GetListSupplierResponseDto> responsePage = _mapper.Map<IPaginate<GetListSupplierResponseDto>>(suppliersPage);
 
-            List<GetListSupplierResponseDto> response = _mapper.Map<List<GetListSupplierResponseDto>>(suppliers);
-            return response;
-
-            /* // Sayfalama ile liste çekme örneği:
-            IPaginate<Supplier> suppliers = await _supplierRepository.GetListAsync(
-                index: request.PageRequest.PageIndex,
-                size: request.PageRequest.PageSize,
-                orderBy: q => q.OrderBy(s => s.Name),
-                cancellationToken: cancellationToken
-            );
-
-            GetListResponse<GetListSupplierResponseDto> response = _mapper.Map<GetListResponse<GetListSupplierResponseDto>>(suppliers);
-            return response;
-            */
+            return responsePage;
         }
     }
 }

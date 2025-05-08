@@ -1,7 +1,7 @@
 ﻿namespace ETicaret.Application.Features.Suppliers.Commands.Create;
 
 // Response DTO (Aynı dosyada veya ayrı bir yerde olabilir)
-public class SupplierAddResponseDto
+public class CreateSupplierResponseDto
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;

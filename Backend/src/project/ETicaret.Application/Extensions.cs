@@ -2,6 +2,7 @@
 using Core.Application.Pipelines.Caching;
 using Core.Application.Pipelines.Loging;
 using Core.Application.Pipelines.Performance;
+using Core.Application.Pipelines.Transactional;
 using ETicaret.Application.Services.Authorization;
 using ETicaret.Application.Services.JwtServices;
 using ETicaret.Application.Services.RedisServices;
@@ -32,7 +33,7 @@ public static class Extensions
             opt.AddOpenBehavior(typeof(LogingPipeline<,>));
             opt.AddOpenBehavior(typeof(CacheRemovePipeline<,>));
             opt.AddOpenBehavior(typeof(AddCachePipeline<,>));
-
+            opt.AddOpenBehavior(typeof(TransactionalPipeline<,>));
         });
 
         return services;

@@ -2,7 +2,7 @@
 using ETicaret.Application.Features.Orders.Commands.Create;
 using ETicaret.Application.Features.Orders.Commands.UpdateStatus;
 using ETicaret.Application.Features.Orders.Queries.GetById; 
-using ETicaret.Application.Features.Orders.Queries.GetListByUserId; 
+using ETicaret.Application.Features.Orders.Queries.GetOrdersByUserId; 
 using ETicaret.Application.Features.Orders.Queries.GetListForEmployee; 
 using ETicaret.Domain.Entities; 
 namespace ETicaret.Application.Features.Orders.Profiles;

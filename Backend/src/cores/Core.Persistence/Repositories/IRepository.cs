@@ -1,4 +1,5 @@
 ﻿using Core.Persistence.Entities;
+using Core.Persistence.Paging;
 using Microsoft.EntityFrameworkCore.Query;
 using System.Linq.Expressions;
 
@@ -13,10 +14,12 @@ public interface IRepository<TEntity, TId> where TEntity : Entity<TId>
     TEntity? Get(Expression<Func<TEntity, bool>> filter, bool enableTracking = true, bool include = true);
 
     bool Any(Expression<Func<TEntity, bool>>? filter = null, bool enableTracking = true);
-    List<TEntity> GetList(
+    Task<IPaginate<TEntity>> GetList(
         Expression<Func<TEntity, bool>>? filter = null,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-        bool include = false,
+        int index = 0,
+        int size = 10,
+        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
         bool enableTracking = true);
-    IQueryable<TEntity> Query(); // Bu metot zaten vardı ve çok önemli
+    IQueryable<TEntity> Query();
 }

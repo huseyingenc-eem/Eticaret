@@ -5,14 +5,16 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using Core.CrossCuttingConcerns.Exceptions;
+using Core.Persistence.Paging;
 
-namespace ETicaret.Application.Features.Orders.Queries.GetListByUserId;
+namespace ETicaret.Application.Features.Orders.Queries.GetOrdersByUserId;
 
-// 1. Query Sınıfı (Değişiklik Yok)
-public class GetOrdersByUserIdQuery : IRequest<List<GetOrdersByUserIdResponseDto>>
+public class GetOrdersByUserIdQuery : IRequest<IPaginate<GetOrdersByUserIdResponseDto>>
 {
-    // 2. Handler Sınıfı (Güncellenmiş Repository Çağrısı)
-    public class GetOrdersByUserIdQueryHandler : IRequestHandler<GetOrdersByUserIdQuery, List<GetOrdersByUserIdResponseDto>>
+    public int PageIndex { get; set; } = 0;
+    public int PageSize { get; set; } = 20;
+
+    public class GetOrdersByUserIdQueryHandler : IRequestHandler<GetOrdersByUserIdQuery, IPaginate<GetOrdersByUserIdResponseDto>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -25,7 +27,7 @@ public class GetOrdersByUserIdQuery : IRequest<List<GetOrdersByUserIdResponseDto
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<List<GetOrdersByUserIdResponseDto>> Handle(GetOrdersByUserIdQuery request, CancellationToken cancellationToken)
+        public async Task<IPaginate<GetOrdersByUserIdResponseDto>> Handle(GetOrdersByUserIdQuery request, CancellationToken cancellationToken)
         {
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
@@ -33,17 +35,20 @@ public class GetOrdersByUserIdQuery : IRequest<List<GetOrdersByUserIdResponseDto
                 throw new AuthorizationException("Siparişlerinizi görmek için giriş yapmalısınız.");
             }
 
-            List<Order> orders = await _unitOfWork.OrderRepository.GetListAsync(
+            // Sayfalama destekli GetListAsync metodu çağrıldı (IPaginate<Order> döndüren)
+            IPaginate<Order> ordersPage = await _unitOfWork.OrderRepository.GetListAsync(
                 filter: o => o.UserId == userId,
                 orderBy: q => q.OrderByDescending(o => o.OrderDate),
-                include: true,
+                include: null, // İlişkili veri gerekmiyorsa null.
+                index: request.PageIndex,
+                size: request.PageSize,
                 enableTracking: false,
                 cancellationToken: cancellationToken
             );
 
-            List<GetOrdersByUserIdResponseDto> response = _mapper.Map<List<GetOrdersByUserIdResponseDto>>(orders);
+            IPaginate<GetOrdersByUserIdResponseDto> responsePage = _mapper.Map<IPaginate<GetOrdersByUserIdResponseDto>>(ordersPage);
 
-            return response;
+            return responsePage;
         }
     }
 }

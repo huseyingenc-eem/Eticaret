@@ -9,7 +9,6 @@ public class GetOrderListForEmployeeResponseDto
     public string Status { get; set; } = string.Empty;
     public decimal TotalAmount { get; set; }
 
-    // Müşteri bilgileri (AutoInclude ile User geliyorsa)
     public string? CustomerId { get; set; } // UserId
     public string? CustomerFirstName { get; set; }
     public string? CustomerLastName { get; set; }

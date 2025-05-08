@@ -1,4 +1,4 @@
-﻿namespace ETicaret.Application.Features.Orders.Queries.GetListByUserId;
+﻿namespace ETicaret.Application.Features.Orders.Queries.GetOrdersByUserId;
 
 public class GetOrdersByUserIdResponseDto
 {

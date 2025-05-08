@@ -1,7 +1,7 @@
 ﻿using ETicaret.Application.Features.Orders.Commands.Create;
 using ETicaret.Application.Features.Orders.Commands.UpdateStatus;
 using ETicaret.Application.Features.Orders.Queries.GetById;
-using ETicaret.Application.Features.Orders.Queries.GetListByUserId;
+using ETicaret.Application.Features.Orders.Queries.GetOrdersByUserId;
 using ETicaret.Application.Features.Orders.Queries.GetListForEmployee;
 using ETicaret.Domain.Enums;
 using MediatR;
@@ -49,21 +49,36 @@ public class OrdersController : ControllerBase
     }
 
     [HttpGet("my-orders")]
-    public async Task<IActionResult> GetMyOrders()
+    public async Task<IActionResult> GetMyOrders(
+        [FromQuery] int pageIndex = 0,
+        [FromQuery] int pageSize = 10)
     {
-        GetOrdersByUserIdQuery query = new GetOrdersByUserIdQuery();
-        List<GetOrdersByUserIdResponseDto> response = await _mediator.Send(query);
-        return Ok(response);
+        GetOrdersByUserIdQuery query = new GetOrdersByUserIdQuery
+        {
+            PageIndex = pageIndex,
+            PageSize = pageSize
+        };
+        var response = await _mediator.Send(query);
+
+        return Ok(response); 
     }
 
     [HttpGet("employee/list")]
-    public async Task<IActionResult> GetOrderListForEmployee([FromQuery] OrderStatus? statusFilter)
+    public async Task<IActionResult> GetOrderListForEmployee(
+        [FromQuery] OrderStatus? statusFilter,
+        [FromQuery] int pageIndex = 0,
+        [FromQuery] int pageSize = 10)
     {
         GetOrderListForEmployeeQuery query = new GetOrderListForEmployeeQuery
         {
-            StatusFilter = statusFilter
+            StatusFilter = statusFilter,
+            PageIndex = pageIndex,
+            PageSize = pageSize
         };
-        List<GetOrderListForEmployeeResponseDto> response = await _mediator.Send(query);
+
+        var response = await _mediator.Send(query);
+
         return Ok(response);
     }
+
 }

@@ -1,13 +1,15 @@
 ﻿using AutoMapper;
 using Core.Application.Pipelines.Caching;
-using ETicaret.Application.Services.RedisServices; // Redis için using
+using Core.Application.Pipelines.Transactional;
+using ETicaret.Application.Features.Products.Constants;
+using ETicaret.Application.Services.RedisServices;
 using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 using MediatR;
 
 namespace ETicaret.Application.Features.Products.Commands.Create;
 
-public class CreateProductCommand : IRequest<CreateProductResponseDto> , ICacheRemoverRequest
+public class CreateProductCommand : IRequest<CreateProductResponseDto> , ICacheRemoverRequest , ITransactionalRequest
 {
     
     public string Name { get; set; } = string.Empty;
@@ -25,7 +27,7 @@ public class CreateProductCommand : IRequest<CreateProductResponseDto> , ICacheR
 
     public bool ByPassCache => false;
 
-    public string? CacheGroupKey => "Products";
+    public string? CacheGroupKey => ProductConstants.ProductsCacheGroup;
 
     public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, CreateProductResponseDto>
     {
@@ -33,9 +35,9 @@ public class CreateProductCommand : IRequest<CreateProductResponseDto> , ICacheR
         private readonly IMapper _mapper;
         private readonly IRedisService _redisService;
 
-        public CreateProductCommandHandler(IUnitOfWork unitOfWork, IMapper mapper, IRedisService redisService) // Constructor güncellendi
+        public CreateProductCommandHandler(IUnitOfWork unitOfWork, IMapper mapper, IRedisService redisService)
         {
-            _unitOfWork = unitOfWork; // Güncellendi
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
             _redisService = redisService;
         }

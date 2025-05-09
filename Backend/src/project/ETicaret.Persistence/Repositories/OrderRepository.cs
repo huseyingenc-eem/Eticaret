@@ -5,7 +5,7 @@ using ETicaret.Persistence.Contexts;
 
 namespace ETicaret.Persistence.Repositories;
 
-public sealed class OrderRepository : EfRepositoryBase<Order, int , BaseDBContexts>, IOrderRepository
+public sealed class OrderRepository : EfRepositoryBase<Order, Guid  , BaseDBContexts>, IOrderRepository
 {
     public OrderRepository(BaseDBContexts contexts) : base(contexts)
     {

@@ -37,12 +37,7 @@ public class CategoriesMapper : Profile
         CreateMap<Category, CategoryAddResponseDto>();
         CreateMap<Category, CategoryUpdateResponseDto>();
 
-
-        // Product -> CategoryProductDto Mapping
-        // Bu map'leme tanımı ileride lazım olabilir diye kalabilir.
         CreateMap<Product, CategoryProductDto>()
-            .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Price))
-            .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.ImageUrl))
             .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive));
     }
 }

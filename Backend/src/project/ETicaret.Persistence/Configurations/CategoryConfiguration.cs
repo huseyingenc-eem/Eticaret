@@ -8,36 +8,36 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
 {
     public void Configure(EntityTypeBuilder<Category> builder)
     {
-        // Tablo adı (isteğe bağlı)
-        // builder.ToTable("Kategoriler");
 
         //builder.Navigation(c => c.Parent).AutoInclude();
 
-        // Alan Konfigürasyonları
-        builder.Property(c => c.Name)
-               .IsRequired()
-               .HasMaxLength(100);
-
-        builder.Property(c => c.Description)
-               .IsRequired(false);
-
-        builder.Property(c => c.IsActive)
-               .HasDefaultValue(true);
+        builder.Property(c => c.Id).ValueGeneratedOnAdd();
+        builder.Property(c => c.Name).IsRequired().HasMaxLength(100);
+        builder.Property(c => c.Description).HasMaxLength(500);
+        builder.Property(c => c.IsActive).IsRequired().HasDefaultValue(true);
+        builder.Property(c => c.ParentId).IsRequired(false);
 
 
-        // 1. Kendi Kendine İlişki (Hiyerarşi: Parent/Children)
+
+        // Self-referencing relationship (Parent-Child categories)
         builder.HasOne(c => c.Parent)
                .WithMany(c => c.Children)
                .HasForeignKey(c => c.ParentId)
                .IsRequired(false)
                .OnDelete(DeleteBehavior.Restrict);
 
-        // 2. Product İlişkisi (Category -> Products)
+        // Category to Product (One-to-Many)
         builder.HasMany(c => c.Products)
                .WithOne(p => p.Category)
-               .HasForeignKey(p => p.CategoryID)
+               .HasForeignKey(p => p.CategoryId)
                .IsRequired()
                .OnDelete(DeleteBehavior.Restrict);
+
+        // CreatedDate, UpdatedDate, DeletedDate (Base Entity'den)
+        builder.Property(e => e.CreatedTime).IsRequired();
+        builder.Property(e => e.UpdateTime).IsRequired(false);
+        builder.Property(e => e.DeletedTime).IsRequired(false);
+
 
     }
 }

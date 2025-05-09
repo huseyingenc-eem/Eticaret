@@ -36,7 +36,7 @@ public class GetListSupplierQuery : IRequest<IPaginate<GetListSupplierResponseDt
         {
             IPaginate<Supplier> suppliersPage = await _supplierRepository.GetListAsync(
                 //filter: s => s.IsActive,
-                orderBy: q => q.OrderBy(s => s.Name), 
+                orderBy: q => q.OrderBy(s => s.CompanyName), 
                 index: request.PageIndex,
                 size: request.PageSize,
                 enableTracking: false,

@@ -2,6 +2,9 @@
 
 namespace Core.Persistence.Paging;
 
+/// <summary>
+/// IQueryable için sayfalama (pagination) genişletme metotları içerir.
+/// </summary>
 public static class IQueryablePaginateExtensions
 {
     /// <summary>
@@ -20,18 +23,25 @@ public static class IQueryablePaginateExtensions
     {
         if (index < 0)
             throw new ArgumentOutOfRangeException(nameof(index), "Sayfa indeksi negatif olamaz.");
-        if (size <= 0)
+        if (size < 0)
             throw new ArgumentOutOfRangeException(nameof(size), "Sayfa boyutu 0'dan büyük olmalıdır.");
 
         int count = await source.CountAsync(cancellationToken).ConfigureAwait(false);
-        var items = await source.Skip(index * size)
-                                .Take(size)
-                                .ToListAsync(cancellationToken)
-                                .ConfigureAwait(false);
 
-        var list = new Paginate<T>(items, index, size, count);
+        List<T> items;
+        if (size == 0) 
+            items = new List<T>();
+        else
+            items = await source.Skip(index * size).Take(size).ToListAsync(cancellationToken).ConfigureAwait(false);
 
-        return list;
+        return new Paginate<T>
+        {
+            Index = index,
+            Size = size,
+            Count = count,
+            Items = items,
+            Pages = (int)Math.Ceiling(count / (double)Math.Max(1, size)) 
+        };
     }
     /// <summary>
     /// Bir IQueryable kaynağını senkron olarak sayfalar (Asenkron olmayan senaryolar için).
@@ -49,8 +59,21 @@ public static class IQueryablePaginateExtensions
             throw new ArgumentOutOfRangeException(nameof(size), "Sayfa boyutu 0'dan büyük olmalıdır.");
 
         int count = source.Count();
-        var items = source.Skip(index * size).Take(size).ToList();
-        var list = new Paginate<T>(items, index, size, count);
-        return list;
+        List<T> items;
+
+        if (size == 0)
+            items = new List<T>();
+        else
+            items = source.Skip(index * size).Take(size).ToList();
+
+        // Paginate<T> nesnesini oluştur ve döndür.
+        return new Paginate<T>
+        {
+            Index = index,
+            Size = size,
+            Count = count,
+            Items = items,
+            Pages = (int)Math.Ceiling(count / (double)Math.Max(1, size))
+        };
     }
 }

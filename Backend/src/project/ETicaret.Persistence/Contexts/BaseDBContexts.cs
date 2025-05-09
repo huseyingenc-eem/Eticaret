@@ -31,4 +31,29 @@ public class BaseDBContexts :IdentityDbContext<User,IdentityRole,string>
     public DbSet<Supplier> Suppliers { get; set; }
     public DbSet<OperationClaim> OperationClaims { get; set; }
 
+
+    // Ürün Kataloğu ile İlgili DbSet'ler
+    public DbSet<ProductVariant> ProductVariants { get; set; }
+    public DbSet<ProductImage> ProductImages { get; set; }
+    public DbSet<Review> Reviews { get; set; }
+
+    // Kullanıcı Etkileşimi ile İlgili DbSet'ler
+    public DbSet<ShoppingCart> ShoppingCarts { get; set; }
+    public DbSet<CartItem> CartItems { get; set; }
+    public DbSet<Wishlist> Wishlists { get; set; }
+    public DbSet<WishlistItem> WishlistItems { get; set; }
+
+    // Sipariş ve Teslimat ile İlgili Ek DbSet'ler
+    public DbSet<Payment> Payments { get; set; }
+    public DbSet<Shipment> Shipments { get; set; }
+    public DbSet<ShipmentItem> ShipmentItems { get; set; }
+
+    // Promosyonlar ile İlgili DbSet'ler
+    public DbSet<Discount> Discounts { get; set; }
+    public DbSet<DiscountUsage> DiscountUsages { get; set; }
+
+    // Çoktan Çoğa İlişki Ara Tabloları 
+    // EF Core, bu tablolar için DbSet olmasa bile ilişkileri yönetebilir,
+    public DbSet<DiscountProduct> DiscountProducts { get; set; }
+    public DbSet<DiscountCategory> DiscountCategories { get; set; }
 }

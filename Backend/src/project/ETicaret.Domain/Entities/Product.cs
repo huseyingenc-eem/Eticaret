@@ -1,39 +1,22 @@
 ﻿using Core.Persistence.Entities;
-using System.ComponentModel.DataAnnotations; // Gerekli olabilir
 
 namespace ETicaret.Domain.Entities;
 
-public class Product : Entity<int>
+public class Product : Entity<Guid>
 {
-    // Mevcut Alanlar (Zorunlu Hale Getirildi)
-    [Required] // Fluent Validation veya Configuration'da da tanımlanabilir
-    [MaxLength(200)] // Örnek uzunluk kısıtlaması
-    public string Name { get; set; } = string.Empty; // Non-nullable string için başlangıç değeri
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
 
-    [Required] // Fiyat zorunlu
-    public decimal Price { get; set; }
+    public int CategoryId { get; set; }
+    public virtual Category Category { get; set; } = null!;
 
-    [Required] // Stok zorunlu
-    public int Stock { get; set; }
+    public int? SupplierId { get; set; }
+    public virtual Supplier? Supplier { get; set; } = null!;
+    public bool IsActive { get; set; } = true;
 
-    [Required] // Kategori ID zorunlu
-    public int CategoryID { get; set; }
-    public virtual Category Category { get; set; } = null!; // Navigation property (non-nullable)
 
-    [Required] // Tedarikçi ID zorunlu
-    public int SupplierID { get; set; }
-    public virtual Supplier Supplier { get; set; } = null!; // Navigation property (non-nullable)
-
-    // Yeni Eklenen Alanlar
-    public string? Description { get; set; } // Açıklama (isteğe bağlı)
-
-    [MaxLength(100)] // Örnek uzunluk kısıtlaması
-    public string? SKU { get; set; } // Stok Takip Birimi (isteğe bağlı veya zorunluysa Required ekleyin)
-
-    public string? ImageUrl { get; set; } // Resim URL'si (isteğe bağlı)
-
-    public bool IsActive { get; set; } = true; // Varsayılan olarak aktif
-
-    // Base Entity'den gelenler: Id, CreatedTime, UpdateTime
-
+    public virtual ICollection<ProductVariant> Variants { get; set; } = new HashSet<ProductVariant>();
+    public virtual ICollection<ProductImage> Images { get; set; } = new HashSet<ProductImage>();
+    public virtual ICollection<Review> Reviews { get; set; } = new HashSet<Review>();
+    public virtual ICollection<DiscountProduct> DiscountProducts { get; set; } = new HashSet<DiscountProduct>();
 }

@@ -6,9 +6,9 @@ public class UpdateProductCommandValidator : AbstractValidator<UpdateProductComm
 {
     public UpdateProductCommandValidator()
     {
-        RuleFor(p => p.Id)
-            .NotEmpty().WithMessage("Ürün ID boş olamaz.")
-            .GreaterThan(0).WithMessage("Geçerli bir Ürün ID girilmelidir.");
+        //RuleFor(p => p.Id)
+        //    //.NotEmpty().WithMessage("Ürün ID boş olamaz.")
+        //    .GreaterThan(0).WithMessage("Geçerli bir Ürün ID girilmelidir.");
 
         RuleFor(p => p.Name)
             .NotEmpty().WithMessage("Ürün adı boş olamaz.")

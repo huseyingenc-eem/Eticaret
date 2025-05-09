@@ -7,22 +7,18 @@ namespace ETicaret.Domain.Entities;
 /// </summary>
 public class Address : Entity<int>
 {
-    /// <summary>
-    /// Adresin ait olduğu kullanıcının kimliği (User tablosuna foreign key).
-    /// </summary>
-    // [ForeignKey(nameof(User))] // İsteğe bağlı: İlişkiyi attribute ile de belirtebilirsiniz. Configuration sınıfında tanımlamak daha merkezi olabilir.
     public string? UserId { get; set; }
-
-    public string AddressTitle { get; set; } = string.Empty;
-    public string Country { get; set; } = string.Empty;
-    public string City { get; set; } = string.Empty;
-    public string District { get; set; } = string.Empty;
-    public string Street { get; set; } = string.Empty;
-    public string FullAddress { get; set; } = string.Empty;
-    public string? PostalCode { get; set; }
-    public bool IsBillingAddress { get; set; } = false;
-    public bool IsShippingAddress { get; set; } = false;
     public virtual User User { get; set; } = null!;
+
+    public string AddressTitle { get; set; } // Örn: "Ev Adresim", "İş Adresim"
+    public string Country { get; set; }
+    public string City { get; set; }
+    public string District { get; set; }
+    public string? ZipCode { get; set; } // Posta kodu, nullable olabilir
+    public string AddressLine1 { get; set; } // Cadde, Sokak, No
+    public string? AddressLine2 { get; set; } // Apartman Adı, Daire No vb., nullable olabilir
+    public bool IsDefaultShipping { get; set; } // Varsayılan kargo adresi mi?
+    public bool IsDefaultBilling { get; set; } // Varsayılan fatura adresi mi?
 
     // Base Entity'den gelenler: Id, CreatedTime, UpdateTime
 

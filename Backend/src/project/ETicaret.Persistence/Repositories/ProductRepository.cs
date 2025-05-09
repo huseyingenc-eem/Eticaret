@@ -5,7 +5,7 @@ using ETicaret.Persistence.Contexts;
 
 namespace ETicaret.Persistence.Repositories;
 
-public class ProductRepository : EfRepositoryBase<Product, int, BaseDBContexts>, IProductRepository
+public class ProductRepository : EfRepositoryBase<Product, Guid, BaseDBContexts>, IProductRepository
 {
     public ProductRepository(BaseDBContexts context) : base(context)
     {

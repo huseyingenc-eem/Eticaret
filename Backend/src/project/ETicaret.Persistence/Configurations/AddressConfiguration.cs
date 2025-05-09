@@ -1,65 +1,36 @@
-﻿using ETicaret.Domain.Entities; // Address ve User için
+﻿using ETicaret.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ETicaret.Persistence.Configurations;
 
-/// <summary>
-/// Address entity'si için veritabanı yapılandırmasını tanımlar.
-/// </summary>
 public class AddressConfiguration : IEntityTypeConfiguration<Address>
 {
     public void Configure(EntityTypeBuilder<Address> builder)
     {
-        // Tablo adı (isteğe bağlı, varsayılan: "Addresses")
         builder.ToTable("Addresses");
+        builder.HasKey(a => a.Id);
 
-        builder.Navigation(a => a.User).AutoInclude();
+        builder.Property(a => a.UserId).IsRequired();
+        builder.Property(a => a.AddressTitle).IsRequired().HasMaxLength(100);
+        builder.Property(a => a.Country).IsRequired().HasMaxLength(100);
+        builder.Property(a => a.City).IsRequired().HasMaxLength(100);
+        builder.Property(a => a.District).IsRequired().HasMaxLength(100);
+        builder.Property(a => a.ZipCode).HasMaxLength(20);
+        builder.Property(a => a.AddressLine1).IsRequired().HasMaxLength(250);
+        builder.Property(a => a.AddressLine2).HasMaxLength(250);
+        builder.Property(a => a.IsDefaultShipping).IsRequired().HasDefaultValue(false);
+        builder.Property(a => a.IsDefaultBilling).IsRequired().HasDefaultValue(false);
 
-        // Alan Konfigürasyonları
-        builder.Property(a => a.UserId)
-               .IsRequired(); // Kullanıcı ID'si zorunlu
+        // Address to User (Many-to-One)
+        builder.HasOne(a => a.User)
+               .WithMany(u => u.Addresses)
+               .HasForeignKey(a => a.UserId)
+               .OnDelete(DeleteBehavior.Cascade);
 
-        builder.Property(a => a.AddressTitle)
-               .IsRequired()
-               .HasMaxLength(50);
-
-        builder.Property(a => a.Country)
-               .IsRequired()
-               .HasMaxLength(100);
-
-        builder.Property(a => a.City)
-               .IsRequired()
-               .HasMaxLength(100);
-
-        builder.Property(a => a.District)
-               .IsRequired()
-               .HasMaxLength(100);
-
-        builder.Property(a => a.Street)
-               .IsRequired()
-               .HasMaxLength(150);
-
-        builder.Property(a => a.FullAddress)
-               .IsRequired()
-               .HasMaxLength(250);
-
-        builder.Property(a => a.PostalCode)
-               .IsRequired(false) // İsteğe bağlı
-               .HasMaxLength(10);
-
-        builder.Property(a => a.IsBillingAddress)
-               .HasDefaultValue(false); // Varsayılan değer
-
-        builder.Property(a => a.IsShippingAddress)
-               .HasDefaultValue(false); // Varsayılan değer
-
-        // İlişki: Address -> User (Bire-Çok)
-        builder.HasOne(a => a.User) // Bir adresin bir kullanıcısı vardır
-               .WithMany(u => u.Addresses) // Bir kullanıcının birden çok adresi olabilir (User entity'sinde Addresses koleksiyonu olmalı)
-               .HasForeignKey(a => a.UserId) // Foreign key UserId'dir
-               .IsRequired() // Her adres bir kullanıcıya bağlı olmalı
-               .OnDelete(DeleteBehavior.Cascade); // Kullanıcı silinirse adresleri de silinsin (Yaygın senaryo)
-                                                  // Veya DeleteBehavior.Restrict (Kullanıcı silinemez) veya SetNull (UserId null olur - pek mantıklı değil)
+        // CreatedDate, UpdatedDate, DeletedDate (Base Entity'den)
+        builder.Property(e => e.CreatedTime).IsRequired();
+        builder.Property(e => e.UpdateTime).IsRequired(false);
+        builder.Property(e => e.DeletedTime).IsRequired(false);
     }
 }

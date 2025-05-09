@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using ETicaret.Application.Services.Repositories;
-using ETicaret.Domain.Entities;
 using MediatR;
 using Core.CrossCuttingConcerns.Exceptions;
 
@@ -12,7 +11,6 @@ public class CategoryUpdateCommand : IRequest<CategoryUpdateResponseDto>
     public string Name { get; set; } = string.Empty;
     public int? ParentId { get; set; }
 
-    // Yeni eklenen alanlar
     public string? Description { get; set; }
     public bool IsActive { get; set; }
 

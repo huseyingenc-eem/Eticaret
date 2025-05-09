@@ -8,28 +8,36 @@ public class OrderItemConfiguration : IEntityTypeConfiguration<OrderItem>
 {
     public void Configure(EntityTypeBuilder<OrderItem> builder)
     {
-        builder.ToTable("OrderItems").HasKey(oi => oi.Id); // Tablo adı ve Primary Key
+        builder.ToTable("OrderItems");
+        builder.HasKey(oi => oi.Id);
 
-        // Property Konfigürasyonları
-        builder.Property(oi => oi.Id).HasColumnName("Id").IsRequired();
-        builder.Property(oi => oi.OrderId).HasColumnName("OrderId").IsRequired();
-        builder.Property(oi => oi.ProductId).HasColumnName("ProductId").IsRequired();
-        builder.Property(oi => oi.Quantity).HasColumnName("Quantity").IsRequired();
-        builder.Property(oi => oi.Price).HasColumnName("Price").HasColumnType("decimal(18,2)").IsRequired();
-        builder.Property(oi => oi.CreatedTime).HasColumnName("CreatedTime").IsRequired();
-        builder.Property(oi => oi.UpdateTime).HasColumnName("UpdateTime");
+        builder.Property(oi => oi.OrderId).IsRequired();
+        builder.Property(oi => oi.ProductVariantId).IsRequired();
+        builder.Property(oi => oi.Quantity).IsRequired();
+        builder.Property(oi => oi.UnitPrice).IsRequired().HasColumnType("decimal(18,2)");
+        builder.Property(oi => oi.TotalPrice).IsRequired().HasColumnType("decimal(18,2)");
 
-        // İlişkiler (Relationships)
+        // OrderItem to Order (Many-to-One)
+        builder.HasOne(oi => oi.Order)
+               .WithMany(o => o.OrderItems)
+               .HasForeignKey(oi => oi.OrderId)
+               .OnDelete(DeleteBehavior.Cascade); // OrderConfiguration'da zaten tanımlı
 
-        // OrderItem -> Order (Bir Sipariş Kaleminin bir Siparişi olur)
-        // Bu ilişki zaten OrderConfiguration tarafında tanımlandı (HasMany ile).
-        // Burada tekrar tanımlamaya gerek yok ama istenirse WithOne kısmı burada da belirtilebilir.
-        // builder.HasOne(oi => oi.Order).WithMany(o => o.OrderItems).HasForeignKey(oi => oi.OrderId);
+        // OrderItem to ProductVariant (Many-to-One)
+        builder.HasOne(oi => oi.ProductVariant)
+               .WithMany(pv => pv.OrderItems)
+               .HasForeignKey(oi => oi.ProductVariantId)
+               .OnDelete(DeleteBehavior.Restrict); // Sipariş kalemi olan bir varyant direkt silinememeli
 
-        // OrderItem -> Product (Bir Sipariş Kaleminin bir Ürünü olur)
-        builder.HasOne(oi => oi.Product)
-               .WithMany() // Bir ürün birden çok sipariş kaleminde bulunabilir
-               .HasForeignKey(oi => oi.ProductId)
-               .OnDelete(DeleteBehavior.Restrict); // Ürün silinirse, geçmiş siparişlerdeki ilişkili kalemler hata verir (silinmez)
+        // OrderItem to ShipmentItem (One-to-Many)
+        builder.HasMany(oi => oi.ShipmentItems)
+               .WithOne(si => si.OrderItem)
+               .HasForeignKey(si => si.OrderItemId)
+               .OnDelete(DeleteBehavior.Cascade); // Sipariş kalemi silinirse kargo kalemleri de silinsin
+
+        builder.Property(e => e.CreatedTime).IsRequired();
+        builder.Property(e => e.UpdateTime).IsRequired(false);
+        builder.Property(e => e.DeletedTime).IsRequired(false);
+
     }
 }

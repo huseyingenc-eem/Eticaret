@@ -11,52 +11,51 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Navigation(x => x.Category).AutoInclude();
         builder.Navigation(x => x.Supplier).AutoInclude();
 
-        // Alan Konfigürasyonları
-        builder.Property(p => p.Name)
-               .IsRequired() // Zorunlu alan
-               .HasMaxLength(200); // Maksimum uzunluk
+        builder.Property(p => p.Name).IsRequired().HasMaxLength(200);
+        builder.Property(p => p.Description).HasMaxLength(1000);
+        builder.Property(p => p.IsActive).IsRequired().HasDefaultValue(true);
 
-        builder.Property(p => p.Price)
-               .IsRequired()
-               .HasColumnType("decimal(18,2)");
+        builder.Property(p => p.CategoryId).IsRequired();
+        builder.Property(p => p.SupplierId).IsRequired(false);
 
-        builder.Property(p => p.Stock)
-               .IsRequired(); // Zorunlu alan
-
-        builder.Property(p => p.CategoryID)
-               .IsRequired(); // Zorunlu alan
-
-        builder.Property(p => p.SupplierID)
-               .IsRequired(); // Zorunlu alan
-
-        // Yeni eklenen alanlar
         builder.Property(p => p.Description)
-               .IsRequired(false); // İsteğe bağlı (nullable)
+               .IsRequired(false);
 
-        builder.Property(p => p.SKU)
-               .IsRequired(false) // İsteğe bağlı (nullable)
-               .HasMaxLength(100); // Maksimum uzunluk
 
-        builder.Property(p => p.ImageUrl)
-               .IsRequired(false); // İsteğe bağlı (nullable)
-
-        builder.Property(p => p.IsActive)
-               .HasDefaultValue(true); // Varsayılan değer
-
-        // SKU için benzersiz index (isteğe bağlı)
-        builder.HasIndex(p => p.SKU)
-               .IsUnique();
-
-        // İlişkiler (Zaten EF Core tarafından convention ile veya migration'da tanımlanmış olabilir,
-        // ancak burada açıkça belirtmek iyi olabilir)
+        // Product to Category (Many-to-One)
         builder.HasOne(p => p.Category)
-               .WithMany(c => c.Products) // Category entity'sinde Products koleksiyonu varsa
-               .HasForeignKey(p => p.CategoryID)
-               .OnDelete(DeleteBehavior.Restrict); // Kategori silinirse ürünler ne olacak? (Restrict: Silinemez)
+               .WithMany(c => c.Products)
+               .HasForeignKey(p => p.CategoryId)
+               .OnDelete(DeleteBehavior.Restrict);
 
+        // Product to Supplier (Many-to-One, nullable)
         builder.HasOne(p => p.Supplier)
-               .WithMany(s => s.Products) // Supplier entity'sinde Products koleksiyonu varsa
-               .HasForeignKey(p => p.SupplierID)
-               .OnDelete(DeleteBehavior.Restrict); // Tedarikçi silinirse ürünler ne olacak?
+               .WithMany(s => s.Products)
+               .HasForeignKey(p => p.SupplierId)
+               .IsRequired(false)
+               .OnDelete(DeleteBehavior.SetNull);
+
+        // Product to ProductVariant (One-to-Many)
+        builder.HasMany(p => p.Variants)
+               .WithOne(pv => pv.Product)
+               .HasForeignKey(pv => pv.ProductId)
+               .OnDelete(DeleteBehavior.Cascade);
+
+        // Product to ProductImage (One-to-Many)
+        builder.HasMany(p => p.Images)
+               .WithOne(pi => pi.Product)
+               .HasForeignKey(pi => pi.ProductId)
+               .OnDelete(DeleteBehavior.Cascade);
+
+        // Product to Review (One-to-Many)
+        builder.HasMany(p => p.Reviews)
+               .WithOne(r => r.Product)
+               .HasForeignKey(r => r.ProductId)
+               .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Property(e => e.CreatedTime).IsRequired();
+        builder.Property(e => e.UpdateTime).IsRequired(false);
+        builder.Property(e => e.DeletedTime).IsRequired(false);
+
     }
 }

@@ -7,7 +7,7 @@ namespace ETicaret.Application.Features.Products.Commands.Delete;
 
 public class DeleteProductCommand : IRequest<DeleteProductResponseDto>
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
 
     public class DeleteProductCommandHandler : IRequestHandler<DeleteProductCommand, DeleteProductResponseDto>
     {

@@ -16,7 +16,7 @@ public class SupplierDeleteCommand : IRequest<SupplierDeleteResponseDto>, ITrans
 
     public bool ByPassCache => false;
 
-    public string? CacheGroupKey => SupplierConstants.SuppliersCacheGroup;
+    public string? CacheGroupKey => SupplierConstants.SuppliersCacheGroup; 
 
     public class SupplierDeleteCommandHandler : IRequestHandler<SupplierDeleteCommand, SupplierDeleteResponseDto>
     {

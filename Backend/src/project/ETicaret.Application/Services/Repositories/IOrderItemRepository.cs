@@ -3,7 +3,7 @@ using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Services.Repositories;
 
-public interface IOrderItemRepository : IAsyncRepository<OrderItem, int> , IRepository<OrderItem, int>
+public interface IOrderItemRepository : IAsyncRepository<OrderItem, Guid> , IRepository<OrderItem, Guid>
 {
 
 }

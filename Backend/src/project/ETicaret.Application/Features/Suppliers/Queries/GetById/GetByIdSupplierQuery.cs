@@ -1,21 +1,22 @@
 ﻿using AutoMapper;
 using ETicaret.Application.Services.Repositories;
-using ETicaret.Domain.Entities;
+using ETicaret.Domain.Entities; // Bu using ifadesi GetByIdSupplierQuery içinde doğrudan kullanılmıyor gibi görünüyor.
 using MediatR;
-using Core.CrossCuttingConcerns.Exceptions;
+using Core.CrossCuttingConcerns.Exceptions; // NotFoundException için kullanılıyor.
 using Core.Application.Pipelines.Caching;
 using ETicaret.Application.Features.Suppliers.Constants;
 
 namespace ETicaret.Application.Features.Suppliers.Queries.GetById;
 
-public class GetByIdSupplierQuery : IRequest<GetByIdSupplierResponseDto> , ICachableRequest
+public class GetByIdSupplierQuery : IRequest<GetByIdSupplierResponseDto>, ICachableRequest
 {
     public int Id { get; set; }
-    public bool ByPassCache { get; set; }
-    public string CacheKey => $"supplier:{Id}";
+    public bool ByPassCache { get; set; } 
+    public string CacheKey => $"supplier:{Id}"; 
     public string? CacheGroupKey => SupplierConstants.SuppliersCacheGroup;
-    public TimeSpan? SlidingExpiration { get; set; }
+    public TimeSpan? SlidingExpiration { get; set; } 
 
+    public TimeSpan? AbsoluteExpirationRelativeToNow => TimeSpan.FromHours(1); 
     public class GetByIdSupplierQueryHandler : IRequestHandler<GetByIdSupplierQuery, GetByIdSupplierResponseDto>
     {
         private readonly ISupplierRepository _supplierRepository;
@@ -30,13 +31,13 @@ public class GetByIdSupplierQuery : IRequest<GetByIdSupplierResponseDto> , ICach
         public async Task<GetByIdSupplierResponseDto> Handle(GetByIdSupplierQuery request, CancellationToken cancellationToken)
         {
             Supplier? supplier = await _supplierRepository.GetAsync(
-                                       filter: s => s.Id == request.Id,
-                                       enableTracking: false,
-                                       cancellationToken: cancellationToken
-                                       );
+                                            filter: s => s.Id == request.Id,
+                                            enableTracking: false, 
+                                            cancellationToken: cancellationToken
+                                            );
 
             if (supplier == null)
-                throw new NotFoundException($"Supplier with Id {request.Id} not found.");
+                throw new NotFoundException($"Supplier with Id {request.Id} not found."); 
 
             GetByIdSupplierResponseDto response = _mapper.Map<GetByIdSupplierResponseDto>(supplier);
 

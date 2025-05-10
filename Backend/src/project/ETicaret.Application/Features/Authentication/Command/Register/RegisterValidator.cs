@@ -29,6 +29,9 @@ public class RegisterValidator : AbstractValidator<RegisterCommand>
             .NotEmpty().WithMessage("Email alanı boş olamaz.")
             .EmailAddress().WithMessage("Geçerli bir email adresi formatı giriniz.");
 
+        RuleFor(c => c.City)
+            .MaximumLength(50).WithMessage("Şehir adı en fazla 50 karakter olabilir.");
+
         // --- Şifre Kuralları ---
         RuleFor(x => x.Password)
             .NotEmpty().WithMessage("Şifre alanı boş olamaz.")

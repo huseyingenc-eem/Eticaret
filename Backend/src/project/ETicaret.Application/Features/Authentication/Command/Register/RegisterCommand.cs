@@ -12,7 +12,7 @@ public class RegisterCommand : IRequest<AccessTokenDto>
     public string LastName { get; set; } = string.Empty;
     public string UserName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
-    public string City { get; set; } = string.Empty;
+    public string? City { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
     public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AccessTokenDto>
     {
@@ -27,6 +27,15 @@ public class RegisterCommand : IRequest<AccessTokenDto>
 
         public async Task<AccessTokenDto> Handle(RegisterCommand request, CancellationToken cancellationToken)
         {
+            
+            var emailUserCheck = await _userManager.FindByEmailAsync(request.Email);
+            if (emailUserCheck is not null)
+                throw new BusinessException("Bu e-posta adresi zaten kayıtlı.");
+
+            var userNameCheck = await _userManager.FindByNameAsync(request.UserName);
+            if (userNameCheck is not null)
+                throw new BusinessException("Bu kullanıcı adı zaten kullanılıyor.");
+
             User user = new User()
             {
                 FirstName = request.FirstName,
@@ -36,24 +45,16 @@ public class RegisterCommand : IRequest<AccessTokenDto>
                 Email = request.Email,
 
             };
-            var emailUserCheck = await _userManager.FindByEmailAsync(request.Email);
-            if (emailUserCheck is not null)
-                throw new BusinessException("Kullanıcı Emaili benzersiz olmalıdır.");
-
-            var userNameCheck = await _userManager.FindByNameAsync(request.UserName);
-            if (userNameCheck is not null)
-                throw new BusinessException("Bu kullanıcı adı zaten kullanılıyor.");
-
 
             IdentityResult result = await _userManager.CreateAsync(user, request.Password);
 
             if (!result.Succeeded)
             {
                 var errors = result.Errors.Select(x => x.Description).ToList();
-                throw new AuthorizationException(errors);
+                throw new BusinessException(string.Join(Environment.NewLine, errors));
             }
             AccessTokenDto token = await _jwtService.CreateTokenAsync(user);
-
+            await _userManager.AddToRoleAsync(user, "User");
             return token;
         }
     }

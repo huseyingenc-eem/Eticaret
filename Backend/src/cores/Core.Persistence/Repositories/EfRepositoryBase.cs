@@ -90,11 +90,15 @@ public class EfRepositoryBase<TEntity, TId, TContext> : IRepository<TEntity, TId
     /// <param name="entity">Güncellenecek entity.</param>
     /// <param name="cancellationToken">Görevin tamamlanmasını beklerken gözlemlenecek bir CancellationToken.</param>
     /// <returns>Asenkron işlemi temsil eden bir görev. Görev sonucu, işaretlenen entity'yi içerir.</returns>
-    public virtual Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
+    public virtual async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
-        entity.UpdateTime = DateTime.UtcNow;
-        Context.Set<TEntity>().Update(entity); 
-        return Task.FromResult(entity);
+        TEntity? existingEntity = await Context.Set<TEntity>().FindAsync(entity.Id);
+        if (existingEntity != null)
+        {
+            Context.Entry(existingEntity).CurrentValues.SetValues(entity);
+            existingEntity.UpdateTime = DateTime.UtcNow;
+        }
+        return entity;
     }
 
     /// <summary>

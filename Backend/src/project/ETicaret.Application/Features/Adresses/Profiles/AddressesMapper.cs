@@ -15,12 +15,12 @@ public class AddressesMapper : Profile
     public AddressesMapper()
     {
         // Command -> Entity
-        CreateMap<AddressAddCommand, Address>();
-        CreateMap<AddressUpdateCommand, Address>();
+        CreateMap<CreateAddressCommand, Address>();
+        CreateMap<UpdateAddressCommand, Address>();
 
         // Entity -> Command Response DTO
-        CreateMap<Address, AddressAddResponseDto>();
-        CreateMap<Address, AddressUpdateResponseDto>();
+        CreateMap<Address, CreateAddressResponseDto>();
+        CreateMap<Address, UpdateAddressResponseDto>();
 
         // Entity -> Query Response DTO
         CreateMap<Address, GetListAddressResponseDto>(); // Liste içindeki tekil item için

@@ -10,10 +10,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Core.CrossCuttingConcerns.Logger;
-using Core.CrossCuttingConcerns.Logger.Serilog;
-using Core.Application;
 using ETicaret.Application.Services.RedisServices;
+using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,11 +31,41 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddApplicationServices();
+builder.Services.AddSwaggerGen(opt => // Mevcut AddSwaggerGen'inizi bu þekilde düzenleyin
+{
+    // Eðer zaten bir SwaggerDoc tanýmýnýz varsa, o kalabilir:
+    // opt.SwaggerDoc("v1", new OpenApiInfo { Title = "ETicaret API", Version = "v1" });
 
-builder.Services.AddSingleton<CachingConfiguration>();
-builder.Services.AddSingleton<LoggingConfiguration>();
+    // JWT Authentication için Swagger yapýlandýrmasý
+    opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Lütfen geçerli bir token girin (baþýna 'Bearer ' ekleyerek). Örnek: \"Bearer {token}\"",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http, // HTTP tabanlý kimlik doðrulama
+        BearerFormat = "JWT",           // Token formatý JWT
+        Scheme = "Bearer"               // Kullanýlan þema "Bearer"
+    });
+    opt.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer" // Yukarýdaki AddSecurityDefinition'daki "Bearer" adýyla eþleþmeli
+                }
+            },
+            new string[]{} // Bu boþ dizi, global olarak tüm endpoint'lere uygulanmasýný saðlar (opsiyonel, sadece [Authorize] olanlara da uygulanabilir)
+        }
+    });
+});
+builder.Services.AddApplicationServices(builder.Configuration);
+
+builder.Services.Configure<LoggingConfiguration>(builder.Configuration.GetSection("SerilogLogConfigurations"));
+builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<LoggingConfiguration>>().Value);
+
 builder.Services.AddScoped<ILoggerService, FileLogger>();
 builder.Services.AddScoped<IRedisService, RedisCasheService>();
 
@@ -44,7 +73,6 @@ builder.Services.AddScoped<IRedisService, RedisCasheService>();
 builder.Services.AddPersistenceServices(builder.Configuration);
 builder.Services.Configure<CustomTokenOptions>(builder.Configuration.GetSection("TokenOptions"));
 
-builder.Services.AddExceptionHandler<HttpExceptionHandler>();
 builder.Services.AddStackExchangeRedisCache(opt=>
 {
     opt.Configuration = "localhost:6379";
@@ -70,6 +98,7 @@ builder.Services.AddAuthentication(opt =>
         ValidAudience = tokenOption.Audience[0],
         ValidateIssuerSigningKey = true,
         ValidateIssuer = true,
+        ValidateAudience = true,
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenOption.SecurityKey))
@@ -102,6 +131,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseMiddleware<HttpExceptionHandler>();
 
 app.UseHttpsRedirection();
 

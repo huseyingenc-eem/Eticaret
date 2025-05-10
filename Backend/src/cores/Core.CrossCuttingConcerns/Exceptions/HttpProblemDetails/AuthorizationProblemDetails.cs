@@ -1,24 +1,31 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json.Serialization;
 
 namespace Core.CrossCuttingConcerns.Exceptions.HttpProblemDetails;
 
 public class AuthorizationProblemDetails : ProblemDetails
 {
-    public List<string> Errors { get; set; }
-    public AuthorizationProblemDetails(List<string> errors)
+    [JsonPropertyName("errorCode")]
+    public string ErrorCode { get; set; }
+
+    [JsonPropertyName("userFriendlyMessage")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? UserFriendlyMessage { get; set; }
+
+    [JsonPropertyName("additionalData")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public object? AdditionalData { get; set; }
+
+    public AuthorizationProblemDetails(string detail, string errorCode, string? userFriendlyMessage = null, object? additionalData = null, int statusCode = StatusCodes.Status401Unauthorized)
     {
-        Title = "Authorization";
-        Status = StatusCodes.Status400BadRequest;
-        Type = nameof(AuthorizationException);
-        Errors = errors;
-    }
-    public AuthorizationProblemDetails(string message)
-    {
-        Title = "Not Found";
-        Detail = message;
-        Status = StatusCodes.Status401Unauthorized;
-        Type = nameof(AuthorizationException);
+        Title = "Yetkilendirme Hatası";
+        Detail = detail;
+        Status = statusCode; // 401 veya 403 olabilir
+        Type = statusCode == StatusCodes.Status401Unauthorized ? "urn:ietf:rfc:7235#section-3.1" : "urn:ietf:rfc:7231#section-6.5.3";
+        ErrorCode = errorCode;
+        UserFriendlyMessage = userFriendlyMessage;
+        AdditionalData = additionalData;
     }
 }
 

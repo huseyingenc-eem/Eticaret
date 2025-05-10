@@ -1,7 +1,6 @@
 ﻿namespace ETicaret.Application.Features.Categories.Commands.Create;
 
-// Yeni Response DTO
-public class CategoryAddResponseDto
+public class CreateCategoryResponseDto
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
@@ -9,5 +8,5 @@ public class CategoryAddResponseDto
     public string? Description { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedTime { get; set; }
-    public string Message { get; set; } = string.Empty; // İşlem sonucu mesajı
+    public string Message { get; set; } = string.Empty;
 }

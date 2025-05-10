@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ETicaret.Persistence.Configurations
 {
-    public class CartItemConfiguration : IEntityTypeConfiguration<CartItem>
+    public class CartItemConfiguration : IEntityTypeConfiguration<CardItem>
     {
-        public void Configure(EntityTypeBuilder<CartItem> builder)
+        public void Configure(EntityTypeBuilder<CardItem> builder)
         {
             builder.ToTable("CartItems");
 

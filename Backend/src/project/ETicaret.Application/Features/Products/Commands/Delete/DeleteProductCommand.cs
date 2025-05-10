@@ -1,40 +1,56 @@
-﻿using ETicaret.Application.Services.RedisServices;
+﻿using Core.Application.Pipelines.Caching;
+using Core.Application.Pipelines.Transactional;
+using Core.CrossCuttingConcerns.Exceptions;
 using ETicaret.Application.Services.Repositories;
 using MediatR;
-using Core.CrossCuttingConcerns.Exceptions;
 
 namespace ETicaret.Application.Features.Products.Commands.Delete;
 
-public class DeleteProductCommand : IRequest<DeleteProductResponseDto>
+public class DeleteProductCommand : IRequest<DeleteProductResponseDto>, ITransactionalRequest, ICacheRemoverRequest
 {
     public Guid Id { get; set; }
+
+    public string CacheKey => $"product:{Id}";
+    public string? CacheGroupKey => "ProductsGroup";
+    public bool ByPassCache { get; set; }
 
     public class DeleteProductCommandHandler : IRequestHandler<DeleteProductCommand, DeleteProductResponseDto>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IRedisService _redisService;
-        
-        public DeleteProductCommandHandler(IUnitOfWork unitOfWork, IRedisService redisService) 
+
+        public DeleteProductCommandHandler(IUnitOfWork unitOfWork /*, ProductBusinessRules productBusinessRules */)
         {
-            _unitOfWork = unitOfWork; 
-            _redisService = redisService;
+            _unitOfWork = unitOfWork;
+            // _productBusinessRules = productBusinessRules;
         }
 
         public async Task<DeleteProductResponseDto> Handle(DeleteProductCommand request, CancellationToken cancellationToken)
         {
-            var product = await _unitOfWork.ProductRepository.GetAsync(filter: x => x.Id == request.Id, cancellationToken: cancellationToken);
+            
+            Domain.Entities.Product? productToDelete = await _unitOfWork.ProductRepository.GetAsync(
+                filter: p => p.Id == request.Id, // Product.Id string ise bu karşılaştırma doğru.
+                enableTracking: true, // Soft delete için entity'nin takip edilmesi iyi bir pratiktir.
+                cancellationToken: cancellationToken
+            );
 
-            if (product == null)
-                throw new NotFoundException($"Product with Id {request.Id} not found.");
+            if (productToDelete == null)
+            {
+                throw new NotFoundException($"Silinecek ürün bulunamadı (ID: {request.Id}).");
+            }
 
-            await _unitOfWork.ProductRepository.DeleteAsync(product, cancellationToken: cancellationToken); 
-            await _unitOfWork.CompleteAsync(cancellationToken); 
+            // --- İş Kuralları Kontrolleri (Örnek) ---
+            // Örneğin, ürünün aktif bir siparişte olup olmadığını kontrol et.
+            // await _productBusinessRules.CheckIfProductIsInActiveOrderAsync(request.Id, cancellationToken);
+            // --- İş Kuralları Kontrolleri Sonu ---
 
-            // Cache temizleme
-            await _redisService.RemoveDataAsync("products");
-            await _redisService.RemoveDataAsync($"product:{request.Id}");
+            await _unitOfWork.ProductRepository.DeleteAsync(productToDelete, permanent: false, cancellationToken);
 
-            return new DeleteProductResponseDto { Id = request.Id, Message = "Ürün başarıyla silindi." };
+            return new DeleteProductResponseDto
+            {
+                Id = request.Id,
+                Message = "Ürün başarıyla silindi (pasif hale getirildi).",
+                IsSuccess = true
+            };
         }
     }
 }

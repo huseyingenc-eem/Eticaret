@@ -39,7 +39,7 @@ public class BaseDBContexts :IdentityDbContext<User,IdentityRole,string>
 
     // Kullanıcı Etkileşimi ile İlgili DbSet'ler
     public DbSet<ShoppingCart> ShoppingCarts { get; set; }
-    public DbSet<CartItem> CartItems { get; set; }
+    public DbSet<CardItem> CartItems { get; set; }
     public DbSet<Wishlist> Wishlists { get; set; }
     public DbSet<WishlistItem> WishlistItems { get; set; }
 

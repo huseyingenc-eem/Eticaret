@@ -17,8 +17,8 @@ public class CategoriesMapper : Profile
     public CategoriesMapper()
     {
         // Command -> Entity Mappings
-        CreateMap<CategoryAddCommand, Category>();
-        CreateMap<CategoryUpdateCommand, Category>();
+        CreateMap<CreateCategoryCommand, Category>();
+        CreateMap<UpdateCategoryCommand, Category>();
 
         // Entity -> Query Response DTO Mappings
         CreateMap<Category, GetCategoryTreeResponseDto>();
@@ -34,8 +34,8 @@ public class CategoriesMapper : Profile
         CreateMap<Category, GetParentCategoriesResponseDto>();
 
         // Entity -> Command Response DTO Mappings
-        CreateMap<Category, CategoryAddResponseDto>();
-        CreateMap<Category, CategoryUpdateResponseDto>();
+        CreateMap<Category, CreateCategoryResponseDto>();
+        CreateMap<Category, UpdateCategoryResponseDto>();
 
         CreateMap<Product, CategoryProductDto>()
             .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive));

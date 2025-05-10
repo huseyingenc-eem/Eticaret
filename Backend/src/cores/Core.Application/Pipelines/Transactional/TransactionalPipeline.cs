@@ -1,13 +1,24 @@
-﻿using MediatR;
-using System.Transactions; // TransactionScope için
+﻿using Core.Application.Abstractions;
+using MediatR;
+using System.Transactions;
 
 namespace Core.Application.Pipelines.Transactional;
 
-
+/// <summary>
+/// MediatR pipeline'ında veritabanı işlemlerini bir transaction içinde gerçekleştiren davranış.
+/// ITransactionalRequest arayüzünü implemente eden isteklerden sonra değişiklikleri kaydeder.
+/// </summary>
+/// <typeparam name="TRequest">İşlenecek MediatR isteğinin tipi.</typeparam>
+/// <typeparam name="TResponse">MediatR isteğinin dönüş tipi.</typeparam>
 public class TransactionalPipeline<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>, ITransactionalRequest
 {
-    public TransactionalPipeline() { }
+    private readonly ICoreUnitOfWork _unitOfWork;
+
+    public TransactionalPipeline(ICoreUnitOfWork unitOfWork)
+    {
+        _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+    }
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
         TResponse response;
@@ -18,7 +29,7 @@ public class TransactionalPipeline<TRequest, TResponse> : IPipelineBehavior<TReq
             try
             {
                 response = await next();
-
+                await _unitOfWork.CompleteAsync(cancellationToken);
                 transactionScope.Complete();
             }
             catch (Exception ex)

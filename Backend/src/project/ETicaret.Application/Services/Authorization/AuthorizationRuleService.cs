@@ -1,11 +1,11 @@
 ﻿using ETicaret.Application.Services.Authorization;
 using ETicaret.Application.Services.Repositories;
-using ETicaret.Application.Services.RedisServices; // Güncellenmiş IRedisService için
+using ETicaret.Application.Services.RedisServices;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Distributed;
 
-// Namespace Application katmanına göre güncellendi
 namespace ETicaret.Application.Services.Authorization;
 
 public class AuthorizationRuleService : IAuthorizationRuleService
@@ -45,7 +45,7 @@ public class AuthorizationRuleService : IAuthorizationRuleService
 
         var operationClaim = await _operationClaimRepository.GetAsync(
             filter: oc => oc.OperationName == operationName,
-            include: false,
+            //include: false,
             enableTracking: false
         );
 
@@ -60,7 +60,9 @@ public class AuthorizationRuleService : IAuthorizationRuleService
         {
             try
             {
-                await _redisService.AddDataAsync(cacheKey, roles);
+                var cacheEntryOptions = new DistributedCacheEntryOptions()
+                    .SetSlidingExpiration(TimeSpan.FromHours(2));
+                await _redisService.AddDataAsync(cacheKey, roles, cacheEntryOptions, CancellationToken.None);
             }
             catch (Exception ex)
             {

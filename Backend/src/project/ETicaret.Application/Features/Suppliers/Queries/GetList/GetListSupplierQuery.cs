@@ -19,7 +19,7 @@ public class GetListSupplierQuery : IRequest<IPaginate<GetListSupplierResponseDt
     public string? CacheGroupKey => SupplierConstants.SuppliersCacheGroup;
     public TimeSpan? SlidingExpiration { get; set; }
 
-    
+    public TimeSpan? AbsoluteExpirationRelativeToNow => TimeSpan.FromHours(1);
 
     public class GetListSupplierQueryHandler : IRequestHandler<GetListSupplierQuery, IPaginate<GetListSupplierResponseDto>>
     {
@@ -35,7 +35,7 @@ public class GetListSupplierQuery : IRequest<IPaginate<GetListSupplierResponseDt
         public async Task<IPaginate<GetListSupplierResponseDto>> Handle(GetListSupplierQuery request, CancellationToken cancellationToken)
         {
             IPaginate<Supplier> suppliersPage = await _supplierRepository.GetListAsync(
-                //filter: s => s.IsActive,
+                filter: s => s.IsActive,
                 orderBy: q => q.OrderBy(s => s.CompanyName), 
                 index: request.PageIndex,
                 size: request.PageSize,

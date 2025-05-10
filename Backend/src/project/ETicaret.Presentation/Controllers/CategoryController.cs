@@ -1,5 +1,6 @@
 ﻿using Core.CrossCuttingConcerns.Logger;
 using ETicaret.Application.Features.Categories.Commands.Create;
+using ETicaret.Application.Features.Categories.Commands.Delete;
 using ETicaret.Application.Features.Categories.Commands.Update;
 using ETicaret.Application.Features.Categories.Queries.GetCategoryTree;
 using ETicaret.Application.Features.Categories.Queries.GetCategoryWithProducts;
@@ -16,7 +17,7 @@ namespace ETicaret.Presentation.Controllers
     {
 
         [HttpPost("add")]
-        public async Task<IActionResult> Add([FromBody] CategoryAddCommand command)
+        public async Task<IActionResult> Add([FromBody] CreateCategoryCommand command)
         {
             loggerService.Info("Kategori ekleme metodu başlatıldı.");
             var result = await mediator.Send(command);
@@ -28,13 +29,15 @@ namespace ETicaret.Presentation.Controllers
         [HttpDelete("delete/{id:int}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
-            CategoryDeleteCommand command = new CategoryDeleteCommand { Id = id };
+            loggerService.Info($"Kategori silme (Delete) metodu başlatıldı. Kategori ID: {id}");
+            DeleteCategoryCommand command = new() { Id = id };
             var result = await mediator.Send(command);
+            loggerService.Info($"Kategori silme (Delete) metodu bitti. Kategori ID: {id}");
             return Ok(result);
         }
 
         [HttpPut("update")]
-        public async Task<IActionResult> Update(CategoryUpdateCommand command)
+        public async Task<IActionResult> Update(UpdateCategoryCommand command)
         {
             var result = await mediator.Send(command);
             return Ok(result);

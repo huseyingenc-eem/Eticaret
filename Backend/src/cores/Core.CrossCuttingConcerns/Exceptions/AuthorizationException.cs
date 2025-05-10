@@ -1,21 +1,14 @@
 ﻿namespace Core.CrossCuttingConcerns.Exceptions;
 
-public class AuthorizationException : Exception
+public class AuthorizationException : CoreException
 {
-    public List<string> Errors { get; set; } = new List<string>();
-
-    public AuthorizationException(string message) : base(message)
+    public AuthorizationException(string errorCode, string message, string? userFriendlyMessage = null, object? additionalData = null, Exception? innerException = null)
+        : base(errorCode, message, userFriendlyMessage, additionalData, innerException)
     {
-        Errors.Add(message);
-    }
-    
-    public AuthorizationException(List<string> errors) : base(BuildErrorMessage(errors))
-    {
-        Errors = errors;
     }
 
-    private static string BuildErrorMessage(List<string> errors)
+    public AuthorizationException(string message)
+        : base(Constants.ErrorCodes.AuthGeneral, message, message, null, null)
     {
-        return string.Join("\n", errors);
     }
 }

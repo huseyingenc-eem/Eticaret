@@ -1,6 +1,7 @@
 ﻿using ETicaret.Application.Features.Authentication.Command.Login;
 using ETicaret.Application.Features.Authentication.Command.Register;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -24,7 +25,6 @@ public class AuthController(IMediator mediator) : ControllerBase
         var response = await mediator.Send(command);
         return Ok(response);
     }
-
 
     [HttpGet("current")]
     public IActionResult GetCurrentUser()

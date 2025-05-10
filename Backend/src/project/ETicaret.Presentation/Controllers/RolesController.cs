@@ -28,7 +28,7 @@ public class RolesController(IMediator mediator) : ControllerBase
         return Ok(result);
     }
 
-    [HttpDelete("update")]
+    [HttpPut("update")]
     public async Task<IActionResult> Update(string id, UpdateRoleCommand command)
     {
         if (id != command.Id)

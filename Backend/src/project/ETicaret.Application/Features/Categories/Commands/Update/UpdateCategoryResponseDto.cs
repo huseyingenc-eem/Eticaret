@@ -1,7 +1,7 @@
 ﻿namespace ETicaret.Application.Features.Categories.Commands.Update;
 
 // Yeni Response DTO
-public class CategoryUpdateResponseDto
+public class UpdateCategoryResponseDto
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;

@@ -88,17 +88,17 @@ public class AddressesController : ControllerBase
     /// <response code="400">Geçersiz istek verisi (Validation hatası).</response>
     /// <response code="401">Kullanıcı kimliği doğrulanamadı.</response>
     [HttpPost]
-    [ProducesResponseType(typeof(AddressAddResponseDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(CreateAddressResponseDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> Add([FromBody] AddressAddCommand addressAddCommand)
+    public async Task<IActionResult> Add([FromBody] CreateAddressCommand addressAddCommand)
     {
         var userId = GetUserIdFromClaims();
         if (string.IsNullOrEmpty(userId)) // Guid.Empty yerine string kontrolü
             return Unauthorized("Kullanıcı kimliği alınamadı.");
         addressAddCommand.UserId = userId; // Komuttaki UserId'yi string olarak set et
 
-        AddressAddResponseDto result = await _mediator.Send(addressAddCommand);
+        CreateAddressResponseDto result = await _mediator.Send(addressAddCommand);
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
@@ -113,19 +113,19 @@ public class AddressesController : ControllerBase
     /// <response code="403">Kullanıcının bu adresi güncelleme yetkisi yok.</response>
     /// <response code="404">Güncellenecek adres bulunamadı.</response>
     [HttpPut]
-    [ProducesResponseType(typeof(AddressUpdateResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(UpdateAddressResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Update([FromBody] AddressUpdateCommand addressUpdateCommand)
+    public async Task<IActionResult> Update([FromBody] UpdateAddressCommand addressUpdateCommand)
     {
         var userId = GetUserIdFromClaims();
         if (string.IsNullOrEmpty(userId)) // Guid.Empty yerine string kontrolü
             return Unauthorized("Kullanıcı kimliği alınamadı.");
         addressUpdateCommand.UserId = userId; // Handler'da kontrol için UserId'yi string olarak gönder
 
-        AddressUpdateResponseDto result = await _mediator.Send(addressUpdateCommand);
+        UpdateAddressResponseDto result = await _mediator.Send(addressUpdateCommand);
         return Ok(result);
     }
 
@@ -139,7 +139,7 @@ public class AddressesController : ControllerBase
     /// <response code="403">Kullanıcının bu adresi silme yetkisi yok.</response>
     /// <response code="404">Silinecek adres bulunamadı.</response>
     [HttpDelete("{id}")]
-    [ProducesResponseType(typeof(AddressDeleteResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(DeleteAddressResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -150,8 +150,8 @@ public class AddressesController : ControllerBase
             return Unauthorized("Kullanıcı kimliği alınamadı.");
 
         // Komuttaki UserId'yi string olarak ata
-        AddressDeleteCommand addressDeleteCommand = new() { Id = id, UserId = userId };
-        AddressDeleteResponseDto result = await _mediator.Send(addressDeleteCommand);
+        DeleteAddressCommand addressDeleteCommand = new() { Id = id, UserId = userId };
+        DeleteAddressResponseDto result = await _mediator.Send(addressDeleteCommand);
         return Ok(result);
     }
 

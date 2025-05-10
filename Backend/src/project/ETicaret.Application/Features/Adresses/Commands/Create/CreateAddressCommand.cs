@@ -1,13 +1,16 @@
 ﻿using AutoMapper;
+using Core.Application.Pipelines.Transactional;
 using ETicaret.Application.Services.Repositories;
-using ETicaret.Domain.Entities;
+using ETicaret.Domain.Entities; 
 using MediatR;
 
 namespace ETicaret.Application.Features.Addresses.Commands.Create;
 
-public class AddressAddCommand : IRequest<AddressAddResponseDto>
+public class CreateAddressCommand : IRequest<CreateAddressResponseDto> , ITransactionalRequest
 {
-    public string? UserId { get; set; }
+
+    public string UserId { get; set; } = string.Empty;
+
     public string AddressTitle { get; set; } = string.Empty;
     public string Country { get; set; } = string.Empty;
     public string City { get; set; } = string.Empty;
@@ -18,26 +21,26 @@ public class AddressAddCommand : IRequest<AddressAddResponseDto>
     public bool IsBillingAddress { get; set; } = false;
     public bool IsShippingAddress { get; set; } = false;
 
-    public class AddressAddCommandHandler : IRequestHandler<AddressAddCommand, AddressAddResponseDto>
+    public class CreateAddressCommandHandler : IRequestHandler<CreateAddressCommand, CreateAddressResponseDto>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public AddressAddCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public CreateAddressCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
 
-        public async Task<AddressAddResponseDto> Handle(AddressAddCommand request, CancellationToken cancellationToken)
+        public async Task<CreateAddressResponseDto> Handle(CreateAddressCommand request, CancellationToken cancellationToken)
         {
             Address address = _mapper.Map<Address>(request);
 
             Address addedAddress = await _unitOfWork.AddressRepository.AddAsync(address, cancellationToken);
-            await _unitOfWork.CompleteAsync(cancellationToken);
 
-            AddressAddResponseDto response = _mapper.Map<AddressAddResponseDto>(addedAddress);
+            CreateAddressResponseDto response = _mapper.Map<CreateAddressResponseDto>(addedAddress);
             response.Message = "Adres başarıyla eklendi.";
+
             return response;
         }
     }

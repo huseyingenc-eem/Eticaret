@@ -4,44 +4,37 @@ using System.Text.Json;
 using Core.Application;
 using Core.CrossCuttingConcerns.Logger;
 using Serilog;
+using Microsoft.Extensions.Options;
+using System.Threading;
 
 namespace ETicaret.Application.Services.RedisServices;
 
 public class RedisCasheService : IRedisService
 {
     private readonly IDistributedCache _distributedCache;
-    private readonly CachingConfiguration _cachingConfiguration;
     private readonly ILoggerService _loggerService;
 
-    public RedisCasheService(IDistributedCache distributedCache, CachingConfiguration cachingConfiguration, ILoggerService loggerService)
+    public RedisCasheService(IDistributedCache distributedCache, ILoggerService loggerService)
     {
         _distributedCache = distributedCache;
-        _cachingConfiguration = cachingConfiguration;
+        
         _loggerService = loggerService;
     }
 
-    public async Task AddDataAsync<T>(string key, T value)
+    public async Task AddDataAsync<T>(string key, T value, DistributedCacheEntryOptions options, CancellationToken cancellationToken = default)
     {
         try
         {
             var jsonData = JsonSerializer.Serialize(value);
-
             byte[] dataBytes = Encoding.UTF8.GetBytes(jsonData);
 
-            var options = new DistributedCacheEntryOptions
-            {
-                SlidingExpiration = TimeSpan.FromMinutes(_cachingConfiguration.SlidingExpiration),
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(_cachingConfiguration.AbsoluteExpiration)
-            };
 
-            await _distributedCache.SetAsync(key, dataBytes, options);
+            await _distributedCache.SetAsync(key, dataBytes, options, cancellationToken);
         }
         catch (Exception ex)
         {
-            _loggerService.Error("RedisCacheService AddDataAsync error: " + ex.Message, ex);
-            //_logger.Error("RedisCacheService AddDataAsync error: " + ex.Message);
-
-            throw new Exception("RedisCacheService AddDataAsync error: " + ex.Message);
+            _loggerService.Error($"RedisCacheService AddDataAsync error for key {key}: {ex.Message}", ex);
+            throw new Exception($"RedisCacheService AddDataAsync error. See inner exception for details. Key: {key}", ex);
         }
     }
 
@@ -60,13 +53,19 @@ public class RedisCasheService : IRedisService
 
             return response;
         }
+        catch (JsonException jsonEx)
+        {
+            _loggerService.Error($"RedisCacheService GetDataAsync JSON deserialization error for key {key}: {jsonEx.Message}", jsonEx);
+            // Cache'deki veri bozuk olabilir, bu durumda silmek bir seçenek olabilir.
+            await RemoveDataAsync(key); // Opsiyonel: Bozuk veriyi temizle
+            throw new Exception($"RedisCacheService GetDataAsync error: Could not deserialize data for key {key}. See inner exception.", jsonEx);
+        }
         catch (Exception ex)
         {
-            _loggerService.Error("RedisCacheService GetDataAsync error: " + ex.Message, ex);
-            //_logger.Error("RedisCacheService GetDataAsync error: " + ex.Message);
-
-            throw new Exception("RedisCacheService GetDataAsync error: " + ex.Message);
+            _loggerService.Error($"RedisCacheService GetDataAsync error for key {key}: {ex.Message}", ex);
+            throw new Exception($"RedisCacheService GetDataAsync error. See inner exception for details. Key: {key}", ex);
         }
+
     }
 
     public async Task RemoveDataAsync(string key)
@@ -74,13 +73,12 @@ public class RedisCasheService : IRedisService
         try
         {
             await _distributedCache.RemoveAsync(key);
+            _loggerService.Info($"Data removed from cache with key: {key}");
         }
         catch (Exception ex)
         {
-            _loggerService.Error("RedisCacheService RemoveDataAsync error: " + ex.Message, ex);
-            //_logger.Error("RedisCacheService RemoveDataAsync error: " + ex.Message);
-
-            throw new Exception("RedisCacheService RemoveDataAsync error: " + ex.Message);
+            _loggerService.Error($"RedisCacheService RemoveDataAsync error for key {key}: {ex.Message}", ex);
+            throw new Exception($"RedisCacheService RemoveDataAsync error. See inner exception for details. Key: {key}", ex);
         }
     }
 }

@@ -23,7 +23,6 @@
 
   <ItemGroup>
     <Folder Include="Features\Roles\Rules\" />
-    <Folder Include="Features\UserRoles\Queries\a\" />
   </ItemGroup>
 
 </Project>

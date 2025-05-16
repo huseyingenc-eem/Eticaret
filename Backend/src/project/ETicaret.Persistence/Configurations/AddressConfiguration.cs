@@ -10,6 +10,7 @@ public class AddressConfiguration : IEntityTypeConfiguration<Address>
     {
         builder.ToTable("Addresses");
         builder.HasKey(a => a.Id);
+        builder.Property(a => a.Id).ValueGeneratedOnAdd();
 
         builder.Property(a => a.UserId).IsRequired();
         builder.Property(a => a.AddressTitle).IsRequired().HasMaxLength(100);
@@ -17,8 +18,7 @@ public class AddressConfiguration : IEntityTypeConfiguration<Address>
         builder.Property(a => a.City).IsRequired().HasMaxLength(100);
         builder.Property(a => a.District).IsRequired().HasMaxLength(100);
         builder.Property(a => a.ZipCode).HasMaxLength(20);
-        builder.Property(a => a.AddressLine1).IsRequired().HasMaxLength(250);
-        builder.Property(a => a.AddressLine2).HasMaxLength(250);
+        builder.Property(a => a.AddressLine).IsRequired().HasMaxLength(350);
         builder.Property(a => a.IsDefaultShipping).IsRequired().HasDefaultValue(false);
         builder.Property(a => a.IsDefaultBilling).IsRequired().HasDefaultValue(false);
 

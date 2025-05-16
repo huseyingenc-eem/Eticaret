@@ -40,22 +40,22 @@ public class CreateAddressResponseDto
     /// <summary>
     /// Tam adres metni.
     /// </summary>
-    public string FullAddress { get; set; } = string.Empty;
+    public string AddressLine { get; set; }
 
     /// <summary>
     /// Posta kodu (opsiyonel).
     /// </summary>
-    public string? PostalCode { get; set; }
+    public string? zipCode { get; set; }
 
     /// <summary>
     /// Bu adresin fatura adresi olup olmadığını belirtir.
     /// </summary>
-    public bool IsBillingAddress { get; set; }
+    public bool IsDefaultBilling { get; set; }
 
     /// <summary>
     /// Bu adresin gönderi adresi olup olmadığını belirtir.
     /// </summary>
-    public bool IsShippingAddress { get; set; }
+    public bool IsDefaultShipping { get; set; }
 
     /// <summary>
     /// Adresin oluşturulma zamanı.

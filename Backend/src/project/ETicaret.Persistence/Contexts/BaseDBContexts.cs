@@ -1,4 +1,5 @@
 ﻿using ETicaret.Domain.Entities;
+using ETicaret.Persistence.FirstDB;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -56,4 +57,5 @@ public class BaseDBContexts :IdentityDbContext<User,IdentityRole,string>
     // EF Core, bu tablolar için DbSet olmasa bile ilişkileri yönetebilir,
     public DbSet<DiscountProduct> DiscountProducts { get; set; }
     public DbSet<DiscountCategory> DiscountCategories { get; set; }
+    public DbSet<asd> asds { get; set; }
 }

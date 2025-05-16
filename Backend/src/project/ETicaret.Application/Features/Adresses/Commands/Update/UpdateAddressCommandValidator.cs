@@ -33,9 +33,9 @@ public class UpdateAddressCommandValidator : AbstractValidator<UpdateAddressComm
             .NotEmpty().WithMessage("Cadde/Sokak boş olamaz.")
             .MaximumLength(100).WithMessage("Cadde/Sokak bilgisi en fazla 100 karakter olabilir.");
 
-        RuleFor(c => c.FullAddress)
+        RuleFor(c => c.AddressLine)
             .NotEmpty().WithMessage("Tam adres boş olamaz.")
-            .MaximumLength(250).WithMessage("Tam adres en fazla 250 karakter olabilir.");
+            .MaximumLength(300).WithMessage("Tam adres en fazla 300 karakter olabilir.");
 
         RuleFor(c => c.PostalCode)
             .MaximumLength(10).WithMessage("Posta kodu en fazla 10 karakter olabilir.")
@@ -44,7 +44,7 @@ public class UpdateAddressCommandValidator : AbstractValidator<UpdateAddressComm
             .When(c => !string.IsNullOrEmpty(c.PostalCode) && c.Country == "Türkiye");
 
         RuleFor(c => c)
-            .Must(c => c.IsBillingAddress || c.IsShippingAddress)
+            .Must(c => c.IsDefaultBilling || c.IsDefaultShipping)
             .WithMessage("Adres, fatura adresi veya gönderi adresi olarak en az biri işaretlenmelidir.")
             .WithName("AddressPurpose");
     }

@@ -46,6 +46,7 @@ public class DeleteAddressCommand : IRequest<DeleteAddressResponseDto> , ITransa
             }
 
             await _unitOfWork.AddressRepository.DeleteAsync(addressToDelete, permanent: true, cancellationToken);
+            await _unitOfWork.CompleteAsync(cancellationToken);
             return new DeleteAddressResponseDto
             {
                 Id = request.Id,

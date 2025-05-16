@@ -10,16 +10,16 @@ namespace ETicaret.Application.Features.Addresses.Commands.Update;
 public class UpdateAddressCommand : IRequest<UpdateAddressResponseDto> , ITransactionalRequest
 {
     public int Id { get; set; }
-    public string UserId { get; set; }
+    public string UserId { get; set; } = string.Empty;
     public string AddressTitle { get; set; } = string.Empty;
     public string Country { get; set; } = string.Empty;
     public string City { get; set; } = string.Empty;
     public string District { get; set; } = string.Empty;
     public string Street { get; set; } = string.Empty;
-    public string FullAddress { get; set; } = string.Empty;
+    public string AddressLine { get; set; }
     public string? PostalCode { get; set; }
-    public bool IsBillingAddress { get; set; }
-    public bool IsShippingAddress { get; set; }
+    public bool IsDefaultBilling { get; set; } = false;
+    public bool IsDefaultShipping { get; set; } = false;
 
     public class UpdateAddressCommandHandler : IRequestHandler<UpdateAddressCommand, UpdateAddressResponseDto>
     {
@@ -49,7 +49,7 @@ public class UpdateAddressCommand : IRequest<UpdateAddressResponseDto> , ITransa
 
             _mapper.Map(request, addressToUpdate);
             await _unitOfWork.AddressRepository.UpdateAsync(addressToUpdate, cancellationToken);
-
+            await _unitOfWork.CompleteAsync(cancellationToken);
             UpdateAddressResponseDto response = _mapper.Map<UpdateAddressResponseDto>(addressToUpdate);
             response.Message = "Adres başarıyla güncellendi.";
             return response;

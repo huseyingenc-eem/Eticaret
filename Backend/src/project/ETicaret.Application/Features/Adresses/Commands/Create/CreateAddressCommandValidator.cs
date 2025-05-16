@@ -33,19 +33,14 @@ public class CreateAddressCommandValidator : AbstractValidator<CreateAddressComm
             .NotEmpty().WithMessage("Cadde/Sokak boş olamaz.")
             .MaximumLength(100).WithMessage("Cadde/Sokak bilgisi en fazla 100 karakter olabilir.");
 
-        RuleFor(c => c.FullAddress)
-            .NotEmpty().WithMessage("Tam adres boş olamaz.")
-            .MaximumLength(250).WithMessage("Tam adres en fazla 250 karakter olabilir.");
-
-        RuleFor(c => c.PostalCode)
+        RuleFor(c => c.zipCode)
             .MaximumLength(10).WithMessage("Posta kodu en fazla 10 karakter olabilir.")
-            .When(c => !string.IsNullOrEmpty(c.PostalCode))
+            .When(c => !string.IsNullOrEmpty(c.zipCode))
             .Matches("^[0-9]{5}$").WithMessage("Posta kodu 5 haneli rakam olmalıdır.")
-            .When(c => !string.IsNullOrEmpty(c.PostalCode) && c.Country == "Türkiye");
+            .When(c => !string.IsNullOrEmpty(c.zipCode) && c.Country == "Türkiye");
 
         RuleFor(c => c)
-            .Must(c => c.IsBillingAddress || c.IsShippingAddress)
-            .WithMessage("Adres, fatura adresi veya gönderi adresi olarak en az biri işaretlenmelidir.")
-            .WithName("AddressPurpose");
+            .Must(c => c.IsDefaultBilling || c.IsDefaultShipping)
+            .WithMessage("Adres, fatura adresi veya gönderi adresi olarak en az biri işaretlenmelidir.");
     }
 }

@@ -8,6 +8,10 @@ public class PagingProfile : Profile
 {
     public PagingProfile()
     {
-        CreateMap(typeof(IPaginate<>), typeof(IPaginate<>)).ConvertUsing(typeof(PaginateTypeConverter<,>));
+        CreateMap(typeof(Paginate<>), typeof(Paginate<>)) // <<-- SOMUT TİPLER
+        .ConvertUsing(typeof(PaginateTypeConverter<,>));
+
+        CreateMap(typeof(IPaginate<>), typeof(IPaginate<>))
+        .ConvertUsing(typeof(PaginateTypeConverter<,>));
     }
 }

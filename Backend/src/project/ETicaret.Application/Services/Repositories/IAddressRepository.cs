@@ -1,5 +1,7 @@
-﻿using Core.Persistence.Repositories;
+﻿using Core.Persistence.Paging;
+using Core.Persistence.Repositories;
 using ETicaret.Domain.Entities;
+using System.Linq.Expressions;
 
 namespace ETicaret.Application.Services.Repositories;
 
@@ -9,6 +11,12 @@ namespace ETicaret.Application.Services.Repositories;
 /// </summary>
 public interface IAddressRepository : IAsyncRepository<Address, int>, IRepository<Address, int>
 {
-    // Adres'e özel ek metotlar gerekirse buraya tanımlanabilir.
-    // Örneğin: Task<List<Address>> GetUserShippingAddressesAsync(Guid userId);
+    Task<IPaginate<Address>> GetListWithUserDetailsAsync(
+            Expression<Func<Address, bool>>? predicate = null,
+            Func<IQueryable<Address>, IOrderedQueryable<Address>>? orderBy = null,
+            int index = 0,
+            int size = 10,
+            bool enableTracking = true,
+            CancellationToken cancellationToken = default
+        );
 }

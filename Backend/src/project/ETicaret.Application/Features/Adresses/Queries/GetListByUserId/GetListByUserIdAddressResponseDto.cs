@@ -3,7 +3,7 @@
 /// <summary>
 /// Kullanıcının adres listesinde gösterilecek temel bilgileri içeren DTO.
 /// </summary>
-public class GetListAddressResponseDto
+public class GetListByUserIdAddressResponseDto
 {
     /// <summary>
     /// Adres ID'si.
@@ -18,15 +18,15 @@ public class GetListAddressResponseDto
     /// <summary>
     /// Adresin tam metni (Liste görünümü için kısaltılmış olabilir).
     /// </summary>
-    public string FullAddress { get; set; } = string.Empty; // Veya City/District gibi alanlar
+    public string AddressLine { get; set; } = string.Empty; // Veya City/District gibi alanlar
 
     /// <summary>
     /// Fatura adresi mi?
     /// </summary>
-    public bool IsBillingAddress { get; set; }
+    public bool isDefaultBilling { get; set; }
 
     /// <summary>
     /// Teslimat adresi mi?
     /// </summary>
-    public bool IsShippingAddress { get; set; }
+    public bool isDefaultShipping { get; set; }
 }

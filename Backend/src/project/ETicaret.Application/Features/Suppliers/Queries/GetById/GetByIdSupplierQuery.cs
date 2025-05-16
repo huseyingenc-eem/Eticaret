@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using ETicaret.Application.Services.Repositories;
-using ETicaret.Domain.Entities; // Bu using ifadesi GetByIdSupplierQuery içinde doğrudan kullanılmıyor gibi görünüyor.
+using ETicaret.Domain.Entities;
 using MediatR;
-using Core.CrossCuttingConcerns.Exceptions; // NotFoundException için kullanılıyor.
+using Core.CrossCuttingConcerns.Exceptions;
 using Core.Application.Pipelines.Caching;
 using ETicaret.Application.Features.Suppliers.Constants;
 

@@ -1,4 +1,5 @@
-﻿using ETicaret.Application.Services.Repositories; // Tüm repository arayüzleri için
+﻿using Core.Application.Abstractions;
+using ETicaret.Application.Services.Repositories; // Tüm repository arayüzleri için
 using System; // IAsyncDisposable için
 using System.Threading; // CancellationToken için
 using System.Threading.Tasks; // Task için
@@ -10,7 +11,7 @@ namespace ETicaret.Application.Services.Repositories;
 /// Veritabanı işlemlerinin bir bütün olarak yönetilmesini ve atomik olmasını sağlar.
 /// Repository'lere erişim noktası görevi görür ve değişikliklerin toplu olarak kaydedilmesini yönetir.
 /// </summary>
-public interface IUnitOfWork : IAsyncDisposable
+public interface IUnitOfWork : ICoreUnitOfWork
 {
     #region Temel Varlık Repository'leri
     /// <summary>
@@ -124,12 +125,4 @@ public interface IUnitOfWork : IAsyncDisposable
     IOperationClaimRepository OperationClaimRepository { get; }
     #endregion
 
-    #region Kaydetme İşlemi
-    /// <summary>
-    /// Bu Unit of Work kapsamında yapılan tüm değişiklikleri veritabanına asenkron olarak kaydeder.
-    /// </summary>
-    /// <param name="cancellationToken">İşlemin iptal edilip edilemeyeceğini belirten bir token.</param>
-    /// <returns>Veritabanında etkilenen satır sayısını içeren bir görev.</returns>
-    Task<int> CompleteAsync(CancellationToken cancellationToken = default);
-    #endregion
 }

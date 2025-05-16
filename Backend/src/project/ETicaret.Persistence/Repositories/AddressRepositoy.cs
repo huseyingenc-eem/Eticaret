@@ -1,7 +1,10 @@
-﻿using Core.Persistence.Repositories;
+﻿using Core.Persistence.Paging;
+using Core.Persistence.Repositories;
 using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
-using ETicaret.Persistence.Contexts; 
+using ETicaret.Persistence.Contexts;
+using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace ETicaret.Persistence.Repositories;
 
@@ -19,10 +22,18 @@ public class AddressRepository : EfRepositoryBase<Address, int, BaseDBContexts>,
     {
     }
 
-    // IAddressRepository'ye özel metotlar eklenirse, implementasyonları buraya yazılır.
-    // Örneğin:
-    // public async Task<List<Address>> GetUserShippingAddressesAsync(Guid userId)
-    // {
-    //     return await GetListAsync(predicate: a => a.UserId == userId && a.IsShippingAddress, enableTracking: false);
-    // }
+    public async Task<IPaginate<Address>> GetListWithUserDetailsAsync(Expression<Func<Address, bool>>? predicate = null, Func<IQueryable<Address>, IOrderedQueryable<Address>>? orderBy = null, int index = 0, int size = 10, bool enableTracking = true, CancellationToken cancellationToken = default)
+    {
+        // base.GetListAsync'i çağırırken EF Core'a özgü Include'u burada yapın.
+        // Bu, Application katmanının EF Core detaylarını bilmesini engeller.
+        return await base.GetListAsync(
+            filter: predicate,
+            orderBy: orderBy,
+            include: query => query.Include(address => address.User), // EF Core Include burada kapsüllendi
+            index: index,
+            size: size,
+            enableTracking: enableTracking,
+            cancellationToken: cancellationToken
+        );
+    }
 }

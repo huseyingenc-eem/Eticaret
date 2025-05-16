@@ -1,13 +1,9 @@
-﻿using MediatR;
+﻿using Core.Persistence.Paging;
+using MediatR;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options; // IOptions için
-using System; // TimeSpan, ArgumentNullException için
-using System.Collections.Generic; // HashSet için
-using System.Linq; // FirstOrDefault için (kullanılmıyor ama genel using)
 using System.Text; // Encoding için
 using System.Text.Json; // JsonSerializer için
-using System.Threading; // CancellationToken için
-using System.Threading.Tasks; // Task için
 
 namespace Core.Application.Pipelines.Caching;
 
@@ -56,8 +52,8 @@ public class AddCachePipeline<TRequest, TResponse> : IPipelineBehavior<TRequest,
 
         if (cachedResponseBytes != null && cachedResponseBytes.Length > 0)
         {
-            
-            response = JsonSerializer.Deserialize<TResponse>(Encoding.UTF8.GetString(cachedResponseBytes), _jsonSerializerOptions);
+
+            response = DeserializeResponse<TResponse>(cachedResponseBytes);
             if (response == null)
                
                 await _cache.RemoveAsync(request.CacheKey, cancellationToken);
@@ -139,5 +135,22 @@ public class AddCachePipeline<TRequest, TResponse> : IPipelineBehavior<TRequest,
             };
             await _cache.SetAsync(groupKey, newGroupBytes, groupCacheEntryOptions, cancellationToken);
         }
+    }
+
+    private static T? DeserializeResponse<T>(byte[] data)
+    {
+        string json = Encoding.UTF8.GetString(data);
+
+        // Eğer dönüş tipi IPaginate<GetListAddressResponseDto> ise, somut Paginate<GetListAddressResponseDto> kullan
+        if (typeof(T).IsInterface && typeof(T).IsGenericType && typeof(T).GetGenericTypeDefinition() == typeof(IPaginate<>))
+        {
+            Type itemType = typeof(T).GetGenericArguments()[0];
+            Type concreteType = typeof(Paginate<>).MakeGenericType(itemType);
+
+            object? deserialized = JsonSerializer.Deserialize(json, concreteType);
+            return (T?)deserialized;
+        }
+
+        return JsonSerializer.Deserialize<T>(json);
     }
 }

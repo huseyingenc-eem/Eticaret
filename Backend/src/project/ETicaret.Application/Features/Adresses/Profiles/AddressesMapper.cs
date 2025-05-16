@@ -3,7 +3,10 @@ using ETicaret.Application.Features.Addresses.Commands.Create;
 using ETicaret.Application.Features.Addresses.Commands.Update;
 using ETicaret.Application.Features.Addresses.Queries.GetById;
 using ETicaret.Application.Features.Addresses.Queries.GetListByUserId;
+using ETicaret.Application.Features.Addresses.Queries.GetList;
 using ETicaret.Domain.Entities;
+using Core.Application.Mappings.Converters;
+using Core.Persistence.Paging;
 
 namespace ETicaret.Application.Features.Addresses.Profiles;
 
@@ -14,21 +17,20 @@ public class AddressesMapper : Profile
 {
     public AddressesMapper()
     {
-        // Command -> Entity
+        // Commands
         CreateMap<CreateAddressCommand, Address>();
         CreateMap<UpdateAddressCommand, Address>();
 
-        // Entity -> Command Response DTO
+        // Responses
         CreateMap<Address, CreateAddressResponseDto>();
         CreateMap<Address, UpdateAddressResponseDto>();
-
-        // Entity -> Query Response DTO
-        CreateMap<Address, GetListAddressResponseDto>(); // Liste içindeki tekil item için
         CreateMap<Address, GetByIdAddressResponseDto>();
+        CreateMap<Address, GetListByUserIdAddressResponseDto>();
+        CreateMap<Address, GetListAddressResponseDto>();
 
-        // IPaginate<Entity> -> GetListResponse<DTO> (Sayfalama için - Eğer GetListByUserIdQuery IPaginate döndürüyorsa)
-        // Eğer GetListByUserIdQuery doğrudan List<> döndürüyorsa bu map'lemeye gerek yok.
-        // Şimdilik yorumda bırakalım, çünkü GetListAsync'in liste döndüren versiyonunu kullanıyoruz.
-        // CreateMap<IPaginate<Address>, GetListResponse<GetListAddressResponseDto>>().ReverseMap();
+        // Paging
+        CreateMap<IPaginate<Address>, IPaginate<GetListAddressResponseDto>>()
+            .ConvertUsing<PaginateTypeConverter<Address, GetListAddressResponseDto>>();
+
     }
 }

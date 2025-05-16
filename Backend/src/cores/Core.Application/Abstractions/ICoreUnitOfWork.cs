@@ -8,10 +8,12 @@
 /// </summary>
 public interface ICoreUnitOfWork : IAsyncDisposable
 {
+    #region Kaydetme İşlemi
     /// <summary>
     /// Bu Unit of Work kapsamında yapılan tüm değişiklikleri veritabanına asenkron olarak kaydeder.
     /// </summary>
     /// <param name="cancellationToken">İşlemin iptal edilip edilemeyeceğini belirten bir token.</param>
     /// <returns>Veritabanında etkilenen satır sayısını içeren bir görev.</returns>
     Task<int> CompleteAsync(CancellationToken cancellationToken = default);
+    #endregion
 }

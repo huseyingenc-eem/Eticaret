@@ -1,4 +1,5 @@
-﻿using ETicaret.Application.Services.Repositories;
+﻿using Core.Application.Abstractions;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Persistence.Contexts;
 using ETicaret.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -29,7 +30,8 @@ public static class Extensions
             opt.EnableSensitiveDataLogging();
         });
 
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>(); // ETicaret.Application...IUnitOfWork -> UnitOfWork
+        services.AddScoped<ICoreUnitOfWork, UnitOfWork>(); // Core.Application...ICoreUnitOfWork -> UnitOfWork
 
         #region Repository Kayıtları
         services.AddScoped<IAddressRepository, AddressRepository>();

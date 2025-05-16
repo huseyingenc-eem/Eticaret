@@ -11,10 +11,10 @@ public class UpdateAddressResponseDto
     public string City { get; set; } = string.Empty;
     public string District { get; set; } = string.Empty;
     public string Street { get; set; } = string.Empty;
-    public string FullAddress { get; set; } = string.Empty;
+    public string AddressLine { get; set; } = string.Empty;
     public string? PostalCode { get; set; }
-    public bool IsBillingAddress { get; set; }
-    public bool IsShippingAddress { get; set; }
+    public bool IsDefaultBilling { get; set; } = false;
+    public bool IsDefaultShipping { get; set; } = false;
     public DateTime UpdateTime { get; set; } 
     public string Message { get; set; } = string.Empty;
 }

@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims; // ClaimsPrincipal ve ClaimTypes için
 using System.Threading.Tasks;
+using ETicaret.Application.Features.Addresses.Queries.GetList;
 
 namespace ETicaret.Presentation.Controllers;
 
@@ -40,7 +41,7 @@ public class AddressesController : ControllerBase
     /// <response code="200">Kullanıcının adres listesi başarıyla döndürüldü.</response>
     /// <response code="401">Kullanıcı kimliği doğrulanamadı.</response>
     [HttpGet("my-addresses")]
-    [ProducesResponseType(typeof(List<GetListAddressResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(List<GetListByUserIdAddressResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetListByCurrentUser()
     {
@@ -51,7 +52,7 @@ public class AddressesController : ControllerBase
 
         // Query'deki UserId'yi string olarak ata
         GetListByUserIdAddressQuery getListByUserIdAddressQuery = new() { UserId = userId };
-        List<GetListAddressResponseDto> result = await _mediator.Send(getListByUserIdAddressQuery);
+        List<GetListByUserIdAddressResponseDto> result = await _mediator.Send(getListByUserIdAddressQuery);
         return Ok(result);
     }
 
@@ -87,7 +88,7 @@ public class AddressesController : ControllerBase
     /// <response code="201">Adres başarıyla oluşturuldu.</response>
     /// <response code="400">Geçersiz istek verisi (Validation hatası).</response>
     /// <response code="401">Kullanıcı kimliği doğrulanamadı.</response>
-    [HttpPost]
+    [HttpPost("add")]
     [ProducesResponseType(typeof(CreateAddressResponseDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -112,7 +113,7 @@ public class AddressesController : ControllerBase
     /// <response code="401">Kullanıcı kimliği doğrulanamadı.</response>
     /// <response code="403">Kullanıcının bu adresi güncelleme yetkisi yok.</response>
     /// <response code="404">Güncellenecek adres bulunamadı.</response>
-    [HttpPut]
+    [HttpPut("update")]
     [ProducesResponseType(typeof(UpdateAddressResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -152,6 +153,13 @@ public class AddressesController : ControllerBase
         // Komuttaki UserId'yi string olarak ata
         DeleteAddressCommand addressDeleteCommand = new() { Id = id, UserId = userId };
         DeleteAddressResponseDto result = await _mediator.Send(addressDeleteCommand);
+        return Ok(result);
+    }
+
+    [HttpGet("getlist")] // İstek: GET /api/Addresses?PageIndex=0&PageSize=10
+    public async Task<IActionResult> GetList([FromQuery] GetListAddressQuery getListAddressQuery)
+    {
+        var result = await _mediator.Send(getListAddressQuery);
         return Ok(result);
     }
 

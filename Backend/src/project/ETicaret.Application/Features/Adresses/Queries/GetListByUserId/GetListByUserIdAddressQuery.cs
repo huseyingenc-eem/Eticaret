@@ -4,11 +4,11 @@ using MediatR;
 
 namespace ETicaret.Application.Features.Addresses.Queries.GetListByUserId;
 
-public class GetListByUserIdAddressQuery : IRequest<List<GetListAddressResponseDto>>
+public class GetListByUserIdAddressQuery : IRequest<List<GetListByUserIdAddressResponseDto>>
 {
     public string? UserId { get; set; }
 
-    public class GetListByUserIdAddressQueryHandler : IRequestHandler<GetListByUserIdAddressQuery, List<GetListAddressResponseDto>>
+    public class GetListByUserIdAddressQueryHandler : IRequestHandler<GetListByUserIdAddressQuery, List<GetListByUserIdAddressResponseDto>>
     {
         private readonly IAddressRepository _addressRepository;
         private readonly IMapper _mapper;
@@ -22,7 +22,7 @@ public class GetListByUserIdAddressQuery : IRequest<List<GetListAddressResponseD
         /// <summary>
         /// Kullanıcının adreslerini getirme isteğini işler.
         /// </summary>
-        public async Task<List<GetListAddressResponseDto>> Handle(GetListByUserIdAddressQuery request, CancellationToken cancellationToken)
+        public async Task<List<GetListByUserIdAddressResponseDto>> Handle(GetListByUserIdAddressQuery request, CancellationToken cancellationToken)
         {
             var addresses = await _addressRepository.GetListAsync(
                 filter: a => a.UserId == request.UserId,
@@ -31,7 +31,7 @@ public class GetListByUserIdAddressQuery : IRequest<List<GetListAddressResponseD
                 cancellationToken: cancellationToken
             );
 
-            List<GetListAddressResponseDto> response = _mapper.Map<List<GetListAddressResponseDto>>(addresses);
+            List<GetListByUserIdAddressResponseDto> response = _mapper.Map<List<GetListByUserIdAddressResponseDto>>(addresses);
             return response;
         }
     }

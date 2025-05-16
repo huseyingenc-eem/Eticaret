@@ -18,12 +18,6 @@ public class RegisterValidator : AbstractValidator<RegisterCommand>
             .MinimumLength(2).WithMessage("Soyisim en az 2 karakter olmalıdır.")
             .MaximumLength(50).WithMessage("Soyisim en fazla 50 karakter olabilir.");
 
-        // --- Kullanıcı Adı Kuralları ---
-        RuleFor(x => x.UserName)
-            .NotEmpty().WithMessage("Kullanıcı adı alanı boş olamaz.")
-            .MinimumLength(3).WithMessage("Kullanıcı adı en az 3 karakter olmalıdır.")
-            .MaximumLength(50).WithMessage("Kullanıcı adı en fazla 50 karakter olabilir.");
-
         // --- Email Kuralları ---
         RuleFor(x => x.Email)
             .NotEmpty().WithMessage("Email alanı boş olamaz.")

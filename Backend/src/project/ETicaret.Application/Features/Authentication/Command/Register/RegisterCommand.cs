@@ -10,7 +10,7 @@ public class RegisterCommand : IRequest<AccessTokenDto>
 {
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
-    public string UserName { get; set; } = string.Empty;
+    //public string? UserName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string? City { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
@@ -32,7 +32,7 @@ public class RegisterCommand : IRequest<AccessTokenDto>
             if (emailUserCheck is not null)
                 throw new BusinessException("Bu e-posta adresi zaten kayıtlı.");
 
-            var userNameCheck = await _userManager.FindByNameAsync(request.UserName);
+            var userNameCheck = await _userManager.FindByNameAsync(request.Email);
             if (userNameCheck is not null)
                 throw new BusinessException("Bu kullanıcı adı zaten kullanılıyor.");
 
@@ -41,7 +41,7 @@ public class RegisterCommand : IRequest<AccessTokenDto>
                 FirstName = request.FirstName,
                 LastName = request.LastName,
                 City = request.City,
-                UserName = request.UserName,
+                UserName = request.Email,
                 Email = request.Email,
 
             };

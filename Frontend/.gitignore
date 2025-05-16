@@ -1,24 +1,56 @@
-# Logs
-logs
-*.log
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# Bağımlılıklar
+/node_modules
+/pnpm-lock.yaml # Eğer pnpm kullanıyorsanız
+
+# Build çıktıları
+/dist
+/build
+
+# Log dosyaları
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
+# Editör ve IDE özel dosyaları
 .idea
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.sublime-workspace
+
+# macOS özel dosyaları
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+.AppleDouble
+.LSOverride
+
+# Windows özel dosyaları
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Geçici dosyalar ve önbellekler
+.cache
+*.local
+*.log
+logs
+*.tmp
+
+# Ortam değişkenleri dosyaları (Kesinlikle Git'e yüklenmemeli!)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Vite özel dosyalar
+.vite # Vite'ın önbellek klasörü
+coverage # Test kapsamı raporları
+
+# Opsiyonel: TypeScript build çıktıları
+*.tsbuildinfo

@@ -1,127 +1,98 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Box, Button, Card, CardActions, CardContent, CardMedia, Container, Typography } from '@mui/material';
+import Grid from '@mui/material/Grid';
+import ImageSlider from '../components/common/ImageSlider';
 
 const HomePage: React.FC = () => {
-    const navigate = useNavigate();
-
     return (
-            <div className="main_layout">
-
-                <div className="container">
-                    <div className="row">
-                        <div className="col-md-12 mt-4 mb-4">
-                            <div id="carouselExample" className="carousel slide">
-                                <div className="carousel-inner">
-                                    <div className="carousel-item active">
-                                        <img src="https://picsum.photos/1200/600" className="d-block w-100" alt="..."/>
-                                    </div>
-                                    <div className="carousel-item">
-                                        <img src="https://picsum.photos/1200/599" className="d-block w-100" alt="..."/>
-                                    </div>
-                                    <div className="carousel-item">
-                                        <img src="https://picsum.photos/1200/601" className="d-block w-100" alt="..."/>
-                                    </div>
-                                </div>
-                                <button className="carousel-control-prev" type="button"
-                                        data-bs-target="#carouselExample" data-bs-slide="prev">
-                                    <span className="carousel-control-prev-icon" aria-hidden="true"></span>
-                                    <span className="visually-hidden">Previous</span>
-                                </button>
-                                <button className="carousel-control-next" type="button"
-                                        data-bs-target="#carouselExample" data-bs-slide="next">
-                                    <span className="carousel-control-next-icon" aria-hidden="true"></span>
-                                    <span className="visually-hidden">Next</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="row my-5">
-                            <div className="col-md-4">
-                                <h2 className="text-center">Hizmetler</h2>
-                                <p className="text-center">Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                                    Accusamus explicabo odit ratione porro quaerat hic! Esse consectetur ipsum aut
-                                    distinctio!</p>
-                                <a className="text-center d-block" href="#">Devamı</a>
-                            </div>
-                            <div className="col-md-4">
-                                <h2 className="text-center">Ulaşım</h2>
-                                <p className="text-center">Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                                    Deserunt fugiat hic tempora ullam asperiores iusto. Officiis aliquid culpa
-                                    doloremque similique!</p>
-                                <a className="text-center d-block" href="#">Devamı</a>
-                            </div>
-                            <div className="col-md-4">
-                                <h2 className="text-center">İletişim</h2>
-                                <p className="text-center">Lorem ipsum dolor sit amet consectetur adipisicing elit. In
-                                    aut ut dolores doloribus id voluptatem eveniet voluptates nisi ipsam iste?</p>
-                                <a className="text-center d-block" href="#">Devamı</a>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <div className="gri-zemin">
-                    <div className="container">
-                        <div className="row mt-5 mb-5 py-10">
-                            <div className="col-md-4 offset-md-2 text-center">
-                                <img src="https://picsum.photos/375/430" className="rounded-5"/>
-                            </div>
-                            <div className="col-md-4">
-                                <p className="fs-1 fw-semibold">GOSB<br/>TEKNOPARK</p>
-                                <p className="fs-5">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Rem
-                                    placeat id accusamus sit ducimus non repellat porro alias incidunt illum.</p>
-                                <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Rem placeat id accusamus
-                                    sit ducimus non repellat porro alias incidunt illum.</p>
-                                <a href="#" className="btn btn-secondary">Devamını oku</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <>
+            <Box sx={{ width: '100%', position: 'relative' }}>
+                {/* Carousel common */}
+                <ImageSlider
+                    images={[
+                        'https://picsum.photos/1200/600',
+                        'https://picsum.photos/1200/599',
+                        'https://picsum.photos/1200/601',
+                    ]}
+                />
+            </Box>
 
 
-                <div className="container">
-                    <div className="row blog">
-                        <h2 className="text-center">BLOG</h2>
-                        <p className="text-center">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Aliquam,
-                            maxime?</p>
-                        <div className="col-md-4">
-                            <div className="card">
-                                <img src="https://picsum.photos/300/200"/>
-                                <div className="card-body">
-                                    <h5 className="card-title">HTML'in Temelleri</h5>
-                                    <p className="card-text">Some quick example text to build on the card title and make
-                                        up the bulk of the card’s content.</p>
-                                    <a href="#" className="btn btn-primary">Yazıyı Oku</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="col-md-4">
-                            <div className="card">
-                                <img src="https://picsum.photos/300/200"/>
-                                <div className="card-body">
-                                    <h5 className="card-title">HTML'in Temelleri</h5>
-                                    <p className="card-text">Some quick example text to build on the card title and make
-                                        up the bulk of the card’s content.</p>
-                                    <a href="#" className="btn btn-primary">Yazıyı Oku</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="col-md-4">
-                            <div className="card">
-                                <img src="https://picsum.photos/300/200"/>
-                                <div className="card-body">
-                                    <h5 className="card-title">HTML'in Temelleri</h5>
-                                    <p className="card-text">Some quick example text to build on the card title and make
-                                        up the bulk of the card’s content.</p>
-                                    <a href="#" className="btn btn-primary">Yazıyı Oku</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {/* Hizmetler, Ulaşım, İletişim */}
+            <Container sx={{ my: 6 }}>
+                <Grid container spacing={4}>
+                    {[
+                        { title: 'Hizmetler', desc: 'Lorem ipsum dolor sit amet consectetur adipisicing elit.' },
+                        { title: 'Ulaşım', desc: 'Deserunt fugiat hic tempora ullam asperiores iusto.' },
+                        { title: 'İletişim', desc: 'In aut ut dolores doloribus id voluptatem.' }
+                    ].map((item, i) => (
+                        <Grid item xs={12} md={4} key={i}>
+                            <Typography variant="h5" align="center" gutterBottom>{item.title}</Typography>
+                            <Typography align="center" paragraph>{item.desc}</Typography>
+                            <Box textAlign="center">
+                                <Button variant="text">Devamı</Button>
+                            </Box>
+                        </Grid>
+                    ))}
+                </Grid>
+            </Container>
 
+            {/* Gri Arka Planlı Tanıtım */}
+            <Box sx={{ bgcolor: '#f5f5f5', py: 8 }}>
+                <Container>
+                    <Grid container spacing={4} alignItems="center">
+                        <Grid item xs={12} md={6}>
+                            <Box
+                                component="img"
+                                src="https://picsum.photos/375/430"
+                                sx={{ width: '100%', borderRadius: 4 }}
+                            />
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                            <Typography variant="h4" gutterBottom>GOSB TEKNOPARK</Typography>
+                            <Typography paragraph>
+                                Lorem ipsum dolor sit, amet consectetur adipisicing elit. Rem placeat id accusamus sit.
+                            </Typography>
+                            <Typography paragraph>
+                                Rem placeat id accusamus sit ducimus non repellat porro alias incidunt illum.
+                            </Typography>
+                            <Button variant="contained" color="secondary">Devamını oku</Button>
+                        </Grid>
+                    </Grid>
+                </Container>
+            </Box>
+
+            {/* Blog Bölümü */}
+            <Container sx={{ my: 8 }}>
+                <Typography variant="h4" align="center" gutterBottom>BLOG</Typography>
+                <Typography align="center" paragraph>
+                    Lorem, ipsum dolor sit amet consectetur adipisicing elit. Aliquam, maxime?
+                </Typography>
+                <Grid container spacing={4}>
+                    {[1, 2, 3].map((item, i) => (
+                        <Grid item xs={12} md={4} key={i}>
+                            <Card>
+                                <CardMedia
+                                    component="img"
+                                    height="200"
+                                    image={`https://picsum.photos/300/20${i}`}
+                                    alt="Blog görseli"
+                                />
+                                <CardContent>
+                                    <Typography variant="h6">HTML'in Temelleri</Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        Some quick example text to build on the card title and make up the bulk of the card’s content.
+                                    </Typography>
+                                </CardContent>
+                                <CardActions>
+                                    <Button size="small">Yazıyı Oku</Button>
+                                </CardActions>
+                            </Card>
+                        </Grid>
+                    ))}
+                </Grid>
+            </Container>
+        </>
     );
 };
 

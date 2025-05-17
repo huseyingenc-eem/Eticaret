@@ -7,7 +7,7 @@ const MainLayout: React.FC = () => {
     return (
         <div className="d-flex flex-column min-vh-100">
             <Header />
-            <main className="flex-fill container py-4">
+            <main className="flex-fill container">
                 <Outlet /> {/* Nested route'lar buraya gelir */}
             </main>
             <Footer />

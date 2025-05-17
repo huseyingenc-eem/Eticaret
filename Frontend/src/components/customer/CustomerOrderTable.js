@@ -2,7 +2,7 @@ import React from 'react';
 import * as dayjs from 'dayjs';
 import { TableCell, TableBody, TableRow } from '@windmill/react-ui';
 
-import Status from '../table/Status.js';
+import Status from '../table/Status.jsx';
 import SelectStatus from '../form/SelectStatus.js';
 
 const CustomerOrderTable = ({ orders }) => {

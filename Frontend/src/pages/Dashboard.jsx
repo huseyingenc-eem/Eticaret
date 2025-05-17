@@ -10,17 +10,17 @@ import {
 } from '@windmill/react-ui';
 import { ImStack, ImCreditCard } from 'react-icons/im';
 import { FiShoppingCart, FiTruck, FiRefreshCw, FiCheck } from 'react-icons/fi';
-
-import useAsync from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/hooks/useAsync.js';
-import useFilter from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/hooks/useFilter.js';
-import OrderServices from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/services/OrderServices.js';
-import Loading from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/components/preloader/Loading.js';
-import ChartCard from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/components/chart/ChartCard.js';
-import CardItem from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/components/dashboard/CardItem.js';
-import PageTitle from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/components/Typography/PageTitle.js';
-import OrderTable from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/components/dashboard/OrderTable.js';
-import CardItemTwo from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/components/dashboard/CardItemTwo.js';
-import { barOptions, doughnutOptions } from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/utils/chartsData.js';
+import '../chartConfig';
+import useAsync from '../hooks/useAsync.js';
+import useFilter from '../hooks/useFilter.js';
+import OrderServices from '../services/OrderServices.js';
+import Loading from '../components/preloader/Loading.jsx';
+import ChartCard from '../components/chart/ChartCard.jsx';
+import CardItem from '../components/dashboard/CardItem.jsx';
+import PageTitle from '../components/Typography/PageTitle.jsx';
+import OrderTable from '../components/dashboard/OrderTable.jsx';
+import CardItemTwo from '../components/dashboard/CardItemTwo.jsx';
+import { barOptions, doughnutOptions } from '../utils/chartsData.js';
 
 const Dashboard = () => {
   const { data, loading } = useAsync(OrderServices.getAllOrders);

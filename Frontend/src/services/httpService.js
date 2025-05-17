@@ -1,11 +1,11 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-console.log('API BASE URL:', process.env.REACT_APP_API_BASE_URL); // TEST
+const resolvedBaseURL = import.meta.env.VITE_API_BASE_URL || 'https://localhost:7053/api';
 
 const instance = axios.create({
-  baseURL: process.env.REACT_APP_API_BASE_URL,
-  timeout: 5000,
+  baseURL: resolvedBaseURL, // Düzeltilmiş: Vite ortam değişkeni burada kullanılıyor
+  timeout: 50000, // İstek zaman aşımı süresi (milisaniye)
   headers: {
     Accept: 'application/json',
     'Content-Type': 'application/json',

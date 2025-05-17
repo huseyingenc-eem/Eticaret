@@ -1,14 +1,14 @@
 import React, { useContext } from 'react';
 import { Button } from '@windmill/react-ui';
 
-import Error from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/components/form/Error.js';
-import useStaffSubmit from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/hooks/useStaffSubmit.js';
-import LabelArea from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/components/form/LabelArea.js';
-import InputArea from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/components/form/InputArea.js';
-import { AdminContext } from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/context/AdminContext.js';
-import SelectRole from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/components/form/SelectRole.js';
-import PageTitle from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/components/Typography/PageTitle.js';
-import Uploader from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/components/image-uploader/Uploader.js';
+import Error from '../components/form/Error.jsx';
+import useStaffSubmit from '../hooks/useStaffSubmit.js';
+import LabelArea from '../components/form/LabelArea.jsx';
+import InputArea from '../components/form/InputArea.jsx';
+import { AdminContext } from '../contexts/AdminContext.jsx';
+import SelectRole from '../components/form/SelectRole.jsx';
+import PageTitle from '../components/Typography/PageTitle.jsx';
+import Uploader from '../components/image-uploader/Uploader.jsx';
 
 const EditProfile = () => {
   const {

@@ -4,8 +4,8 @@ import * as dayjs from 'dayjs';
 import { TableCell, TableBody, TableRow } from '@windmill/react-ui';
 import { FiEye, FiTrash2 } from 'react-icons/fi';
 
-import Tooltip from '../tooltip/Tooltip.js';
-import MainModal from '../modal/MainModal.js';
+import Tooltip from '../tooltip/Tooltip.jsx';
+import MainModal from '../modal/MainModal.jsx';
 import { SidebarContext } from '../../context/SidebarContext';
 
 const CustomerTable = ({ customers }) => {

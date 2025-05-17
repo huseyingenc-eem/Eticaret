@@ -2,10 +2,10 @@ import React, { useContext } from 'react';
 import { useLocation } from 'react-router-dom';
 import { BsToggleOff, BsToggleOn } from 'react-icons/bs';
 
-import { notifySuccess, notifyError } from '../../utils/toast';
+import { notifySuccess, notifyError } from '../../utils/toast.jsx';
 import ProductServices from '../../services/ProductServices';
 import CategoryServices from '../../services/CategoryServices';
-import { SidebarContext } from '../../context/SidebarContext';
+import { SidebarContext } from '../../contexts/SidebarContext';
 
 const ShowHideButton = ({ id, status }) => {
   const location = useLocation();

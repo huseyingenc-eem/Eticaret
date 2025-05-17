@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom';
 import { Button } from '@windmill/react-ui';
 import { ImFacebook, ImGoogle } from 'react-icons/im';
 
-import Error from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/components/form/Error.js';
-import LabelArea from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/components/form/LabelArea.js';
-import InputArea from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/components/form/InputArea.js';
-import ImageLight from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/assets/img/login-office.jpeg';
-import ImageDark from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/assets/img/login-office-dark.jpeg';
-import useLoginSubmit from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/hooks/useLoginSubmit.js';
+import Error from '../components/form/Error.jsx';
+import LabelArea from '../components/form/LabelArea.jsx';
+import InputArea from '../components/form/InputArea.jsx';
+import ImageLight from '../assets/img/login-office.jpeg';
+import ImageDark from '../assets/img/login-office-dark.jpeg';
+import useLoginSubmit from '../hooks/useLoginSubmit.js';
 
 const Login = () => {
   const { onSubmit, register, handleSubmit, errors, loading } =

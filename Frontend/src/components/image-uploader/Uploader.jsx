@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useDropzone } from 'react-dropzone';
 import { FiUploadCloud } from 'react-icons/fi';
-import { uuid } from 'uuidv4'
+import { v4 as uuidv4 } from 'uuid';
 import { storage } from '../../firebase/firebase_config';
 import { uploadBytesResumable, ref, getDownloadURL } from 'firebase/storage'
 
@@ -12,7 +12,7 @@ const Uploader = ({ setImageUrl, imageUrl }) => {
   useEffect(() => {
     if (files) {
       // setLoading(true)
-      const storageRef = ref(storage, `products/${uuid()}`);
+      const storageRef = ref(storage, `products/${uuidv4()}`);
       const uploadTask = uploadBytesResumable(storageRef, files);
       uploadTask.on('state_changed',
         (snapshot) => {

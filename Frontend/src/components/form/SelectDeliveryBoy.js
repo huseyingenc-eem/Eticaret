@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { Select } from '@windmill/react-ui';
 
 import OrderServices from '../../services/OrderServices';
-import { notifySuccess, notifyError } from '../../utils/toast';
+import { notifySuccess, notifyError } from '../../utils/toast.jsx';
 
 const SelectDeliveryBoy = ({ id }) => {
   const handleAssignOrder = (id, boy) => {

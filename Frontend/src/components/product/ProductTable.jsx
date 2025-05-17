@@ -9,12 +9,12 @@ import {
 } from '@windmill/react-ui';
 import { FiEye } from 'react-icons/fi';
 
-import Tooltip from '../tooltip/Tooltip.js';
-import MainModal from '../modal/MainModal.js';
-import MainDrawer from '../drawer/MainDrawer.js';
-import ProductDrawer from '../drawer/ProductDrawer.js';
-import ShowHideButton from '../table/ShowHideButton.js';
-import EditDeleteButton from '../table/EditDeleteButton.js';
+import Tooltip from '../tooltip/Tooltip.jsx';
+import MainModal from '../modal/MainModal.jsx';
+import MainDrawer from '../drawer/MainDrawer.jsx';
+import ProductDrawer from '../drawer/ProductDrawer.jsx';
+import ShowHideButton from '../table/ShowHideButton.jsx';
+import EditDeleteButton from '../table/EditDeleteButton.jsx';
 import useToggleDrawer from '../../hooks/useToggleDrawer';
 
 const ProductTable = ({ products }) => {

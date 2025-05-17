@@ -2,13 +2,13 @@ import React from 'react';
 import { Scrollbars } from 'react-custom-scrollbars-2';
 import { Card, CardBody } from '@windmill/react-ui';
 
-import Title from '../form/Title.js';
-import Error from '../form/Error.js';
-import LabelArea from '../form/LabelArea.js';
-import InputArea from '../form/InputArea.js';
-import SelectRole from '../form/SelectRole.js';
-import DrawerButton from '../form/DrawerButton.js';
-import Uploader from '../image-uploader/Uploader.js';
+import Title from '../form/Title.jsx';
+import Error from '../form/Error.jsx';
+import LabelArea from '../form/LabelArea.jsx';
+import InputArea from '../form/InputArea.jsx';
+import SelectRole from '../form/SelectRole.jsx';
+import DrawerButton from '../form/DrawerButton.jsx';
+import Uploader from '../image-uploader/Uploader.jsx';
 import useStaffSubmit from '../../hooks/useStaffSubmit';
 
 const StaffDrawer = ({ id }) => {

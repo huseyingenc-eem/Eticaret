@@ -1,8 +1,8 @@
 import { useContext, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { SidebarContext } from '../contexts/SidebarContext.js';
+import { SidebarContext } from '../contexts/SidebarContext.jsx';
 import CategoryServices from '../services/CategoryServices.js';
-import { notifyError, notifySuccess } from '../utils/toast.js';
+import { notifyError, notifySuccess } from '../utils/toast.jsx';
 
 const useCategorySubmit = (id) => {
   const [imageUrl, setImageUrl] = useState('');

@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import Error from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/components/form/Error.js';
 import LabelArea from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/components/form/LabelArea.js';
 import AdminServices from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/services/AdminServices.js';
-import { notifyError, notifySuccess } from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/utils/toast.js';
+import { notifyError, notifySuccess } from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/utils/toast.jsx';
 import ImageLight from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/assets/img/forgot-password-office.jpeg';
 import ImageDark from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/assets/img/forgot-password-office-dark.jpeg';
 

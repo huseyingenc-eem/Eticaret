@@ -4,9 +4,9 @@ import Cookies from 'js-cookie';
 import { useLocation } from 'react-router';
 
 import AdminServices from '../services/AdminServices.js';
-import { AdminContext } from '../contexts/AdminContext.js';
-import { SidebarContext } from '../contexts/SidebarContext.js';
-import { notifyError, notifySuccess } from '../utils/toast.js';
+import { AdminContext } from '../contexts/AdminContext.jsx';
+import { SidebarContext } from '../contexts/SidebarContext.jsx';
+import { notifyError, notifySuccess } from '../utils/toast.jsx';
 
 const useStaffSubmit = (id) => {
   const { state } = useContext(AdminContext);

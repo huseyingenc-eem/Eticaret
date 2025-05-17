@@ -1,6 +1,6 @@
 import React from "react";
-import DesktopSidebar from "./DesktopSidebar.js";
-import MobileSidebar from "./MobileSidebar.js";
+import DesktopSidebar from "./DesktopSidebar.jsx";
+import MobileSidebar from "./MobileSidebar.jsx";
 
 const Sidebar = () => {
   return (

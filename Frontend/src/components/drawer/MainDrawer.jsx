@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import Drawer from 'rc-drawer';
 import { FiX } from 'react-icons/fi';
-import { SidebarContext } from '../../context/SidebarContext';
+import { SidebarContext } from '../../contexts/SidebarContext';
 
 const MainDrawer = ({ children }) => {
   const { toggleDrawer, isDrawerOpen, closeDrawer } =

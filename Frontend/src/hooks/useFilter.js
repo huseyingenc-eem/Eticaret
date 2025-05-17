@@ -6,7 +6,7 @@ import { useLocation } from 'react-router-dom';
 
 //internal import
 import ProductServices from '../services/ProductServices.js';
-import { notifyError, notifySuccess } from '../utils/toast.js';
+import { notifyError, notifySuccess } from '../utils/toast.jsx';
 
 const useFilter = (data) => {
   const [filter, setFilter] = useState('');

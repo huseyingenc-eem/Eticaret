@@ -1,7 +1,7 @@
 import React from 'react';
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
 
-import Tooltip from '../tooltip/Tooltip.js';
+import Tooltip from '../tooltip/Tooltip.jsx';
 
 const EditDeleteButton = ({ id, handleUpdate, handleModalOpen }) => {
   return (

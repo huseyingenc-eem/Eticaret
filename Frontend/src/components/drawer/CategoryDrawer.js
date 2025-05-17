@@ -2,13 +2,13 @@ import React from 'react';
 import { Scrollbars } from 'react-custom-scrollbars-2';
 import ReactTagInput from '@pathofdev/react-tag-input';
 
-import Error from '../form/Error.js';
-import Title from '../form/Title.js';
-import InputArea from '../form/InputArea.js';
-import LabelArea from '../form/LabelArea.js';
-import SelectOption from '../form/SelectOption.js';
-import DrawerButton from '../form/DrawerButton.js';
-import Uploader from '../image-uploader/Uploader.js';
+import Error from '../form/Error.jsx';
+import Title from '../form/Title.jsx';
+import InputArea from '../form/InputArea.jsx';
+import LabelArea from '../form/LabelArea.jsx';
+import SelectOption from '../form/SelectOption.jsx';
+import DrawerButton from '../form/DrawerButton.jsx';
+import Uploader from '../image-uploader/Uploader.jsx';
 import useCategorySubmit from '../../hooks/useCategorySubmit';
 
 const CategoryDrawer = ({ id }) => {

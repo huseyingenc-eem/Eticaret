@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useEffect, useState, useContext } from 'react';
-import { SidebarContext } from '../contexts/SidebarContext.js';
+import { SidebarContext } from '../contexts/SidebarContext.jsx';
 
 const useAsync = (asyncFunction) => {
   const [data, setData] = useState([] || {});

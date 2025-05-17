@@ -2,11 +2,11 @@ import React from 'react';
 import * as dayjs from 'dayjs';
 import { TableCell, TableBody, TableRow, Avatar } from '@windmill/react-ui';
 
-import MainModal from '../modal/MainModal.js';
-import MainDrawer from '../drawer/MainDrawer.js';
+import MainModal from '../modal/MainModal.jsx';
+import MainDrawer from '../drawer/MainDrawer.jsx';
 import StaffDrawer from '../drawer/StaffDrawer.js';
 import useToggleDrawer from '../../hooks/useToggleDrawer';
-import EditDeleteButton from '../table/EditDeleteButton.js';
+import EditDeleteButton from '../table/EditDeleteButton.jsx';
 import SelectOrder from '../form/SelectOrder.js';
 
 const StaffTable = ({ staffs, orders }) => {

@@ -8,8 +8,8 @@ import AdminServices from '../../services/AdminServices';
 import CouponServices from '../../services/CouponServices';
 import ProductServices from '../../services/ProductServices';
 import CategoryServices from '../../services/CategoryServices';
-import { SidebarContext } from '../../context/SidebarContext';
-import { notifySuccess, notifyError } from '../../utils/toast';
+import { SidebarContext } from '../../contexts/SidebarContext';
+import { notifySuccess, notifyError } from '../../utils/toast.jsx';
 
 const MainModal = ({ id }) => {
   const { isModalOpen, closeModal, setIsUpdate } = useContext(SidebarContext);

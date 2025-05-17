@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 import * as dayjs from 'dayjs';
 import { TableCell, TableBody, TableRow } from '@windmill/react-ui';
 
-import Status from '../table/Status.js';
+import Status from '../table/Status.jsx';
 import { FiEye } from 'react-icons/fi';
-import Tooltip from '../tooltip/Tooltip.js';
+import Tooltip from '../tooltip/Tooltip.jsx';
 import SelectStatus from '../form/SelectStatus.js';
 import SelectDeliveryBoy from '../form/SelectDeliveryBoy.js';
 

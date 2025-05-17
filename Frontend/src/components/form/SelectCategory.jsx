@@ -1,6 +1,6 @@
 import React from "react";
 import { Select } from "@windmill/react-ui";
-import ParentCategory from "../category/ParentCategory.js";
+import ParentCategory from "../category/ParentCategory.jsx";
 
 const SelectCategory = ({ setFilter }) => {
   return (

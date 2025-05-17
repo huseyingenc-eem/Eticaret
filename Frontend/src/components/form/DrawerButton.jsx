@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { Button } from "@windmill/react-ui";
-import { SidebarContext } from "../../context/SidebarContext";
+import { SidebarContext } from "../../contexts/SidebarContext";
 
 const DrawerButton = ({id, title}) => {
   const { toggleDrawer } = useContext(SidebarContext);

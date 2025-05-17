@@ -1,12 +1,12 @@
 import React from 'react';
 import { TableBody, TableRow, TableCell, Avatar } from '@windmill/react-ui';
 
-import MainModal from '../modal/MainModal.js';
-import MainDrawer from '../drawer/MainDrawer.js';
-import ShowHideButton from '../table/ShowHideButton.js';
+import MainModal from '../modal/MainModal.jsx';
+import MainDrawer from '../drawer/MainDrawer.jsx';
+import ShowHideButton from '../table/ShowHideButton.jsx';
 import CategoryDrawer from '../drawer/CategoryDrawer.js';
 import useToggleDrawer from '../../hooks/useToggleDrawer';
-import EditDeleteButton from '../table/EditDeleteButton.js';
+import EditDeleteButton from '../table/EditDeleteButton.jsx';
 
 const CategoryTable = ({ categories }) => {
   const { serviceId, handleModalOpen, handleUpdate } = useToggleDrawer();

@@ -1,5 +1,5 @@
 import React from 'react';
-import notFound from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/assets/img/404.svg';
+import notFound from '../assets/img/404.svg';
 
 const NotFound = () => {
   return (

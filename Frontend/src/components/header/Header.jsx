@@ -14,8 +14,8 @@ import {
   IoClose,
 } from 'react-icons/io5';
 
-import { AdminContext } from '../../context/AdminContext';
-import { SidebarContext } from '../../context/SidebarContext';
+import { AdminContext } from '../../contexts/AdminContext';
+import { SidebarContext } from '../../contexts/SidebarContext';
 
 const Header = () => {
   const { toggleSidebar } = useContext(SidebarContext);
@@ -286,14 +286,14 @@ const Header = () => {
                 className="rounded-full dark:bg-gray-500 bg-green-500 text-white h-8 w-8 font-medium mx-auto focus:outline-none"
                 onClick={handleProfileOpen}
               >
-                {adminInfo.image ? (
-                  <Avatar
-                    className="align-middle"
-                    src={`${adminInfo.image}`}
-                    aria-hidden="true"
-                  />
+                {adminInfo?.image ? (
+                    <Avatar
+                        className="align-middle"
+                        src={adminInfo.image}
+                        aria-hidden="true"
+                    />
                 ) : (
-                  <span>{adminInfo.email[0].toUpperCase()}</span>
+                    <span>{adminInfo?.email?.[0]?.toUpperCase() || 'A'}</span>
                 )}
               </button>
               {profileOpen && (

@@ -1,14 +1,14 @@
 import React from 'react';
 import { Scrollbars } from 'react-custom-scrollbars-2';
 
-import Title from '../form/Title.js';
-import Error from '../form/Error.js';
-import LabelArea from '../form/LabelArea.js';
-import InputArea from '../form/InputArea.js';
-import InputValue from '../form/InputValue.js';
-import SelectOption from '../form/SelectOption.js';
-import DrawerButton from '../form/DrawerButton.js';
-import Uploader from '../image-uploader/Uploader.js';
+import Title from '../form/Title.jsx';
+import Error from '../form/Error.jsx';
+import LabelArea from '../form/LabelArea.jsx';
+import InputArea from '../form/InputArea.jsx';
+import InputValue from '../form/InputValue.jsx';
+import SelectOption from '../form/SelectOption.jsx';
+import DrawerButton from '../form/DrawerButton.jsx';
+import Uploader from '../image-uploader/Uploader.jsx';
 import useCouponSubmit from '../../hooks/useCouponSubmit';
 
 const CouponDrawer = ({ id }) => {

@@ -2,11 +2,11 @@ import React from 'react';
 import * as dayjs from 'dayjs';
 import { TableCell, TableBody, TableRow, Badge } from '@windmill/react-ui';
 
-import MainModal from '../modal/MainModal.js';
-import MainDrawer from '../drawer/MainDrawer.js';
+import MainModal from '../modal/MainModal.jsx';
+import MainDrawer from '../drawer/MainDrawer.jsx';
 import CouponDrawer from '../drawer/CouponDrawer.js';
 import useToggleDrawer from '../../hooks/useToggleDrawer';
-import EditDeleteButton from '../table/EditDeleteButton.js';
+import EditDeleteButton from '../table/EditDeleteButton.jsx';
 
 const CouponTable = ({ coupons }) => {
   const { serviceId, handleModalOpen, handleUpdate } = useToggleDrawer();

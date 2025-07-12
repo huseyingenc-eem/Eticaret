@@ -12,7 +12,7 @@ namespace ETicaret.Persistence.Repositories;
 /// Address entity'si için IAddressRepository interface'ini uygulayan ve
 /// Entity Framework Core kullanarak veri erişim operasyonlarını gerçekleştiren sınıf.
 /// </summary>
-public class AddressRepository : EfRepositoryBase<Address, int, BaseDBContexts>, IAddressRepository
+public class AddressRepository : EfRepositoryBase<Address, Guid, BaseDBContexts>, IAddressRepository
 {
     /// <summary>
     /// AddressRepository sınıfının yeni bir örneğini başlatır.

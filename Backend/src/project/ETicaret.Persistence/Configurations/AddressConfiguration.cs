@@ -21,7 +21,7 @@ public class AddressConfiguration : IEntityTypeConfiguration<Address>
         builder.Property(a => a.AddressLine).IsRequired().HasMaxLength(350);
         builder.Property(a => a.IsDefaultShipping).IsRequired().HasDefaultValue(false);
         builder.Property(a => a.IsDefaultBilling).IsRequired().HasDefaultValue(false);
-
+        builder.Property(a => a.PhoneNumber).HasMaxLength(11);
         // Address to User (Many-to-One)
         builder.HasOne(a => a.User)
                .WithMany(u => u.Addresses)

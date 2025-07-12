@@ -6,9 +6,8 @@ public class UpdateAddressCommandValidator : AbstractValidator<UpdateAddressComm
 {
     public UpdateAddressCommandValidator()
     {
-        RuleFor(c => c.UserId)
-             .NotEmpty().WithMessage("Kullanıcı kimliği boş olamaz.")
-             .Length(36).WithMessage("Kullanıcı kimliği 36 karakter olmalıdır.");
+
+        RuleFor(c => c.Id).NotEmpty();
 
         RuleFor(c => c.AddressTitle)
             .NotEmpty().WithMessage("Adres başlığı boş olamaz.")

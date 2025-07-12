@@ -41,8 +41,6 @@ public static class Extensions
         services.AddScoped<IOrderItemRepository, OrderItemRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<ISupplierRepository, SupplierRepository>();
-        //services.AddScoped<IUserRepository, UserRepository>();
-        //services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IProductImageRepository, ProductImageRepository>();
         services.AddScoped<IProductVariantRepository, ProductVariantRepository>();
         services.AddScoped<IReviewRepository, ReviewRepository>();

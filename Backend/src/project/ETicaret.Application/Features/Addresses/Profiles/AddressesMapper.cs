@@ -7,6 +7,7 @@ using ETicaret.Application.Features.Addresses.Queries.GetList;
 using ETicaret.Domain.Entities;
 using Core.Application.Mappings.Converters;
 using Core.Persistence.Paging;
+using ETicaret.Application.Features.Addresses.Commands.Delete;
 
 namespace ETicaret.Application.Features.Addresses.Profiles;
 
@@ -22,13 +23,27 @@ public class AddressesMapper : Profile
         CreateMap<UpdateAddressCommand, Address>();
 
         // Responses
-        CreateMap<Address, CreateAddressResponseDto>();
-        CreateMap<Address, UpdateAddressResponseDto>();
+
+        // Create
+        CreateMap<Address, CreateAddressResponseDto>().ReverseMap();
+
+        // Update
+        CreateMap<Address, UpdateAddressResponseDto>().ReverseMap();
+
+        //Delete
+        CreateMap<Address, DeleteAddressResponseDto>().ReverseMap();
+
+
         CreateMap<Address, GetByIdAddressResponseDto>();
         CreateMap<Address, GetListByUserIdAddressResponseDto>();
-        CreateMap<Address, GetListAddressResponseDto>();
 
-        // Paging
+
+        CreateMap<Address, GetListAddressResponseDto>().ReverseMap();
+        CreateMap<IPaginate<Address>, Paginate<GetListAddressResponseDto>>().ReverseMap();
+
+
+        // GetListByUserId
+        CreateMap<Address, GetListByUserIdAddressResponseDto>().ReverseMap();
         CreateMap<IPaginate<Address>, IPaginate<GetListAddressResponseDto>>()
             .ConvertUsing<PaginateTypeConverter<Address, GetListAddressResponseDto>>();
 

@@ -9,7 +9,7 @@ namespace ETicaret.Application.Services.Repositories;
 /// Address entity'si için veri erişim operasyonlarını tanımlayan interface.
 /// Temel CRUD operasyonları için IAsyncRepository ve IRepository'den kalıtım alır.
 /// </summary>
-public interface IAddressRepository : IAsyncRepository<Address, int>, IRepository<Address, int>
+public interface IAddressRepository : IAsyncRepository<Address, Guid>, IRepository<Address, Guid>
 {
     Task<IPaginate<Address>> GetListWithUserDetailsAsync(
             Expression<Func<Address, bool>>? predicate = null,

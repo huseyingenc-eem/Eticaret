@@ -9,8 +9,7 @@ namespace ETicaret.Application.Features.Addresses.Commands.Update;
 
 public class UpdateAddressCommand : IRequest<UpdateAddressResponseDto> , ITransactionalRequest
 {
-    public int Id { get; set; }
-    public string UserId { get; set; } = string.Empty;
+    public Guid Id { get; set; }
     public string AddressTitle { get; set; } = string.Empty;
     public string Country { get; set; } = string.Empty;
     public string City { get; set; } = string.Empty;

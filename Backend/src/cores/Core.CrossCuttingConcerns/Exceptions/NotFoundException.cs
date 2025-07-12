@@ -1,6 +1,6 @@
-﻿using Core.CrossCuttingConcerns.Constants;
+﻿using Core.Shared.Constants;
 
-namespace Core.CrossCuttingConcerns.Exceptions;
+namespace Core.Shared.Exceptions;
 
 public class NotFoundException : CoreException
 {

@@ -1,4 +1,4 @@
-﻿namespace Core.CrossCuttingConcerns.Exceptions;
+﻿namespace Core.Shared.Exceptions;
 
 public class ValidationExceptionModel
 {

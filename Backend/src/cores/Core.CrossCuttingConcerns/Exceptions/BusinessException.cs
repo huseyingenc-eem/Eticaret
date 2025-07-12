@@ -1,8 +1,4 @@
-﻿using System; // Exception ve Environment için
-using System.Collections.Generic; // IEnumerable için
-using System.Linq; // ToList, Join için
-
-namespace Core.CrossCuttingConcerns.Exceptions;
+﻿namespace Core.Shared.Exceptions;
 
 /// <summary>
 /// İş kuralları veya beklenen uygulama akışı dışındaki durumlar için fırlatılan özel exception sınıfı.

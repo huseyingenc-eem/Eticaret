@@ -16,8 +16,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Core.CrossCuttingConcerns\Core.CrossCuttingConcerns.csproj" />
-	  <ProjectReference Include="..\Core.Persistence\Core.Persistence.csproj" />
+	  <ProjectReference Include="..\Core.CrossCuttingConcerns\Core.Shared.csproj" />
+	  <ProjectReference Include="..\Core.Domain\Core.Domain.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Mappings\Converters\" />
 	</ItemGroup>
 
 </Project>

@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Core.Application.Interfaces.Paging;
 
-namespace Core.Persistence.Paging;
+
+namespace Core.Infrastructure.Persistence.Paging;
 
 /// <summary>
 /// IQueryable için sayfalama (pagination) genişletme metotları içerir.

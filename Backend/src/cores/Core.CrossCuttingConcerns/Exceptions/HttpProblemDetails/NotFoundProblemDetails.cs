@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json.Serialization;
 
-namespace Core.CrossCuttingConcerns.Exceptions.HttpProblemDetails;
+namespace Core.Shared.Exceptions.HttpProblemDetails;
 
 public class NotFoundProblemDetails : ProblemDetails
 {

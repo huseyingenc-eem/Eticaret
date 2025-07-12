@@ -1,4 +1,4 @@
-﻿using Core.Persistence.Entities;
+﻿using Core.Domain.Entities;
 using ETicaret.Domain.Enums;
 
 namespace ETicaret.Domain.Entities;

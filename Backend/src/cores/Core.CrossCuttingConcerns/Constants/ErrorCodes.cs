@@ -1,4 +1,4 @@
-﻿namespace Core.CrossCuttingConcerns.Constants;
+﻿namespace Core.Shared.Constants;
 
 public static class ErrorCodes
 {

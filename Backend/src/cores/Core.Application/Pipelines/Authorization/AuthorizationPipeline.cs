@@ -1,8 +1,8 @@
-﻿using Core.CrossCuttingConcerns.Exceptions;
+﻿using Core.Shared.Exceptions;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
-using Core.CrossCuttingConcerns.Logger;
+using Core.Application.Interfaces;
 
 namespace Core.Application.Pipelines.Authorization;
 public class AuthorizationPipeline<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : IRequest<TResponse>

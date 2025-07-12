@@ -7,10 +7,10 @@ namespace Core.Application.Pipelines.Transactional
     public class TransactionalPipeline<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
         where TRequest : IRequest<TResponse>, ITransactionalRequest // ITransactionalRequest ile işaretlenmiş istekler
     {
-        private readonly ICoreUnitOfWork _unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<TransactionalPipeline<TRequest, TResponse>> _logger; // Loglama için
 
-        public TransactionalPipeline(ICoreUnitOfWork unitOfWork, ILogger<TransactionalPipeline<TRequest, TResponse>> logger)
+        public TransactionalPipeline(IUnitOfWork unitOfWork, ILogger<TransactionalPipeline<TRequest, TResponse>> logger)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));

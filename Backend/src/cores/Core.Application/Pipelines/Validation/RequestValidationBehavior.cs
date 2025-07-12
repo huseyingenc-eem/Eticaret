@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using MediatR;
 
-using Core.CrossCuttingConcerns.Exceptions;
+using Core.Shared.Exceptions;
 
 namespace Core.Application.Pipelines.Validation;
 

@@ -1,96 +1,89 @@
-﻿using Core.Persistence.Paging;
+﻿using Core.Application.Interfaces;
+using Core.Application.Interfaces.Paging;
 using MediatR;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Options; // IOptions için
-using System.Text; // Encoding için
-using System.Text.Json; // JsonSerializer için
+using Microsoft.Extensions.Options;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Core.Application.Pipelines.Caching;
 
 /// <summary>
-/// MediatR pipeline'ında önbelleğe ekleme işlemlerini gerçekleştiren davranış (behavior).
-/// ICachableRequest arayüzünü implemente eden isteklerin yanıtlarını önbelleğe alır.
+/// MediatR pipeline'ı için önbelleğe ekleme ve önbellekten okuma işlemlerini yöneten davranış (behavior).
+/// ICachableRequest arayüzünü uygulayan isteklerin yanıtlarını önbelleğe alır veya önbellekten döner.
 /// </summary>
-/// <typeparam name="TRequest">İşlenecek MediatR isteğinin tipi.</typeparam>
-/// <typeparam name="TResponse">MediatR isteğinin dönüş tipi.</typeparam>
+/// <typeparam name="TRequest">İşlenecek MediatR isteği (ICachableRequest olmalı).</typeparam>
+/// <typeparam name="TResponse">İsteğin dönüş tipi.</typeparam>
 public class AddCachePipeline<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>, ICachableRequest
 {
     private readonly CacheSettings _cacheSettings;
     private readonly IDistributedCache _cache;
+    private readonly ISerializerService _serializerService;
     private readonly JsonSerializerOptions _jsonSerializerOptions;
 
     /// <summary>
-    /// AddCachePipeline sınıfının bir örneğini başlatır.
+    /// AddCachePipeline sınıfının bir örneğini oluşturur.
     /// </summary>
-    /// <param name="cache">Kullanılacak IDistributedCache örneği.</param>
-    /// <param name="cacheSettingsOptions">Önbellek ayarlarını içeren IOptions örneği.</param>
-    public AddCachePipeline(IDistributedCache cache, IOptions<CacheSettings> cacheSettingsOptions)
+    /// <param name="cache">Veri önbellekleme işlemleri için kullanılacak IDistributedCache servisi.</param>
+    /// <param name="cacheSettingsOptions">Uygulama genelindeki önbellek ayarlarını içeren yapılandırma.</param>
+    /// <param name="serializerService">Nesneleri JSON'a çevirme ve JSON'dan nesneye dönüştürme işlemleri için servis.</param>
+    public AddCachePipeline(IDistributedCache cache, IOptions<CacheSettings> cacheSettingsOptions, ISerializerService serializerService)
     {
-        _cache = cache ?? throw new ArgumentNullException(nameof(cache));
-        _cacheSettings = cacheSettingsOptions?.Value ?? throw new ArgumentNullException(nameof(cacheSettingsOptions));
+        _cache = cache;
+        _cacheSettings = cacheSettingsOptions.Value;
+        _serializerService = serializerService;
         _jsonSerializerOptions = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
     }
 
     /// <summary>
-    /// MediatR isteğini işler. Yanıtı önbellekten alır veya kaynağa gidip sonucu önbelleğe ekler.
+    /// Gelen isteği işler. Önbellekte veri varsa döner, yoksa isteği çalıştırır ve sonucu önbelleğe ekler.
     /// </summary>
+    /// <param name="request">İşlenecek MediatR isteği.</param>
+    /// <param name="next">Pipeline'daki bir sonraki adıma geçişi sağlayan delege.</param>
+    /// <param name="cancellationToken">İşlemin iptal edilmesini sağlayan token.</param>
+    /// <returns>İsteğin yanıtı.</returns>
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
         if (request.ByPassCache || string.IsNullOrWhiteSpace(request.CacheKey))
         {
             return await next();
         }
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(request.CacheKey);
 
-        TResponse? response;
         byte[]? cachedResponseBytes = await _cache.GetAsync(request.CacheKey, cancellationToken);
-
         if (cachedResponseBytes != null && cachedResponseBytes.Length > 0)
         {
-
-            response = DeserializeResponse<TResponse>(cachedResponseBytes);
-            if (response == null)
-               
-                await _cache.RemoveAsync(request.CacheKey, cancellationToken);
-                response = await GetResponseAndAddToCache(request, next, cancellationToken);
+            var response = _serializerService.Deserialize<TResponse>(cachedResponseBytes);
+            if (response != null)
+            {
+                return response;
+            }
         }
-        else
-            response = await GetResponseAndAddToCache(request, next, cancellationToken);
 
-        return response!; 
+        return await GetResponseAndAddToCache(request, next, cancellationToken);
     }
 
     /// <summary>
-    /// Kaynaktan yanıtı alır ve belirlenen ayarlara göre önbelleğe ekler.
+    /// Pipeline'daki bir sonraki adımı çalıştırarak yanıtı alır ve sonucu belirlenen ayarlara göre önbelleğe ekler.
     /// </summary>
     private async Task<TResponse> GetResponseAndAddToCache(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
         TResponse response = await next();
 
-       
-        var cacheEntryOptions = new DistributedCacheEntryOptions();
+        TimeSpan slidingExpiration = request.SlidingExpiration ?? TimeSpan.FromMinutes(_cacheSettings.SlidingExpirationInMinutes);
+        TimeSpan? absoluteExpiration = request.AbsoluteExpirationRelativeToNow ??
+                                       (_cacheSettings.AbsoluteExpirationInMinutes.HasValue ? TimeSpan.FromMinutes(_cacheSettings.AbsoluteExpirationInMinutes.Value) : null);
 
-        TimeSpan slidingExpiration = request.SlidingExpiration
-                                     ?? TimeSpan.FromMinutes(_cacheSettings.SlidingExpirationInMinutes);
-        if (slidingExpiration > TimeSpan.Zero)
+        var cacheEntryOptions = new DistributedCacheEntryOptions
         {
-            cacheEntryOptions.SlidingExpiration = slidingExpiration;
-        }
-        TimeSpan? absoluteExpirationRelativeToNow = request.AbsoluteExpirationRelativeToNow;
-        if (!absoluteExpirationRelativeToNow.HasValue && _cacheSettings.AbsoluteExpirationInMinutes.HasValue && _cacheSettings.AbsoluteExpirationInMinutes.Value > 0)
-        {
-            absoluteExpirationRelativeToNow = TimeSpan.FromMinutes(_cacheSettings.AbsoluteExpirationInMinutes.Value);
-        }
-
-        if (absoluteExpirationRelativeToNow.HasValue && absoluteExpirationRelativeToNow.Value > TimeSpan.Zero)
-        {
-            cacheEntryOptions.AbsoluteExpirationRelativeToNow = absoluteExpirationRelativeToNow;
-        }
+            SlidingExpiration = slidingExpiration > TimeSpan.Zero ? slidingExpiration : null,
+            AbsoluteExpirationRelativeToNow = absoluteExpiration > TimeSpan.Zero ? absoluteExpiration : null
+        };
 
         byte[] serializedData = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(response, _jsonSerializerOptions));
 
@@ -106,51 +99,19 @@ public class AddCachePipeline<TRequest, TResponse> : IPipelineBehavior<TRequest,
 
     /// <summary>
     /// Verilen bir önbellek anahtarını, belirtilen grup anahtarı altındaki bir sete ekler.
-    /// Grup anahtarının kendisi de uygun bir son kullanma süresiyle önbelleğe alınır.
     /// </summary>
     private async Task AddCacheKeyToGroupAsync(string groupKey, string cacheKey, DistributedCacheEntryOptions itemEntryOptions, CancellationToken cancellationToken)
     {
         byte[]? cachedGroupBytes = await _cache.GetAsync(groupKey, cancellationToken);
-        HashSet<string> cacheKeysInGroup;
 
-        if (cachedGroupBytes != null && cachedGroupBytes.Length > 0)
-        {
-            cacheKeysInGroup = JsonSerializer.Deserialize<HashSet<string>>(Encoding.UTF8.GetString(cachedGroupBytes), _jsonSerializerOptions) ?? new HashSet<string>();
-        }
-        else
-        {
-            cacheKeysInGroup = new HashSet<string>();
-        }
+        HashSet<string> cacheKeysInGroup = (cachedGroupBytes != null && cachedGroupBytes.Length > 0)
+            ? (JsonSerializer.Deserialize<HashSet<string>>(Encoding.UTF8.GetString(cachedGroupBytes), _jsonSerializerOptions) ?? new HashSet<string>())
+            : new HashSet<string>();
 
-        if (cacheKeysInGroup.Add(cacheKey)) 
+        if (cacheKeysInGroup.Add(cacheKey))
         {
             byte[] newGroupBytes = JsonSerializer.SerializeToUtf8Bytes(cacheKeysInGroup, _jsonSerializerOptions);
-
-            
-           
-            var groupCacheEntryOptions = new DistributedCacheEntryOptions
-            {
-                SlidingExpiration = itemEntryOptions.SlidingExpiration,
-                AbsoluteExpirationRelativeToNow = itemEntryOptions.AbsoluteExpirationRelativeToNow
-            };
-            await _cache.SetAsync(groupKey, newGroupBytes, groupCacheEntryOptions, cancellationToken);
+            await _cache.SetAsync(groupKey, newGroupBytes, itemEntryOptions, cancellationToken);
         }
-    }
-
-    private static T? DeserializeResponse<T>(byte[] data)
-    {
-        string json = Encoding.UTF8.GetString(data);
-
-        // Eğer dönüş tipi IPaginate<GetListAddressResponseDto> ise, somut Paginate<GetListAddressResponseDto> kullan
-        if (typeof(T).IsInterface && typeof(T).IsGenericType && typeof(T).GetGenericTypeDefinition() == typeof(IPaginate<>))
-        {
-            Type itemType = typeof(T).GetGenericArguments()[0];
-            Type concreteType = typeof(Paginate<>).MakeGenericType(itemType);
-
-            object? deserialized = JsonSerializer.Deserialize(json, concreteType);
-            return (T?)deserialized;
-        }
-
-        return JsonSerializer.Deserialize<T>(json);
     }
 }

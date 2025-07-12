@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic; // IEnumerable için
-
-namespace Core.CrossCuttingConcerns.Exceptions;
+﻿namespace Core.Shared.Exceptions;
 
 /// <summary>
 /// Uygulama genelinde kullanılacak temel özel exception sınıfı.

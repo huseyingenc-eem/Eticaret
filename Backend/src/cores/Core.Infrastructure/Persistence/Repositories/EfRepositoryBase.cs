@@ -1,99 +1,99 @@
-﻿using Core.Persistence.Entities;
-using Core.Persistence.Paging;
-using Core.Persistence.Repositories;
+﻿using Core.Domain.Entities;
+using Core.Application.Interfaces;
+using Core.Application.Interfaces.Paging;
+using Core.Infrastructure.Persistence.Repositories.Ef; // ToPaginateAsync için
+
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
 using System.Linq.Expressions;
 
 namespace Core.Infrastructure.Persistence.Repositories;
 
-public class EfRepositoryBase<TEntity, TId, TContext> : IRepository<TEntity, TId>, IAsyncRepository<TEntity, TId>
+/// <summary>
+/// IRepository arayüzünün Entity Framework Core kullanarak somut (concrete) implementasyonu.
+/// Veritabanı işlemleri, denetim (auditing), yumuşak silme (soft delete) ve
+/// ilişkisel veri yönetimi gibi tüm altyapı mantıkları bu sınıfta yer alır.
+/// </summary>
+public class EfRepositoryBase<TEntity, TId, TContext> : IRepository<TEntity, TId>
     where TEntity : Entity<TId>
-    where TId : IEquatable<TId>  
+    where TId : IEquatable<TId>
     where TContext : DbContext
 {
-    protected readonly TContext Context; 
+    protected readonly TContext Context;
 
     public EfRepositoryBase(TContext context)
     {
         Context = context;
     }
-    #region Tanımlamalar
+
     /// <summary>
-    /// Entity setine sorgulanabilir bir arayüz sağlar, yumuşak silinmiş kayıtları otomatik olarak filtreler.
+    /// Sorgu işlemlerinin temelini oluşturan ve yumuşak silinmiş kayıtları otomatik olarak
+    /// filtreleyen bir IQueryable nesnesi döndürür. Okuma operasyonlarının varsayılan başlangıç noktasıdır.
     /// </summary>
-    /// <returns>Yumuşak silinmiş kayıtları hariç tutan bir IQueryable<TEntity>.</returns> 
+    /// <returns>Yumuşak silinmemiş varlıklar için sorgulanabilir bir nesne.</returns>
     public virtual IQueryable<TEntity> Query() => Context.Set<TEntity>().Where(e => e.DeletedTime == null);
-    /// <summary>
-    /// Entity setine herhangi bir varsayılan filtre olmadan (yumuşak silme dahil) sorgulanabilir bir arayüz sağlar.
-    /// </summary>
-    /// <returns>Ham DbSet'i temsil eden bir IQueryable<TEntity>.</returns> 
-    public virtual IQueryable<TEntity> QueryAll() => Context.Set<TEntity>();
 
-    #endregion
-
-    #region Add Operations
-    /// <summary>
-    /// Bir entity'yi senkron olarak veritabanına eklemek için işaretler.
-    /// </summary>
-    /// <param name="entity"> Dışardan gelen Entity</param>
-    /// <returns>İşaretlenen entity</returns>
-    public virtual TEntity Add(TEntity entity)
-    {
-        entity.CreatedTime = DateTime.UtcNow;
-        Context.Entry(entity).State = EntityState.Added;
-        return entity;
-    }
+    #region Yazma (Command) Operasyonları
 
     /// <summary>
-    /// Bir entity'yi asenkron olarak veritabanına eklemek için işaretler.
+    /// Yeni bir varlığı veritabanına eklemek üzere işaretler.
+    /// <c>CreatedTime</c> alanını otomatik olarak mevcut UTC zamanına ayarlar.
+    /// Değişikliklerin kalıcı olması için <c>IUnitOfWork.SaveChangesAsync()</c> çağrılmalıdır.
+    /// <example>
+    /// <code>
+    /// var newProduct = new Product { Name = "Yeni Ürün", Price = 150 };
+    /// await _productRepository.AddAsync(newProduct);
+    /// await _unitOfWork.SaveChangesAsync(); // Değişikliği veritabanına kaydeder.
+    /// </code>
+    /// </example>
     /// </summary>
-    /// <param name="entity">Dışardan gelen Entity</param>
-    /// <returns>İşaretlenen entity</returns>
+    /// <param name="entity">Eklenecek varlık.</param>
+    /// <param name="cancellationToken">İşlem iptal token'ı.</param>
+    /// <returns>Eklenen varlık.</returns>
     public virtual async Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
         entity.CreatedTime = DateTime.UtcNow;
-        await Context.Set<TEntity>().AddAsync(entity, cancellationToken); 
+        await Context.Set<TEntity>().AddAsync(entity, cancellationToken);
         return entity;
     }
 
     /// <summary>
-    /// Bir dizi entity'yi asenkron olarak veritabanına eklemek için işaretler.
+    /// Birden fazla yeni varlığı toplu olarak veritabanına eklemek üzere işaretler.
+    /// Her bir varlığın <c>CreatedTime</c> alanını otomatik olarak ayarlar.
     /// </summary>
-    /// <param name="entities">Dışardan gelen Entitys</param>
-    /// <returns>İşaretlenen entities</returns>
+    /// <param name="entities">Eklenecek varlıkların koleksiyonu.</param>
+    /// <param name="cancellationToken">İşlem iptal token'ı.</param>
+    /// <returns>Eklenen varlıkların koleksiyonu.</returns>
     public virtual async Task<IEnumerable<TEntity>> AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
     {
-        foreach (TEntity entityInLoop in entities)
-            entityInLoop.CreatedTime = DateTime.UtcNow;
+        foreach (var entity in entities)
+            entity.CreatedTime = DateTime.UtcNow;
 
         await Context.Set<TEntity>().AddRangeAsync(entities, cancellationToken);
         return entities;
     }
-    #endregion
-
-    #region Update Operations
-    /// <summary>
-    /// Mevcut bir entity'yi senkron olarak güncellemek için işaretler.
-    /// </summary>
-    /// <param name="entity">Güncellenecek entity.</param>
-    /// <returns>İşaretlenen entity.</returns>
-    public virtual TEntity Update(TEntity entity)
-    {
-        entity.UpdateTime = DateTime.UtcNow;
-        Context.Entry(entity).State = EntityState.Modified;
-        return entity;
-    }
 
     /// <summary>
-    /// Mevcut bir entity'yi asenkron olarak güncellemek için işaretler.
+    /// Mevcut bir varlığı günceller.
+    /// Güvenli bir yöntemdir: Önce varlığı ID'si ile veritabanından bulur, ardından
+    /// gelen yeni verileri mevcut varlığa uygular ve <c>UpdateTime</c> alanını günceller.
+    /// <example>
+    /// <code>
+    /// var productToUpdate = await _productRepository.GetByIdAsync(1); // Takip edilmeyen bir sorgu olabilir.
+    /// if (productToUpdate != null)
+    /// {
+    ///     productToUpdate.Price = 200; // DTO'dan gelen yeni değerler atanır.
+    ///     await _productRepository.UpdateAsync(productToUpdate);
+    ///     await _unitOfWork.SaveChangesAsync();
+    /// }
+    /// </code>
+    /// </example>
     /// </summary>
-    /// <param name="entity">Güncellenecek entity.</param>
-    /// <param name="cancellationToken">Görevin tamamlanmasını beklerken gözlemlenecek bir CancellationToken.</param>
-    /// <returns>Asenkron işlemi temsil eden bir görev. Görev sonucu, işaretlenen entity'yi içerir.</returns>
+    /// <param name="entity">Güncellenecek verileri içeren varlık.</param>
+    /// <param name="cancellationToken">İşlem iptal token'ı.</param>
+    /// <returns>Güncellenen varlık.</returns>
     public virtual async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
-        TEntity? existingEntity = await Context.Set<TEntity>().FindAsync(entity.Id);
+        var existingEntity = await Context.Set<TEntity>().FindAsync(new object[] { entity.Id }, cancellationToken);
         if (existingEntity != null)
         {
             Context.Entry(existingEntity).CurrentValues.SetValues(entity);
@@ -103,51 +103,29 @@ public class EfRepositoryBase<TEntity, TId, TContext> : IRepository<TEntity, TId
     }
 
     /// <summary>
-    /// Mevcut bir dizi entity'yi asenkron olarak güncellemek için işaretler.
+    /// Birden fazla varlığı toplu olarak günceller.
+    /// Her bir varlığın <c>UpdateTime</c> alanını otomatik olarak ayarlar.
     /// </summary>
-    /// <param name="entities">Güncellenecek entity koleksiyonu</param>
-    /// <param name="cancellationToken">Görevin tamamlanmasını beklerken gözlemlenecek bir CancellationToken.</param>
-    /// <returns>Asenkron işlemi temsil eden bir görev. Görev sonucu, işaretlenen entity'leri içerir.</returns>
-    public  virtual Task<IEnumerable<TEntity>> UpdateRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
+    /// <param name="entities">Güncellenecek varlıkların koleksiyonu.</param>
+    /// <param name="cancellationToken">İşlem iptal token'ı.</param>
+    /// <returns>Güncellenen varlıkların koleksiyonu.</returns>
+    public virtual Task<IEnumerable<TEntity>> UpdateRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
     {
-        foreach (var entityInLoop in entities)
-        {
-            entityInLoop.UpdateTime = DateTime.UtcNow;
-        }
+        foreach (var entity in entities)
+            entity.UpdateTime = DateTime.UtcNow;
+
         Context.Set<TEntity>().UpdateRange(entities);
         return Task.FromResult(entities);
     }
-    #endregion
-
-    #region Delete Operations
-    /// <summary>
-    /// Bir entity'yi senkron olarak silmek için işaretler. Varsayılan olarak yumuşak silme yapar.
-    /// </summary>
-    /// <param name="entity">Silinecek entity.</param>
-    /// <param name="permanent">True ise, fiziksel silme yapar. Aksi takdirde yumuşak silme yapar. Varsayılan: false.</param>
-    /// <returns>İşaretlenen entity.</returns>
-    public virtual TEntity Delete(TEntity entity, bool permanent = false)
-    {
-        if (!permanent)
-        {
-            entity.DeletedTime = DateTime.UtcNow;
-            entity.UpdateTime = DateTime.UtcNow;
-            Context.Entry(entity).State = EntityState.Modified;
-        }
-        else
-        {
-            Context.Entry(entity).State = EntityState.Deleted;
-        }
-        return entity;
-    }
 
     /// <summary>
-    /// Bir entity'yi asenkron olarak silmek için işaretler. Varsayılan olarak yumuşak silme yapar.
+    /// Bir varlığı silmek üzere işaretler.
     /// </summary>
-    /// <param name="entity">Silinecek entity</param>
-    /// <param name="permanent"> True ise, fiziksel silme yapar. Aksi takdirde yumuşak silme yapar. Varsayılan: false</param>
-    /// <param name="cancellationToken">Görevin tamamlanmasını beklerken gözlemlenecek bir CancellationToken.</param>
-    /// <returns>Asenkron işlemi temsil eden bir görev. Görev sonucu, işaretlenen entity'yi içerir.</returns>
+    /// <param name="entity">Silinecek varlık.</param>
+    /// <param name="permanent">Eğer <c>true</c> ise veritabanından fiziksel olarak siler.
+    /// Eğer <c>false</c> ise <c>DeletedTime</c> alanını güncelleyerek yumuşak silme (soft delete) yapar.</param>
+    /// <param name="cancellationToken">İşlem iptal token'ı.</param>
+    /// <returns>İşlem görmüş varlık.</returns>
     public virtual Task<TEntity> DeleteAsync(TEntity entity, bool permanent = false, CancellationToken cancellationToken = default)
     {
         if (!permanent)
@@ -164,55 +142,60 @@ public class EfRepositoryBase<TEntity, TId, TContext> : IRepository<TEntity, TId
     }
 
     /// <summary>
-    /// Bir entity'yi ID'sine göre asenkron olarak silmek için işaretler. Varsayılan olarak yumuşak silme yapar.
+    /// Belirtilen ID'ye sahip varlığı bularak siler.
+    /// <example>
+    /// <code>
+    /// Yumuşak silme (önerilen)
+    /// await _productRepository.DeleteByIdAsync(1, permanent: false);
+    /// 
+    /// Kalıcı silme (dikkatli kullanılmalı)
+    /// await _productRepository.DeleteByIdAsync(2, permanent: true);
+    /// 
+    /// await _unitOfWork.SaveChangesAsync();
+    /// </code>
+    /// </example>
     /// </summary>
-    /// <param name="id">Silinecek entity'nin ID'si.</param>
-    /// <param name="permanent">True ise, fiziksel silme yapar. Aksi takdirde yumuşak silme yapar. Varsayılan: false.</param>
-    /// <param name="cancellationToken">Görevin tamamlanmasını beklerken gözlemlenecek bir CancellationToken.</param>
-    /// <returns>Asenkron işlemi temsil eden bir görev. Görev sonucu, bulunursa işaretlenen entity'yi, aksi takdirde null içerir.</returns>
+    /// <param name="id">Silinecek varlığın ID'si.</param>
+    /// <param name="permanent">Yumuşak (false) veya kalıcı (true) silme seçeneği.</param>
+    /// <param name="cancellationToken">İşlem iptal token'ı.</param>
+    /// <returns>Silinen varlık veya bulunamazsa <c>null</c>.</returns>
     public virtual async Task<TEntity?> DeleteByIdAsync(TId id, bool permanent = false, CancellationToken cancellationToken = default)
     {
-        TEntity? entity = await (permanent ? QueryAll() : Query()).FirstOrDefaultAsync(e => e.Id.Equals(id), cancellationToken);
+        var entity = await Query().FirstOrDefaultAsync(e => e.Id.Equals(id), cancellationToken);
+        if (entity == null) return null;
 
-        if (entity == null)
-            return null;
-
-        await DeleteAsync(entity, permanent, cancellationToken); 
+        await DeleteAsync(entity, permanent, cancellationToken);
         return entity;
     }
 
     /// <summary>
-    /// Bir entity'yi ID'sine göre senkron olarak silmek için işaretler. Varsayılan olarak yumuşak silme yapar.
+    /// Birden fazla varlığı toplu olarak silmek üzere işaretler.
+    /// 
+    /// <example>
+    /// <code>
+    /// Yumuşak silme (önerilen)
+    /// await _productRepository.DeleteRangeAsync(1, permanent: false);
+    /// 
+    /// Kalıcı silme (dikkatli kullanılmalı)
+    /// await _productRepository.DeleteRangeAsync(2, permanent: true);
+    /// 
+    /// await _unitOfWork.SaveChangesAsync();
+    /// </code>
+    /// </example>
     /// </summary>
-    /// <param name="id">Silinecek entity'nin ID'si.</param>
-    /// <param name="permanent">True ise, fiziksel silme yapar. Aksi takdirde yumuşak silme yapar. Varsayılan: false.</param>
-    /// <returns> Bulunursa işaretlenen entity'yi, aksi takdirde null içerir.</returns>
-    public virtual TEntity? DeleteById(TId id, bool permanent = false)
-    {
-        TEntity? entity = (permanent ? QueryAll() : Query()).FirstOrDefault(e => e.Id.Equals(id));
-
-        if (entity == null)
-            return null;
-
-        return Delete(entity, permanent);
-    }
-
-    /// <summary>
-    /// Bir dizi entity'yi asenkron olarak silmek için işaretler. Varsayılan olarak yumuşak silme yapar.
-    /// </summary>
-    /// <param name="entities">Silinecek entity koleksiyonu.</param>
-    /// <param name="permanent">True ise, fiziksel silme yapar. Aksi takdirde yumuşak silme yapar. Varsayılan: false.</param>
-    /// <param name="cancellationToken">Görevin tamamlanmasını beklerken gözlemlenecek bir CancellationToken.</param>
-    /// <returns>Asenkron işlemi temsil eden bir görev. Görev sonucu, işaretlenen entity'leri içerir.</returns>
+    /// <param name="entities">Silinecek varlıkların koleksiyonu.</param>
+    /// <param name="permanent">Yumuşak (false) veya kalıcı (true) silme seçeneği.</param>
+    /// <param name="cancellationToken">İşlem iptal token'ı.</param>
+    /// <returns>İşlem görmüş varlıkların koleksiyonu.</returns>
     public virtual Task<IEnumerable<TEntity>> DeleteRangeAsync(IEnumerable<TEntity> entities, bool permanent = false, CancellationToken cancellationToken = default)
     {
         if (!permanent)
         {
-            foreach (var entityInLoop in entities)
+            foreach (var entity in entities)
             {
-                entityInLoop.DeletedTime = DateTime.UtcNow;
-                entityInLoop.UpdateTime = DateTime.UtcNow;
-                Context.Entry(entityInLoop).State = EntityState.Modified;
+                entity.DeletedTime = DateTime.UtcNow;
+                entity.UpdateTime = DateTime.UtcNow;
+                Context.Entry(entity).State = EntityState.Modified;
             }
         }
         else
@@ -223,202 +206,150 @@ public class EfRepositoryBase<TEntity, TId, TContext> : IRepository<TEntity, TId
     }
     #endregion
 
-    #region Read Operations
+    #region Okuma (Query) Operasyonları
     /// <summary>
-    /// Bir koşulu sağlayan herhangi bir entity olup olmadığını kontrol eder. Varsayılan olarak yumuşak silme filtresi kullanır.
+    /// ID'ye göre bir varlığı, belirtilen ilişkili verileriyle (includes) birlikte getirir.
+    /// Okuma performansı için <c>AsNoTracking()</c> metodu varsayılan olarak kullanılır.
+    /// <example>
+    /// İlişkili verilerle birlikte tek bir kayıt getirme:
+    /// <code>
+    /// Ürünü, Kategori ve Marka bilgileriyle birlikte getir.
+    /// var product = await _productRepository.GetByIdAsync(
+    ///     productId,
+    ///     p => p.Category,
+    ///     p => p.Brand
+    /// );
+    /// </code>
+    /// </example>
     /// </summary>
-    /// <param name="filter">Entity'leri filtrelemek için bir ifade. Null olabilir.</param>
-    /// <param name="enableTracking">Değişiklik izlemeyi etkinleştirmek için bir boolean. Varsayılan: true.</param>
-    /// <returns>Koşulu sağlayan herhangi bir entity varsa true; aksi takdirde false.</returns> 
-    public virtual bool Any(Expression<Func<TEntity, bool>>? filter = null, bool enableTracking = true)
+    /// <param name="id">Aranan varlığın ID'si.</param>
+    /// <param name="includes">Sorguya dahil edilecek ilişkili varlıklar (örn: <c>x => x.Category</c>).</param>
+    /// <returns>Bulunan varlık veya <c>null</c>.</returns>
+    public virtual async Task<TEntity?> GetByIdAsync(TId id, params Expression<Func<TEntity, object>>[] includes)
     {
-        IQueryable<TEntity> queryable = Query();
-        if (!enableTracking) queryable = queryable.AsNoTracking();
-        if (filter != null) return queryable.Any(filter);
-        return queryable.Any();
+        var query = Query().AsNoTracking();
+        query = includes.Aggregate(query, (current, include) => current.Include(include));
+        return await query.FirstOrDefaultAsync(e => e.Id.Equals(id));
     }
 
     /// <summary>
-    /// Bir koşulu sağlayan herhangi bir entity olup olmadığını asenkron olarak kontrol eder. Varsayılan olarak yumuşak silme filtresi kullanır.
+    /// Bir filtreye uyan ilk varlığı, belirtilen ilişkili verileriyle (includes) birlikte getirir.
+    /// Okuma performansı için <c>AsNoTracking()</c> metodu kullanılır.
     /// </summary>
-    /// <param name="filter">Entity'leri filtrelemek için bir ifade. Null olabilir.</param>
-    /// <param name="enableTracking">Değişiklik izlemeyi etkinleştirmek için bir boolean. Varsayılan: true.</param>
-    /// <param name="cancellationToken">Görevin tamamlanmasını beklerken gözlemlenecek bir CancellationToken.</param>
-    /// <returns> Asenkron işlemi temsil eden bir görev. Görev sonucu, koşulu sağlayan herhangi bir entity varsa true; aksi takdirde false içerir.</returns>
-    public virtual async Task<bool> AnyAsync(Expression<Func<TEntity, bool>>? filter = null, bool enableTracking = true, CancellationToken cancellationToken = default)
+    /// <param name="filter">Filtre koşulu.</param>
+    /// <param name="includes">Sorguya dahil edilecek ilişkili varlıklar.</param>
+    /// <returns>Filtreye uyan ilk varlık veya <c>null</c>.</returns>
+    public virtual async Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> filter, params Expression<Func<TEntity, object>>[] includes)
     {
-        IQueryable<TEntity> queryable = Query();
-        if (!enableTracking) queryable = queryable.AsNoTracking();
-        if (filter != null) return await queryable.AnyAsync(filter, cancellationToken);
-        return await queryable.AnyAsync(cancellationToken);
+        var query = Query().AsNoTracking();
+        query = includes.Aggregate(query, (current, include) => current.Include(include));
+        return await query.FirstOrDefaultAsync(filter);
     }
 
     /// <summary>
-    /// Bir entity'yi ID'sine göre senkron olarak alır. Varsayılan olarak yumuşak silme filtresi kullanır.
+    /// Bir filtreye uyan tüm varlıkları, belirtilen ilişkili verileriyle (includes) birlikte liste olarak getirir.
+    /// Okuma performansı için <c>AsNoTracking()</c> metodu kullanılır.
     /// </summary>
-    /// <param name="id">Alınacak entity'nin ID'si.</param>
-    /// <param name="include"> İlişkili entity'leri dahil etmek için bir fonksiyon.</param>
-    /// <param name="enableTracking">Değişiklik izlemeyi etkinleştirmek için bir boolean. Varsayılan: true.</param>
-    /// <returns> Bulunursa (ve yumuşak silinmemişse) entity; aksi takdirde null.</returns>
-    public virtual TEntity? Get(TId id,
-                                Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
-                                bool enableTracking = true)
+    /// <param name="filter">Filtre koşulu (opsiyonel).</param>
+    /// <param name="includes">Sorguya dahil edilecek ilişkili varlıklar.</param>
+    /// <returns>Sonuçların listesi.</returns>
+    public virtual async Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>>? filter = null, params Expression<Func<TEntity, object>>[] includes)
     {
-        IQueryable<TEntity> queryable = Query();
-        if (!enableTracking) queryable = queryable.AsNoTracking();
-        if (include != null) queryable = include(queryable);
-        return queryable.FirstOrDefault(e => e.Id.Equals(id));
+        var query = Query().AsNoTracking();
+
+        if (filter != null)
+            query = query.Where(filter);
+
+        query = includes.Aggregate(query, (current, include) => current.Include(include));
+
+        return await query.ToListAsync();
     }
 
     /// <summary>
-    /// /Bir entity'yi ID'sine göre asenkron olarak alır. Varsayılan olarak yumuşak silme filtresi kullanır.
+    /// ID'ye göre bir varlığı, belirtilen ilişkili verileriyle (includes) birlikte getirir.
+    /// Okuma performansı için <c>AsNoTracking()</c> metodu varsayılan olarak kullanılır.
+    /// <example>
+    /// İlişkili verilerle birlikte tek bir kayıt getirme:
+    /// <code>
+    /// Ürünü, Kategori ve Marka bilgileriyle birlikte getir.
+    /// var paginatedResult = await _productRepository.GetListAsync(
+    ///     filter: p => p.Stock > 0 || p.IsActive,
+    ///     orderBy: q => q.OrderByDescending(p => p.Price),
+    ///     index: 0,
+    ///     size: 10,
+    ///     includes: p => p.Category
+    /// );
+    /// Dönen sonuçlar kullanılabilir:
+    /// foreach(var product in paginatedResult.Items)
+    /// {
+    ///     Console.WriteLine(product.Name);
+    /// }
+    /// Console.WriteLine($"Toplam Sayfa: {paginatedResult.Pages}");
+    /// </code>
+    /// </example>
     /// </summary>
-    /// <param name="id">Alınacak entity'nin ID'si.</param>
-    /// <param name="include">İlişkili entity'leri dahil etmek için bir fonksiyon.</param>
-    /// <param name="enableTracking">Değişiklik izlemeyi etkinleştirmek için bir boolean. Varsayılan: true.</param>
-    /// <param name="cancellationToken">Görevin tamamlanmasını beklerken gözlemlenecek bir CancellationToken.</param>
-    /// <returns>Asenkron işlemi temsil eden bir görev. Görev sonucu, bulunursa (ve yumuşak silinmemişse) entity; aksi takdirde null içerir.</returns>
-    public virtual async Task<TEntity?> GetAsync(TId id,
-                                                 Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
-                                                 bool enableTracking = true,
-                                                 CancellationToken cancellationToken = default)
-    {
-        IQueryable<TEntity> queryable = Query();
-        if (!enableTracking) queryable = queryable.AsNoTracking();
-        if (include != null) queryable = include(queryable);
-        return await queryable.FirstOrDefaultAsync(e => e.Id.Equals(id), cancellationToken);
-    }
+    /// <param name="filter">Filtre koşulu (opsiyonel).</param>
+    /// <param name="orderBy">Sıralama koşulu (opsiyonel).</param>
+    /// <param name="index">Sayfa indeksi (0'dan başlar).</param>
+    /// <param name="size">Sayfa boyutu.</param>
+    /// <param name="includes">Sorguya dahil edilecek ilişkili varlıklar.</param>
+    /// <returns>Sayfalanmış veri yapısı (<c>IPaginate</c>).</returns>
 
     /// <summary>
-    /// /Bir koşula göre tek bir entity'yi senkron olarak alır. Varsayılan olarak yumuşak silme filtresi kullanır.
+    /// Bir filtreye uyan kayıt olup olmadığını kontrol eder.
     /// </summary>
-    /// <param name="filter">Entity'leri filtrelemek için bir ifade.</param>
-    /// <param name="include">İlişkili entity'leri dahil etmek için bir fonksiyon.</param>
-    /// <param name="enableTracking">Değişiklik izlemeyi etkinleştirmek için bir boolean. Varsayılan: true.</param>
-    /// <returns>Bulunursa (ve yumuşak silinmemişse) entity; aksi takdirde null.</returns>
-    public virtual TEntity? Get(Expression<Func<TEntity, bool>> filter,
-                                Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
-                                bool enableTracking = true)
-    {
-        IQueryable<TEntity> queryable = Query();
-        if (!enableTracking) queryable = queryable.AsNoTracking();
-        if (include != null) queryable = include(queryable);
-        return queryable.FirstOrDefault(filter);
-    }
-
-    /// <summary>
-    /// Bir koşula göre tek bir entity'yi asenkron olarak alır. Varsayılan olarak yumuşak silme filtresi kullanır.
-    /// </summary>
-    /// <param name="filter">Entity'leri filtrelemek için bir ifade.</param>
-    /// <param name="include"> İlişkili entity'leri dahil etmek için bir fonksiyon.</param>
-    /// <param name="enableTracking">Değişiklik izlemeyi etkinleştirmek için bir boolean. Varsayılan: true.</param>
-    /// <param name="cancellationToken">Görevin tamamlanmasını beklerken gözlemlenecek bir CancellationToken.</param>
-    /// <returns>Görev sonucu, bulunursa (ve yumuşak silinmemişse) entity; aksi takdirde null içerir.</returns>
-    public virtual async Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> filter,
-                                               Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
-                                               bool enableTracking = true,
-                                               CancellationToken cancellationToken = default)
-    {
-        IQueryable<TEntity> queryable = Query();
-        if (!enableTracking) queryable = queryable.AsNoTracking();
-        if (include != null) queryable = include(queryable);
-        return await queryable.FirstOrDefaultAsync(filter, cancellationToken);
-    }
-
-    /// <summary>
-    /// Bir filtreyi sağlayan tüm entity'lerin listesini senkron olarak alır. Varsayılan olarak yumuşak silme filtresi kullanır.
-    /// </summary>
-    /// <param name="filter">Entity'leri filtrelemek için bir ifade. Tüm (yumuşak silinmemiş) entity'leri almak için null olabilir.</param>
-    /// <param name="include">İlişkili entity'leri dahil etmek için bir fonksiyon.</param>
-    /// <param name="enableTracking">Değişiklik izlemeyi etkinleştirmek için bir boolean. Varsayılan: true.</param>
-    /// <returns>Entity listesi.</returns> 
-    public virtual List<TEntity> GetAll(Expression<Func<TEntity, bool>>? filter = null,
-                                        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
-                                        bool enableTracking = true)
-    {
-        IQueryable<TEntity> queryable = Query();
-        if (filter != null) queryable = queryable.Where(filter);
-        if (!enableTracking) queryable = queryable.AsNoTracking();
-        if (include != null) queryable = include(queryable);
-        return queryable.ToList();
-    }
-
-    /// <summary>
-    /// Bir filtreyi sağlayan tüm entity'lerin listesini asenkron olarak alır. Varsayılan olarak yumuşak silme filtresi kullanır.
-    /// </summary>
-    /// <param name="filter">Entity'leri filtrelemek için bir ifade. Null olabilir.</param>
-    /// <param name="include">İlişkili entity'leri dahil etmek için bir fonksiyon.</param>
-    /// <param name="enableTracking">Değişiklik izlemeyi etkinleştirmek için bir boolean. Varsayılan: true.</param>
-    /// <param name="cancellationToken">Görevin tamamlanmasını beklerken gözlemlenecek bir CancellationToken.</param>
-    /// <returns>Asenkron işlemi temsil eden bir görev. Görev sonucu, entity listesini içerir.</returns>
-    public virtual async Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>>? filter = null,
-                                                       Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
-                                                       bool enableTracking = true,
-                                                       CancellationToken cancellationToken = default)
-    {
-        IQueryable<TEntity> queryable = Query();
-        if (filter != null) queryable = queryable.Where(filter);
-        if (!enableTracking) queryable = queryable.AsNoTracking();
-        if (include != null) queryable = include(queryable);
-        return await queryable.ToListAsync(cancellationToken);
-    }
-
-    /// <summary>
-    /// Sayfalanmış bir entity listesini senkron olarak alır. Varsayılan olarak yumuşak silme filtresi kullanır.
-    /// </summary>
-    /// <param name="filter">Entity'leri filtrelemek için bir ifade. Null olabilir.</param>
-    /// <param name="orderBy">Entity'leri sıralamak için bir fonksiyon. Null olabilir.</param>
-    /// <param name="index">Sıfır tabanlı sayfa indeksi. Varsayılan: 0.</param>
-    /// <param name="size">Sayfa boyutu. Varsayılan: 10.</param>
-    /// <param name="include">İlişkili entity'leri dahil etmek için bir fonksiyon.</param>
-    /// <param name="enableTracking">Değişiklik izlemeyi etkinleştirmek için bir boolean. Varsayılan: true.</param>
-    /// <returns>Sayfalanmış entity listesini temsil eden bir IPaginate<TEntity>.</returns>
-    public virtual IPaginate<TEntity> GetList(
-        Expression<Func<TEntity, bool>>? filter = null,
-        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-        int index = 0,
-        int size = 20,
-        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
-        bool enableTracking = true)
-    {
-        IQueryable<TEntity> queryable = Query();
-        if (!enableTracking) queryable = queryable.AsNoTracking();
-        if (include != null) queryable = include(queryable);
-        if (filter != null) queryable = queryable.Where(filter);
-        if (orderBy != null)
-            return orderBy(queryable).ToPaginate(index, size);
-
-        return queryable.ToPaginate(index, size);
-    }
-
-    /// <summary>
-    /// Sayfalanmış bir entity listesini asenkron olarak alır. Varsayılan olarak yumuşak silme filtresi kullanır.
-    /// </summary>
-    /// <param name="filter">Entity'leri filtrelemek için bir ifade. Null olabilir.</param>
-    /// <param name="orderBy">Entity'leri sıralamak için bir fonksiyon. Null olabilir.</param>
-    /// <param name="index">Sıfır tabanlı sayfa indeksi. Varsayılan: 0.</param>
-    /// <param name="size">Sayfa boyutu. Varsayılan: 20 (kodunuzda 20 idi, burada da 20 olarak bırakıldı).</param>
-    /// <param name="include">İlişkili entity'leri dahil etmek için bir fonksiyon.</param>
-    /// <param name="enableTracking">Değişiklik izlemeyi etkinleştirmek için bir boolean. Varsayılan: true.</param>
-    /// <param name="cancellationToken">Görevin tamamlanmasını beklerken gözlemlenecek bir CancellationToken.</param>
-    /// <returns>sayfalanmış entity listesini temsil eden bir IPaginate<TEntity> içerir.</returns>
+    /// <param name="filter">Filtre koşulu (opsiyonel).</param>
+    /// <param name="cancellationToken">İşlem iptal token'ı.</param>
+    /// <returns>Kayıt varsa <c>true</c>, yoksa <c>false</c>.</returns>
     public virtual async Task<IPaginate<TEntity>> GetListAsync(
         Expression<Func<TEntity, bool>>? filter = null,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
         int index = 0,
         int size = 20,
-        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
-        bool enableTracking = true,
-        CancellationToken cancellationToken = default)
+        params Expression<Func<TEntity, object>>[] includes)
     {
-        IQueryable<TEntity> queryable = Query(); 
-        if (!enableTracking) queryable = queryable.AsNoTracking();
-        if (include != null) queryable = include(queryable);
-        if (filter != null) queryable = queryable.Where(filter);
-        if (orderBy != null)
-            return await orderBy(queryable).ToPaginateAsync(index, size, cancellationToken: cancellationToken);
+        var query = Query().AsNoTracking();
 
-        return await queryable.ToPaginateAsync(index, size, cancellationToken: cancellationToken);
+        if (filter != null)
+            query = query.Where(filter);
+
+        query = includes.Aggregate(query, (current, include) => current.Include(include));
+
+        if (orderBy != null)
+            query = orderBy(query);
+
+        return await query.ToPaginateAsync(index, size);
+    }
+    /// <summary>
+    /// Bir filtreye uyan kayıt olup olmadığını kontrol eder.
+    /// </summary>
+    /// <param name="filter">Filtre koşulu (opsiyonel).</param>
+    /// <param name="cancellationToken">İşlem iptal token'ı.</param>
+    /// <returns>Kayıt varsa <c>true</c>, yoksa <c>false</c>.</returns>
+    public virtual async Task<bool> AnyAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken cancellationToken = default)
+    {
+        return filter != null
+            ? await Query().AnyAsync(filter, cancellationToken)
+            : await Query().AnyAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Bir filtreye uyan kayıtların toplam sayısını döndürür.
+    /// <example>
+    /// <code>
+    /// // Stokta olmayan ürünlerin sayısı
+    /// int count = await _productRepository.CountAsync(p => p.Stock == 0);
+    /// </code>
+    /// </example>
+    /// </summary>
+    /// <param name="filter">Filtre koşulu (opsiyonel).</param>
+    /// <param name="cancellationToken">İşlem iptal token'ı.</param>
+    /// <returns>Toplam kayıt sayısı.</returns>
+    public virtual async Task<int> CountAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken cancellationToken = default)
+    {
+        return filter != null
+            ? await Query().CountAsync(filter, cancellationToken)
+            : await Query().CountAsync(cancellationToken);
     }
     #endregion
 }

@@ -1,6 +1,6 @@
-﻿using Core.CrossCuttingConcerns.Exceptions;
-using Core.CrossCuttingConcerns.Logger;
-using Core.CrossCuttingConcerns.Logger.Models;
+﻿using Core.Shared.Exceptions;
+using Core.Application.Interfaces;
+using Core.Shared.Logging.Models;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using System.Net.Http;

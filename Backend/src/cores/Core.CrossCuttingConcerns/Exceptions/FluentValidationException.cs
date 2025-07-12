@@ -1,5 +1,6 @@
-﻿using Core.CrossCuttingConcerns.Constants;
-using Core.CrossCuttingConcerns.Exceptions;
+﻿using Core.Shared.Constants;
+
+namespace Core.Shared.Exceptions;
 public class FluentValidationException : CoreException
 {
     public IEnumerable<ValidationExceptionModel> Errors { get; }

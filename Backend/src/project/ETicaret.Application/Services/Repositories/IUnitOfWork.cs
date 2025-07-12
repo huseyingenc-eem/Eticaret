@@ -11,7 +11,7 @@ namespace ETicaret.Application.Services.Repositories;
 /// Veritabanı işlemlerinin bir bütün olarak yönetilmesini ve atomik olmasını sağlar.
 /// Repository'lere erişim noktası görevi görür ve değişikliklerin toplu olarak kaydedilmesini yönetir.
 /// </summary>
-public interface IUnitOfWork : ICoreUnitOfWork
+public interface IUnitOfWork : Core.Application.Abstractions.IUnitOfWork
 {
     #region Temel Varlık Repository'leri
     /// <summary>

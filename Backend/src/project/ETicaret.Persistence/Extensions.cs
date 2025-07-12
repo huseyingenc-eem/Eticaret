@@ -30,8 +30,8 @@ public static class Extensions
             opt.EnableSensitiveDataLogging();
         });
 
-        services.AddScoped<IUnitOfWork, UnitOfWork>(); // ETicaret.Application...IUnitOfWork -> UnitOfWork
-        services.AddScoped<ICoreUnitOfWork, UnitOfWork>(); // Core.Application...ICoreUnitOfWork -> UnitOfWork
+        services.AddScoped<Application.Services.Repositories.IUnitOfWork, UnitOfWork>(); // ETicaret.Application...IUnitOfWork -> UnitOfWork
+        services.AddScoped<Core.Application.Abstractions.IUnitOfWork, UnitOfWork>(); // Core.Application...ICoreUnitOfWork -> UnitOfWork
 
         #region Repository Kayıtları
         services.AddScoped<IAddressRepository, AddressRepository>();

@@ -4,35 +4,18 @@ using ETicaret.Application.Features.Addresses.Commands.Delete;
 using ETicaret.Application.Features.Addresses.Queries.GetById;
 using ETicaret.Application.Features.Addresses.Queries.GetListByUserId;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Security.Claims; // ClaimsPrincipal ve ClaimTypes için
-using System.Threading.Tasks;
+using System.Security.Claims;
 using ETicaret.Application.Features.Addresses.Queries.GetList;
+using ETicaret.Presentation.Abstraction;
 
 namespace ETicaret.Presentation.Controllers;
 
-/// <summary>
-/// Kullanıcı adresleri ile ilgili API operasyonlarını yönetir.
-/// </summary>
-[Route("api/[controller]")]
-[ApiController]
-[Authorize]
-public class AddressesController : ControllerBase
+public class AddressesController : ApiController
 {
     private readonly IMediator _mediator;
 
-    /// <summary>
-    /// AddressesController sınıfının yeni bir örneğini başlatır.
-    /// </summary>
-    /// <param name="mediator">MediatR arayüzü.</param>
-    public AddressesController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
+    public AddressesController(IMediator mediator) : base(mediator) {}
 
     /// <summary>
     /// Giriş yapmış kullanıcının tüm adreslerini listeler.

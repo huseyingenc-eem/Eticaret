@@ -1,9 +1,9 @@
-﻿using Core.Persistence.Repositories;
+﻿using Core.Application.Abstractions.Repositories;
 using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Services.Repositories;
 
-public interface ISupplierRepository : IAsyncRepository<Supplier,int> , IRepository<Supplier, int>
+public interface ISupplierRepository : IRepository<Supplier, int>
 {
 
 }

@@ -1,7 +1,7 @@
 ﻿using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 using MediatR;
-using Core.CrossCuttingConcerns.Exceptions;
+using Core.Shared.Exceptions;
 using Core.Application.Pipelines.Transactional;
 using Core.Application.Pipelines.Caching;
 using ETicaret.Application.Features.Suppliers.Constants;

@@ -10,21 +10,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Core.Application\Core.Application.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="Adapters\Http\ProblemDetails\" />
-    <Folder Include="Exceptions\" />
-    <Folder Include="Constants\" />
-    <Folder Include="Extensions\Types\" />
-    <Folder Include="Persistence\Contexts\" />
-    <Folder Include="Services\Logging\" />
-    <Folder Include="Services\Caching\" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core.Application\Core.Application.csproj" />
   </ItemGroup>
 
 </Project>

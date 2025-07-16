@@ -1,7 +1,8 @@
 ﻿using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 using ETicaret.Persistence.Contexts;
-using Core.Persistence.Repositories;
+using Core.Infrastructure.Persistence.Repositories;
+
 
 namespace ETicaret.Persistence.Repositories;
 

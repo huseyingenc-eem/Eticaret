@@ -22,10 +22,10 @@ const ChildrenCategory = ({ value }) => {
   return (
     <>
       {categories.map((parent) => {
-        return parent.children.map((children) => (
-          <option key={children} value={children}>
-            {children}
-          </option>
+        return parent.children.map((child) => (
+            <option key={`${parent._id}-${child}`} value={child}>
+              {child}
+            </option>
         ));
       })}
     </>

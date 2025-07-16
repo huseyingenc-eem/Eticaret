@@ -1,7 +1,5 @@
-﻿using Core.Persistence.Repositories;
+﻿using Core.Application.Abstractions.Repositories;
 using ETicaret.Domain.Entities;
-using Core.Persistence.Paging;
-using System.Linq.Expressions;
 
 namespace ETicaret.Application.Services.Repositories;
 
@@ -9,7 +7,7 @@ namespace ETicaret.Application.Services.Repositories;
 /// Category entity'si için domain-specific veri erişim operasyonlarını tanımlayan interface.
 /// Temel CRUD operasyonları için IAsyncRepository ve IRepository'den kalıtım alır.
 /// </summary>
-public interface ICategoryRepository : IAsyncRepository<Category,int> , IRepository<Category,int>
+public interface ICategoryRepository : IRepository<Category,int>
 {
     /// <summary>
     /// Belirtilen kategorinin tüm alt kategorilerini (aktif/pasif durumuna göre) getirir.

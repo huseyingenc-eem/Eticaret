@@ -1,4 +1,4 @@
-﻿using Core.Persistence.Entities;
+﻿using Core.Domain.Entities;
 
 namespace ETicaret.Domain.Entities;
 public class OperationClaim : Entity<int>

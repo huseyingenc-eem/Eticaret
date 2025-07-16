@@ -1,17 +1,11 @@
-﻿using Core.Application.Abstractions;
-using ETicaret.Application.Services.Repositories; // Tüm repository arayüzleri için
-using System; // IAsyncDisposable için
-using System.Threading; // CancellationToken için
-using System.Threading.Tasks; // Task için
-
-namespace ETicaret.Application.Services.Repositories;
+﻿namespace ETicaret.Application.Services.Repositories;
 
 /// <summary>
 /// Unit of Work desenini temsil eden arayüz.
 /// Veritabanı işlemlerinin bir bütün olarak yönetilmesini ve atomik olmasını sağlar.
 /// Repository'lere erişim noktası görevi görür ve değişikliklerin toplu olarak kaydedilmesini yönetir.
 /// </summary>
-public interface IUnitOfWork : Core.Application.Abstractions.IUnitOfWork
+public interface IUnitOfWork : Core.Application.Abstractions.Repositories.IUnitOfWork
 {
     #region Temel Varlık Repository'leri
     /// <summary>

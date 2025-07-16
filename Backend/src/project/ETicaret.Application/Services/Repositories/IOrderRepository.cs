@@ -1,8 +1,8 @@
-﻿using Core.Persistence.Repositories;
+﻿using Core.Application.Abstractions.Repositories;
 using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Services.Repositories;
 
-public interface IOrderRepository : IAsyncRepository<Order,Guid> , IRepository<Order,Guid>
+public interface IOrderRepository : IRepository<Order,Guid>
 {
 }

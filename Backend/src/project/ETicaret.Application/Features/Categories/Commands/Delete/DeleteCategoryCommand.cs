@@ -1,6 +1,6 @@
 ﻿using Core.Application.Pipelines.Caching;
 using Core.Application.Pipelines.Transactional;
-using Core.CrossCuttingConcerns.Exceptions;
+using Core.Shared.Exceptions;
 using ETicaret.Application.Features.Categories.Commands.Update;
 using ETicaret.Application.Features.Categories.Rules; // CategoryBusinessRules için
 using ETicaret.Application.Services.Repositories;

@@ -4,7 +4,6 @@ using Core.Application.Pipelines.Transactional;
 using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 using MediatR;
-using Core.Application.Extensions;
 
 namespace ETicaret.Application.Features.Addresses.Commands.Create;
 

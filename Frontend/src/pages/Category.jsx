@@ -13,17 +13,17 @@ import {
 } from '@windmill/react-ui';
 import { FiPlus } from 'react-icons/fi';
 
-import useAsync from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/hooks/useAsync.js';
-import useFilter from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/hooks/useFilter.js';
-import NotFound from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/components/table/NotFound.js';
-import Loading from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/components/preloader/Loading.js';
-import { SidebarContext } from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/context/SidebarContext.jsx';
-import PageTitle from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/components/Typography/PageTitle.js';
-import CategoryServices from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/services/CategoryServices.js';
-import CategoryTable from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/components/category/CategoryTable.js';
-import SelectCategory from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/components/form/SelectCategory.js';
-import MainDrawer from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/components/drawer/MainDrawer.js';
-import CategoryDrawer from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/components/drawer/CategoryDrawer.js';
+import useAsync from '../hooks/useAsync.js';
+import useFilter from '../hooks/useFilter.js';
+import NotFound from '../components/table/NotFound.jsx';
+import Loading from '../components/preloader/Loading.jsx';
+import { SidebarContext } from '../contexts/SidebarContext.jsx';
+import PageTitle from '../components/Typography/PageTitle.jsx';
+import CategoryServices from '../services/CategoryServices.js';
+import CategoryTable from '../components/category/CategoryTable.jsx';
+import SelectCategory from '../components/form/SelectCategory.jsx';
+import MainDrawer from '../components/drawer/MainDrawer.jsx';
+import CategoryDrawer from '../components/drawer/CategoryDrawer.jsx';
 
 const Category = () => {
   const { toggleDrawer } = useContext(SidebarContext);

@@ -3,10 +3,7 @@ using ETicaret.Application.Features.Addresses.Commands.Create;
 using ETicaret.Application.Features.Addresses.Commands.Update;
 using ETicaret.Application.Features.Addresses.Queries.GetById;
 using ETicaret.Application.Features.Addresses.Queries.GetListByUserId;
-using ETicaret.Application.Features.Addresses.Queries.GetList;
 using ETicaret.Domain.Entities;
-using Core.Application.Mappings.Converters;
-using Core.Persistence.Paging;
 using ETicaret.Application.Features.Addresses.Commands.Delete;
 
 namespace ETicaret.Application.Features.Addresses.Profiles;
@@ -37,15 +34,6 @@ public class AddressesMapper : Profile
         CreateMap<Address, GetByIdAddressResponseDto>();
         CreateMap<Address, GetListByUserIdAddressResponseDto>();
 
-
-        CreateMap<Address, GetListAddressResponseDto>().ReverseMap();
-        CreateMap<IPaginate<Address>, Paginate<GetListAddressResponseDto>>().ReverseMap();
-
-
-        // GetListByUserId
-        CreateMap<Address, GetListByUserIdAddressResponseDto>().ReverseMap();
-        CreateMap<IPaginate<Address>, IPaginate<GetListAddressResponseDto>>()
-            .ConvertUsing<PaginateTypeConverter<Address, GetListAddressResponseDto>>();
 
     }
 }

@@ -1,9 +1,9 @@
-﻿using Core.Persistence.Repositories;
+﻿using Core.Application.Abstractions.Repositories;
 using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Services.Repositories;
 
-public interface IDiscountRepository : IAsyncRepository<Discount, Guid>, IRepository<Discount, Guid>
+public interface IDiscountRepository : IRepository<Discount, Guid>
 {
 
 }

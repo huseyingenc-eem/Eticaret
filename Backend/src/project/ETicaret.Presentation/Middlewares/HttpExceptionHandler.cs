@@ -1,10 +1,10 @@
-﻿using Core.CrossCuttingConcerns.Exceptions;
-using Core.CrossCuttingConcerns.Exceptions.HttpProblemDetails;
-using Core.CrossCuttingConcerns.Logger;
-using Core.CrossCuttingConcerns.Logger.Models;
+﻿using Core.Shared.Exceptions;
+using ETicaret.Presentation.Errors;
+using Core.Shared.Logging.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Core.Application.Abstractions.Services;
 
 namespace ETicaret.Presentation.Middlewares
 {
@@ -150,7 +150,7 @@ namespace ETicaret.Presentation.Middlewares
                 Instance = context.Request.Path,
             };
 
-            string unhandledErrorCode = Core.CrossCuttingConcerns.Constants.ErrorCodes.UnhandledException ?? "ERR_UNHANDLED";
+            string unhandledErrorCode = Core.Shared.Constants.ErrorCodes.UnhandledException ?? "ERR_UNHANDLED";
             genericProblemDetails.Extensions["errorCode"] = unhandledErrorCode;
 
             loggerService.Fatal(JsonSerializer.Serialize(logDetail, GetJsonSerializerOptions()), exception);

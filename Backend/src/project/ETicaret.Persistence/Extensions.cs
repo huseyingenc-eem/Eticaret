@@ -1,10 +1,10 @@
-﻿using Core.Application.Abstractions;
-using ETicaret.Application.Services.Repositories;
+﻿using ETicaret.Application.Services.Repositories;
 using ETicaret.Persistence.Contexts;
 using ETicaret.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+
 
 namespace ETicaret.Persistence;
 
@@ -29,9 +29,6 @@ public static class Extensions
             opt.UseSqlServer(configuration.GetConnectionString("SqlConnection"));
             opt.EnableSensitiveDataLogging();
         });
-
-        services.AddScoped<Application.Services.Repositories.IUnitOfWork, UnitOfWork>(); // ETicaret.Application...IUnitOfWork -> UnitOfWork
-        services.AddScoped<Core.Application.Abstractions.IUnitOfWork, UnitOfWork>(); // Core.Application...ICoreUnitOfWork -> UnitOfWork
 
         #region Repository Kayıtları
         services.AddScoped<IAddressRepository, AddressRepository>();

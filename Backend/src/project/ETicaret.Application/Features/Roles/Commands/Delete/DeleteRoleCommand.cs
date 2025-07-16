@@ -1,6 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Identity;
-using Core.CrossCuttingConcerns.Exceptions;
+using Core.Shared.Exceptions;
 using AutoMapper;
 
 namespace ETicaret.Application.Features.Roles.Commands.Delete;

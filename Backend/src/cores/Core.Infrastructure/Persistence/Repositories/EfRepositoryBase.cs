@@ -1,10 +1,10 @@
 ﻿using Core.Domain.Entities;
-using Core.Application.Interfaces;
-using Core.Application.Interfaces.Paging;
-using Core.Infrastructure.Persistence.Repositories.Ef; // ToPaginateAsync için
 
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using Core.Infrastructure.Persistence.Extensions;
+using Core.Application.Abstractions.Repositories;
+using Core.Application.Abstractions.Paging;
 
 namespace Core.Infrastructure.Persistence.Repositories;
 

@@ -1,13 +1,7 @@
-﻿using ETicaret.Application.Services.Authorization;
-using ETicaret.Application.Services.Repositories;
+﻿using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 using MediatR;
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace ETicaret.Application.Services.Authorization;
 

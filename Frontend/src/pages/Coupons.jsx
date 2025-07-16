@@ -13,9 +13,9 @@ import {
 } from '@windmill/react-ui';
 import { FiPlus } from 'react-icons/fi';
 
-import useAsync from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/hooks/useAsync.js';
-import useFilter from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/hooks/useFilter.js';
-import NotFound from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/components/table/NotFound.js';
+import useAsync from '../hooks/useAsync.js';
+import useFilter from '../hooks/useFilter.js';
+import NotFound from '../components/table/NotFound.js';
 import Loading from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/components/preloader/Loading.js';
 import CouponServices from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/services/CouponServices.js';
 import { SidebarContext } from '../../../../../../../Users/husey/Downloads/Compressed/dashtar-admin-frontend-master/dashtar-admin-frontend-master/src/context/SidebarContext.jsx';

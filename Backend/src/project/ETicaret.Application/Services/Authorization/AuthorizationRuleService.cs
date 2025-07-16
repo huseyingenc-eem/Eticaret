@@ -1,9 +1,5 @@
-﻿using ETicaret.Application.Services.Authorization;
-using ETicaret.Application.Services.Repositories;
+﻿using ETicaret.Application.Services.Repositories;
 using ETicaret.Application.Services.RedisServices;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace ETicaret.Application.Services.Authorization;

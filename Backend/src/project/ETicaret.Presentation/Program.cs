@@ -1,5 +1,5 @@
-using Core.CrossCuttingConcerns.Logger.Serilog;
-using Core.CrossCuttingConcerns.Logger;
+using Core.Infrastructure.Logger.Serilog;
+using Core.Infrastructure.Logger;
 using ETicaret.Application;
 using ETicaret.Application.Services.JwtServices;
 using ETicaret.Domain.Entities;
@@ -13,6 +13,7 @@ using System.Text;
 using ETicaret.Application.Services.RedisServices;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using Core.Application.Abstractions.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

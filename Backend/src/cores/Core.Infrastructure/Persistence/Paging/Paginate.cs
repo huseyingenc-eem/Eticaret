@@ -1,4 +1,4 @@
-﻿using Core.Application.Interfaces.Paging;
+﻿using Core.Application.Abstractions.Paging;
 
 namespace Core.Infrastructure.Persistence.Paging;
 

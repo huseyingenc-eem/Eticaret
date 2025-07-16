@@ -1,6 +1,6 @@
 ﻿using Core.Application.Pipelines.Caching;
 using Core.Application.Pipelines.Transactional;
-using Core.CrossCuttingConcerns.Exceptions;
+using Core.Shared.Exceptions;
 using ETicaret.Application.Services.Repositories;
 using MediatR;
 

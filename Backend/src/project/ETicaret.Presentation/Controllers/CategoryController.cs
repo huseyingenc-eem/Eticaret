@@ -1,4 +1,4 @@
-﻿using Core.CrossCuttingConcerns.Logger;
+﻿
 using ETicaret.Application.Features.Categories.Commands.Create;
 using ETicaret.Application.Features.Categories.Commands.Delete;
 using ETicaret.Application.Features.Categories.Commands.Update;
@@ -13,26 +13,21 @@ namespace ETicaret.Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CategoryController(IMediator mediator, ILoggerService loggerService) : ControllerBase
+    public class CategoryController(IMediator mediator) : ControllerBase
     {
 
         [HttpPost("add")]
         public async Task<IActionResult> Add([FromBody] CreateCategoryCommand command)
         {
-            loggerService.Info("Kategori ekleme metodu başlatıldı.");
             var result = await mediator.Send(command);
-            loggerService.Info("Kategori ekleme metodu bitti.");
             return Created("", result);
         }
-
 
         [HttpDelete("delete/{id:int}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
-            loggerService.Info($"Kategori silme (Delete) metodu başlatıldı. Kategori ID: {id}");
             DeleteCategoryCommand command = new() { Id = id };
             var result = await mediator.Send(command);
-            loggerService.Info($"Kategori silme (Delete) metodu bitti. Kategori ID: {id}");
             return Ok(result);
         }
 
@@ -42,9 +37,6 @@ namespace ETicaret.Presentation.Controllers
             var result = await mediator.Send(command);
             return Ok(result);
         }
-
-
-
 
         /// <summary>
         /// Tüm kategorileri ağaç yapısı (parent-child) şeklinde getirir.
@@ -57,8 +49,6 @@ namespace ETicaret.Presentation.Controllers
             var result = await mediator.Send(query);
             return Ok(result);
         }
-
-
 
         /// <summary>
         /// Belirtilen kategoriye ait ürünleri birlikte getirir.

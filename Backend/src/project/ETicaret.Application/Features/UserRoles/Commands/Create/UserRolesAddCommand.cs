@@ -1,4 +1,4 @@
-﻿using Core.CrossCuttingConcerns.Exceptions;
+﻿using Core.Shared.Exceptions;
 using ETicaret.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Identity;

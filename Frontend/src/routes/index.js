@@ -4,13 +4,13 @@ import {lazy} from 'react';
 const Dashboard = lazy(() => import('../pages/Dashboard.jsx'));
 const Products = lazy(() => import('../pages/Products.jsx'));
 const ProductDetails = lazy(() => import('../pages/ProductDetails.js'));
-const Category = lazy(() => import('../pages/Category.js'));
+const Category = lazy(() => import('../pages/Category.jsx'));
 const Staff = lazy(() => import('../pages/Staff.js'));
-const Customers = lazy(() => import('../pages/Customers.js'));
+const Customers = lazy(() => import('../pages/Customers.jsx'));
 const CustomerOrder = lazy(() => import('../pages/CustomerOrder.js'));
 const Orders = lazy(() => import('../pages/Orders.js'));
 const OrderInvoice = lazy(() => import('../pages/OrderInvoice.js'));
-const Coupons = lazy(() => import('../pages/Coupons.js'));
+const Coupons = lazy(() => import('../pages/Coupons.jsx'));
 const Page404 = lazy(() => import('../pages/404.jsx'));
 const EditProfile = lazy(() => import('../pages/EditProfile.jsx'));
 

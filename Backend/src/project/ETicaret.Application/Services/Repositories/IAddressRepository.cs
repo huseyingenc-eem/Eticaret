@@ -1,7 +1,5 @@
-﻿using Core.Persistence.Paging;
-using Core.Persistence.Repositories;
+﻿using Core.Application.Abstractions.Repositories;
 using ETicaret.Domain.Entities;
-using System.Linq.Expressions;
 
 namespace ETicaret.Application.Services.Repositories;
 
@@ -9,14 +7,6 @@ namespace ETicaret.Application.Services.Repositories;
 /// Address entity'si için veri erişim operasyonlarını tanımlayan interface.
 /// Temel CRUD operasyonları için IAsyncRepository ve IRepository'den kalıtım alır.
 /// </summary>
-public interface IAddressRepository : IAsyncRepository<Address, Guid>, IRepository<Address, Guid>
+public interface IAddressRepository : IRepository<Address, Guid>
 {
-    Task<IPaginate<Address>> GetListWithUserDetailsAsync(
-            Expression<Func<Address, bool>>? predicate = null,
-            Func<IQueryable<Address>, IOrderedQueryable<Address>>? orderBy = null,
-            int index = 0,
-            int size = 10,
-            bool enableTracking = true,
-            CancellationToken cancellationToken = default
-        );
 }

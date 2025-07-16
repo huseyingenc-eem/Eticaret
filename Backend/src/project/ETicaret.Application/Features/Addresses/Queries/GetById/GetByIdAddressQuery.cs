@@ -2,7 +2,7 @@
 using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 using MediatR;
-using Core.CrossCuttingConcerns.Exceptions;
+using Core.Shared.Exceptions;
 
 namespace ETicaret.Application.Features.Addresses.Queries.GetById;
 

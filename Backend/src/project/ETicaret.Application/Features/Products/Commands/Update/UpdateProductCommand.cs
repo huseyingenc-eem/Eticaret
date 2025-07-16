@@ -2,7 +2,7 @@
 using ETicaret.Application.Services.RedisServices;
 using ETicaret.Application.Services.Repositories;
 using MediatR;
-using Core.CrossCuttingConcerns.Exceptions;
+using Core.Shared.Exceptions;
 
 namespace ETicaret.Application.Features.Products.Commands.Update;
 

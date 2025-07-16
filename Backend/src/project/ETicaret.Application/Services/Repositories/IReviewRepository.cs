@@ -1,9 +1,9 @@
-﻿using Core.Persistence.Repositories;
+﻿using Core.Application.Abstractions.Repositories;
 using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Services.Repositories;
 
-public interface IReviewRepository : IAsyncRepository<Review, Guid>, IRepository<Review, Guid>
+public interface IReviewRepository :IRepository<Review, Guid>
 {
 
 }

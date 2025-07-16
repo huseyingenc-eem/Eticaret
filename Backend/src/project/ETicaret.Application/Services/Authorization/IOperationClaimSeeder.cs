@@ -1,6 +1,4 @@
-﻿
-
-namespace ETicaret.Application.Services.Authorization;
+﻿namespace ETicaret.Application.Services.Authorization;
 
 public interface IOperationClaimSeeder
 {

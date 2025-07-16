@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using Core.Application.Pipelines.Caching;
-using Core.Persistence.Paging;
-using ETicaret.Application.Services.Repositories; 
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 using MediatR;
 using System.Linq.Expressions;
+using Core.Application.Abstractions.Paging;
 
 namespace ETicaret.Application.Features.Addresses.Queries.GetList;
 
@@ -44,15 +44,15 @@ public class GetListAddressQuery : IRequest<IPaginate<GetListAddressResponseDto>
                                     (a.User.Email != null && a.User.Email.ToLower().Contains(searchTerm)))) ||
                                  (a.AddressLine != null && a.AddressLine.ToLower().Contains(searchTerm));
             }
-            IPaginate<Address> addressesPaginate = await _addressRepository.GetListWithUserDetailsAsync(
-            predicate: predicate,
-            index: request.PageIndex,
-            size: request.PageSize,
-            orderBy: q => q.OrderByDescending(a => a.CreatedTime),
-            enableTracking: false,
-            cancellationToken: cancellationToken
-            );
-            IPaginate<GetListAddressResponseDto> mappedAddressesPaginate = _mapper.Map<IPaginate<GetListAddressResponseDto>>(addressesPaginate);
+            //IPaginate<Address> addressesPaginate = await _addressRepository.GetListWithUserDetailsAsync(
+            //predicate: predicate,
+            //index: request.PageIndex,
+            //size: request.PageSize,
+            //orderBy: q => q.OrderByDescending(a => a.CreatedTime),
+            //enableTracking: false,
+            //cancellationToken: cancellationToken
+            //);
+            //IPaginate<GetListAddressResponseDto> mappedAddressesPaginate = _mapper.Map<IPaginate<GetListAddressResponseDto>>(addressesPaginate);
 
             return mappedAddressesPaginate;
         }

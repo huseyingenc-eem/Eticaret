@@ -33,6 +33,7 @@ function App() {
                             <PrivateRoute>
                                 <Layout />
                             </PrivateRoute>
+                            
                         }
                     />
                 </Routes>

@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Core.Application.Pipelines.Caching;
 using Core.Application.Pipelines.Transactional;
-using Core.CrossCuttingConcerns.Exceptions;
+using Core.Shared.Exceptions;
 using ETicaret.Application.Features.Categories.Rules;
 using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;

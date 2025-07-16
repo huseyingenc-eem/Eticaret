@@ -1,5 +1,5 @@
-﻿using ETicaret.Application.Services.Repositories;
-using ETicaret.Persistence.Contexts;
+﻿using ETicaret.Persistence.Contexts;
+using Core.Application.Abstractions.Repositories;
 
 namespace ETicaret.Persistence.Repositories;
 

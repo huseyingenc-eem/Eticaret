@@ -1,5 +1,5 @@
-﻿using Core.Persistence.Paging;
-using Core.Persistence.Repositories;
+﻿using Core.Application.Abstractions.Paging;
+using Core.Infrastructure.Persistence.Repositories;
 using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 using ETicaret.Persistence.Contexts;

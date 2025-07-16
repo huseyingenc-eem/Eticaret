@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\cores\Core.Application\Core.Application.csproj" />
-    <ProjectReference Include="..\..\cores\Core.CrossCuttingConcerns\Core.Shared.csproj" />
     <ProjectReference Include="..\ETicaret.Domain\ETicaret.Domain.csproj" />
   </ItemGroup>
 

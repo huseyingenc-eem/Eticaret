@@ -1,8 +1,11 @@
 import requests from './httpService.js';
 
+
+const API_BASE_URL = '/Category'; // Backend API'nizin temel URL'si
+
 const CategoryServices = {
   getAllCategory() {
-    return requests.get('/category');
+    return requests.get(`${API_BASE_URL}/GetCategoryTree`);
   },
 
   getCategoryById(id) {

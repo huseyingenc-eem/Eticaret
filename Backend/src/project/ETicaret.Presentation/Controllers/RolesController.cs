@@ -4,7 +4,6 @@ using ETicaret.Application.Features.Roles.Commands.Update;
 using ETicaret.Application.Features.Roles.Queries.RolesList;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace ETicaret.Presentation.Controllers;
 

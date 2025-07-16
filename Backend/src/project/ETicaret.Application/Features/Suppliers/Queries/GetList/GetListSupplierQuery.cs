@@ -2,7 +2,9 @@
 using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 using MediatR;
-using Core.Persistence.Paging;
+
+
+
 using Core.Application.Pipelines.Caching;
 using ETicaret.Application.Features.Suppliers.Constants;
 

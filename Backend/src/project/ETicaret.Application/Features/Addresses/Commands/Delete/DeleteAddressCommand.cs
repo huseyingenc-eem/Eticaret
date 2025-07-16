@@ -1,7 +1,7 @@
 ﻿using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 using MediatR;
-using Core.CrossCuttingConcerns.Exceptions;
+using Core.Shared.Exceptions;
 using Core.Application.Pipelines.Transactional;
 using Core.Application.Pipelines.Caching;
 
@@ -31,7 +31,7 @@ public class DeleteAddressCommand : IRequest<DeleteAddressResponseDto> , ITransa
 
         public async Task<DeleteAddressResponseDto> Handle(DeleteAddressCommand request, CancellationToken cancellationToken)
         {
-            Address? addressToDelete = await _unitOfWork.AddressRepository.GetAsync(
+            Address? addressToDelete = await _unitOfWork.AddressRepository.g(
                 filter: a => a.Id == request.Id,
                 cancellationToken: cancellationToken);
 

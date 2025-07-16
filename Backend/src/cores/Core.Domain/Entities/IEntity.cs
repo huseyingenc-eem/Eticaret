@@ -1,9 +1,10 @@
 ﻿namespace Core.Domain.Entities;
 
-public interface IEntity<TId>
+public interface IEntity<TId> where TId : notnull
 {
-    TId Id { get; set; }
-    DateTime CreatedTime { get; set; }
-    DateTime? UpdateTime { get; set; }
-    DateTime? DeletedTime { get; set; }
+    TId Id { get; init; }
+
+    DateTime CreatedTime { get; }
+    DateTime? UpdateTime { get; }
+    DateTime? DeletedTime { get; }
 }

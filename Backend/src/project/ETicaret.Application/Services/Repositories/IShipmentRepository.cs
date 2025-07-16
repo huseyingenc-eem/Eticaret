@@ -1,9 +1,9 @@
-﻿using Core.Persistence.Repositories;
+﻿using Core.Application.Abstractions.Repositories;
 using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Services.Repositories;
 
-public interface IShipmentRepository : IAsyncRepository<Shipment, Guid>, IRepository<Shipment, Guid>
+public interface IShipmentRepository : IRepository<Shipment, Guid>
 {
 
 }

@@ -7,10 +7,9 @@ public class UpdateSupplierCommandValidator : AbstractValidator<UpdateSupplierCo
     public UpdateSupplierCommandValidator()
     {
         RuleFor(s => s.Id)
-            .NotEmpty().WithMessage("Tedarikçi ID boş olamaz.")
-            .GreaterThan(0).WithMessage("Geçerli bir Tedarikçi ID girilmelidir.");
+            .NotEmpty().WithMessage("Tedarikçi ID boş olamaz.");
 
-        RuleFor(s => s.Name)
+        RuleFor(s => s.CompanyName)
             .NotEmpty().WithMessage("Tedarikçi adı boş olamaz.")
             .MaximumLength(150).WithMessage("Tedarikçi adı en fazla 150 karakter olabilir.");
 

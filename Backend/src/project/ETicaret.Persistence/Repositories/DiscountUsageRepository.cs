@@ -8,8 +8,6 @@ namespace ETicaret.Persistence.Repositories;
 // DiscountUsage için Repository
 public class DiscountUsageRepository : EfRepositoryBase<DiscountUsage, Guid, BaseDBContexts>, IDiscountUsageRepository
 {
-    public DiscountUsageRepository(BaseDBContexts context) : base(context)
-    {
-    }
+    public DiscountUsageRepository(BaseDBContexts context) : base(context){}
    
 }

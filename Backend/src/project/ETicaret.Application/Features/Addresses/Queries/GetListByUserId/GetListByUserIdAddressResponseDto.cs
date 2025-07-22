@@ -8,7 +8,7 @@ public class GetListByUserIdAddressResponseDto
     /// <summary>
     /// Adres ID'si.
     /// </summary>
-    public int Id { get; set; }
+    public Guid Id { get; set; }
 
     /// <summary>
     /// Adres başlığı.

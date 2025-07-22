@@ -12,8 +12,6 @@ namespace ETicaret.Application.Services.JwtServices;
 public class JwtService : IJwtService
 {
     private readonly UserManager<User> _userManager;
-
-    //ayrı yerden alıyoruz maplediğimiz için
     private readonly CustomTokenOptions _customTokenOptions;
 
     public JwtService(UserManager<User> userManager, IOptions<CustomTokenOptions> options)
@@ -24,7 +22,7 @@ public class JwtService : IJwtService
 
     public async Task<AccessTokenDto> CreateTokenAsync(User user)
     {
-        var accessTokenExpiration = DateTime.Now.AddMinutes(_customTokenOptions.AccessTokenExpiration);
+        var accessTokenExpiration = DateTime.UtcNow.AddMinutes(_customTokenOptions.AccessTokenExpiration);
         var symetricKey = GetSecurityKey(_customTokenOptions.SecurityKey);
 
         SigningCredentials signintCredentials = new SigningCredentials(symetricKey,SecurityAlgorithms.HmacSha512Signature);
@@ -69,9 +67,5 @@ public class JwtService : IJwtService
         }
 
         return claimList;
-
-
     }
-
-
 }

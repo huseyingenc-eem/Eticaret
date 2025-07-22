@@ -11,7 +11,7 @@ public interface ICachableRequest
     /// Önbelleği atlayıp doğrudan kaynağa gidilip gidilmeyeceğini belirtir.
     /// True ise önbellek kullanılmaz.
     /// </summary>
-    bool ByPassCache { get; }
+    bool BypassCache { get; }
 
     /// <summary>
     /// Bu isteğin ait olduğu önbellek grubu anahtarı.

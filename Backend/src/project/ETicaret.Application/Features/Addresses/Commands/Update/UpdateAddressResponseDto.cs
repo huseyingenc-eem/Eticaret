@@ -4,7 +4,7 @@
 public class UpdateAddressResponseDto
 {
     
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string UserId { get; set; } = string.Empty;
     public string AddressTitle { get; set; } = string.Empty;
     public string Country { get; set; } = string.Empty;

@@ -1,4 +1,4 @@
-﻿using Core.Shared.Exceptions;
+﻿using Core.Application.Common.Exceptions;
 using ETicaret.Application.Services.JwtServices;
 using ETicaret.Domain.Entities;
 using MediatR;
@@ -38,6 +38,7 @@ public class RegisterCommand : IRequest<AccessTokenDto>
 
             User user = new User()
             {
+                Id = Guid.NewGuid().ToString(),
                 FirstName = request.FirstName,
                 LastName = request.LastName,
                 City = request.City,

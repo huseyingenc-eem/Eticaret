@@ -1,10 +1,11 @@
 ﻿using AutoMapper;
 using ETicaret.Application.Features.Addresses.Commands.Create;
+using ETicaret.Application.Features.Addresses.Commands.Delete;
 using ETicaret.Application.Features.Addresses.Commands.Update;
 using ETicaret.Application.Features.Addresses.Queries.GetById;
+using ETicaret.Application.Features.Addresses.Queries.GetList;
 using ETicaret.Application.Features.Addresses.Queries.GetListByUserId;
 using ETicaret.Domain.Entities;
-using ETicaret.Application.Features.Addresses.Commands.Delete;
 
 namespace ETicaret.Application.Features.Addresses.Profiles;
 
@@ -29,7 +30,7 @@ public class AddressesMapper : Profile
 
         //Delete
         CreateMap<Address, DeleteAddressResponseDto>().ReverseMap();
-
+        CreateMap<Address, GetListAddressResponseDto>();
 
         CreateMap<Address, GetByIdAddressResponseDto>();
         CreateMap<Address, GetListByUserIdAddressResponseDto>();

@@ -6,7 +6,7 @@ namespace Core.Application.Behaviors.Performance;
 
 public class PerformanceBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
 
-    where TRequest : IRequest<TResponse> , IPerformanceRequest
+    where TRequest : IRequest<TResponse>, IPerformanceRequest
 {
 
     private readonly ILogger<PerformanceBehavior<TRequest, TResponse>> _logger;
@@ -24,7 +24,7 @@ public class PerformanceBehavior<TRequest, TResponse> : IPipelineBehavior<TReque
 
         stopWatch.Stop();
 
-        if (stopWatch.ElapsedMilliseconds >500)
+        if (stopWatch.ElapsedMilliseconds > 500)
         {
             _logger.LogWarning($"{request.GetType()} : {stopWatch.ElapsedMilliseconds}");
         }

@@ -1,9 +1,8 @@
 ﻿using AutoMapper;
-using Core.Application.Pipelines.Caching;
-using Core.Application.Pipelines.Transactional;
+using Core.Application.Behaviors.Caching;
+using Core.Application.Behaviors.Transactional;
 using ETicaret.Application.Features.Products.Constants;
-using ETicaret.Application.Services.RedisServices;
-using ETicaret.Application.Services.Repositories;
+using Core.Application.Abstractions.Repositories;
 using ETicaret.Domain.Entities;
 using MediatR;
 
@@ -25,7 +24,7 @@ public class CreateProductCommand : IRequest<CreateProductResponseDto> , ICacheR
 
     public string? CacheKey => null;
 
-    public bool ByPassCache => false;
+    public bool BypassCache => false;
 
     public string? CacheGroupKey => ProductConstants.ProductsCacheGroup;
 
@@ -33,23 +32,20 @@ public class CreateProductCommand : IRequest<CreateProductResponseDto> , ICacheR
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IRedisService _redisService;
 
-        public CreateProductCommandHandler(IUnitOfWork unitOfWork, IMapper mapper, IRedisService redisService)
+        public CreateProductCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _redisService = redisService;
         }
 
         public async Task<CreateProductResponseDto> Handle(CreateProductCommand request, CancellationToken cancellationToken)
         {
             Product product = _mapper.Map<Product>(request);
-            
 
-            var addedProduct = await _unitOfWork.ProductRepository.AddAsync(product, cancellationToken: cancellationToken);
+            var productRepository = _unitOfWork.GetRepository<Product,Guid>();
+            var addedProduct = await productRepository.AddAsync(product, cancellationToken: cancellationToken);
             await _unitOfWork.CompleteAsync(cancellationToken);
-            await _redisService.RemoveDataAsync("products");
 
             CreateProductResponseDto response = _mapper.Map<CreateProductResponseDto>(addedProduct);
             response.Message = "Ürün başarıyla eklendi.";

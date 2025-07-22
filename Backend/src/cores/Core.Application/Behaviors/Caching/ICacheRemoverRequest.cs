@@ -2,6 +2,6 @@
 public interface ICacheRemoverRequest
 {
     string? CacheKey { get; }
-    bool ByPassCache { get; }
+    bool BypassCache { get; }
     string? CacheGroupKey { get; }
 }

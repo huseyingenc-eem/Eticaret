@@ -42,7 +42,9 @@ public interface IUnitOfWork : IAsyncDisposable
     /// <typeparam name="TEntity">Repository'si istenen varlık tipi.</typeparam>
     /// <typeparam name="TId">Varlığın ID tipi.</typeparam>
     /// <returns><c>IRepository</c> arayüzünün bir örneği.</returns>
-    IRepository<TEntity, TId> GetRepository<TEntity, TId>() where TEntity : Entity<TId>;
+    IRepository<TEntity, TId> GetRepository<TEntity, TId>()
+        where TEntity : Entity<TId>
+        where TId : IEquatable<TId>;
 
     #endregion
 

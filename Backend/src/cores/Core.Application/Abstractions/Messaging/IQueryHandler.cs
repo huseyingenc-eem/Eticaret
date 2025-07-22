@@ -8,4 +8,5 @@ namespace Core.Application.Abstractions.Messaging;
 /// <typeparam name="TQuery">İşlenecek sorgunun türü.</typeparam>
 /// <typeparam name="TResponse">Döndürülecek yanıtın türü.</typeparam>
 public interface IQueryHandler<in TQuery, TResponse> : IRequestHandler<TQuery, TResponse>
-    where TQuery : IQuery<TResponse>{}
+    where TQuery : IQuery<TResponse>
+{ }

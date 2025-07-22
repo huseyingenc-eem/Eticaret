@@ -5,7 +5,6 @@ using ETicaret.Persistence.Contexts;
 
 namespace ETicaret.Persistence.Repositories;
 
-// WishlistItem için Repository
 public class WishlistItemRepository : EfRepositoryBase<WishlistItem, Guid, BaseDBContexts>, IWishlistItemRepository
 {
     public WishlistItemRepository(BaseDBContexts context) : base(context)

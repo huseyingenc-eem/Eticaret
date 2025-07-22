@@ -1,4 +1,4 @@
-﻿using Core.Shared.Exceptions;
+﻿using Core.Application.Common.Exceptions;
 using System.Security.Claims;
 
 namespace Core.Application.Common.Extensions;

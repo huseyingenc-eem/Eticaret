@@ -13,10 +13,10 @@ public abstract class AggregateRoot<TId> : Entity<TId>, IAggregateRoot
     /// Initializes a new instance of the <see cref="AggregateRoot{TId}"/> class with a specific identifier.
     /// </summary>
     /// <param name="id">The unique identifier for the aggregate root.</param>
-    protected AggregateRoot(TId id) : base(id) {}
+    protected AggregateRoot(TId id) : base(id) { }
 
     /// <summary>
     /// Parameterless constructor for ORMs like Entity Framework Core.
     /// </summary>
-    protected AggregateRoot(){}
+    protected AggregateRoot() { }
 }

@@ -4,7 +4,7 @@
 /// Uygulama (Application) katmanında meydana gelen ve ele alınması gereken hatalar için temel sınıf.
 /// Yapısal hata bilgileri taşır.
 /// </summary>
-public class ApplicationException : Exception
+public class ApplicationException : Exception, IApplicationException
 {
     public string? ErrorCode { get; }
     public string? UserFriendlyMessage { get; }

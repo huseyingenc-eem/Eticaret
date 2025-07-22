@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Core.Shared.Abstractions;
 
-namespace Core.Shared.Utilities
+/// <summary>
+/// Uygulama genelinde mevcut zamanı almak için standart bir sözleşme tanımlar.
+/// Bu arayüz, zamanla ilgili bağımlılıkları soyutlayarak test edilebilirliği artırır.
+/// </summary>
+public interface IDateTimeProvider
 {
-    internal class DateTimeProvider
-    {
-    }
+    /// <summary>
+    /// Mevcut Eşgüdümlü Evrensel Zaman'ı (UTC) alır.
+    /// </summary>
+    DateTime UtcNow { get; }
 }

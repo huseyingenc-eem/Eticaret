@@ -19,7 +19,7 @@ public class CacheRemoveBehavior<TRequest, TResponse> : IPipelineBehavior<TReque
 
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
-        if (request.ByPassCache)
+        if (request.BypassCache)
         {
             return await next();
         }

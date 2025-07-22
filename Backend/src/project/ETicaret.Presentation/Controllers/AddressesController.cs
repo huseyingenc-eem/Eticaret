@@ -13,7 +13,6 @@ namespace ETicaret.Presentation.Controllers;
 
 public class AddressesController : ApiController
 {
-    private readonly IMediator _mediator;
 
     public AddressesController(IMediator mediator) : base(mediator) {}
 
@@ -51,7 +50,7 @@ public class AddressesController : ApiController
     [ProducesResponseType(typeof(GetByIdAddressResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetById([FromRoute] int id)
+    public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
         var userId = GetUserIdFromClaims();
         if (string.IsNullOrEmpty(userId)) // Guid.Empty yerine string kontrolü
@@ -127,7 +126,7 @@ public class AddressesController : ApiController
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Delete([FromRoute] int id)
+    public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
         var userId = GetUserIdFromClaims();
         if (string.IsNullOrEmpty(userId)) // Guid.Empty yerine string kontrolü

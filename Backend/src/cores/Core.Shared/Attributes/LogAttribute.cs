@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Core.Shared.Attributes;
 
-namespace Core.Shared.Attributes
+internal class LogAttribute
 {
-    internal class LogAttribute
-    {
-    }
 }

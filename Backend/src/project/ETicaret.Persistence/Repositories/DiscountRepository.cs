@@ -8,8 +8,5 @@ namespace ETicaret.Persistence.Repositories;
 // Discount için Repository
 public class DiscountRepository : EfRepositoryBase<Discount, Guid, BaseDBContexts>, IDiscountRepository
 {
-    public DiscountRepository(BaseDBContexts context) : base(context)
-    {
-    }
-    // IDiscountRepository'e özel metot implementasyonları buraya eklenebilir.
+    public DiscountRepository(BaseDBContexts context) : base(context){}
 }

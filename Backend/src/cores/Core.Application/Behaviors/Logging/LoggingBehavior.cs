@@ -1,10 +1,10 @@
-﻿using Core.Application.Common.Exceptions;
-using Core.Shared.Logging.Models;
+﻿using Core.Application.Abstractions.Services;
+using Core.Application.Behaviors.Logging.Models;
+using Core.Application.Common.Exceptions;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using System.Text.Json;
-using Core.Application.Abstractions.Services;
 
 namespace Core.Application.Behaviors.Logging;
 
@@ -49,11 +49,11 @@ public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
 
         LogDetail logDetail = new()
         {
-            ClassFullName = next.Method.DeclaringType?.FullName, 
+            ClassFullName = next.Method.DeclaringType?.FullName,
             MethodName = next.Method.Name,
             Parameters = logParameters,
-            User = userPrincipal?.Identity?.Name ?? "Anonymous", 
-            UserId = userPrincipal?.FindFirst(ClaimTypes.NameIdentifier)?.Value, 
+            User = userPrincipal?.Identity?.Name ?? "Anonymous",
+            UserId = userPrincipal?.FindFirst(ClaimTypes.NameIdentifier)?.Value,
             RequestPath = httpContext?.Request.Path.ToString(),
             RequestMethod = httpContext?.Request.Method,
             ClientIpAddress = httpContext?.Connection.RemoteIpAddress?.ToString(),
@@ -76,7 +76,7 @@ public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
             logDetail.ExceptionType = ex.GetType().FullName;
             logDetail.ExceptionMessage = ex.Message;
             logDetail.ExceptionStackTrace = ex.StackTrace;
-            logDetail.ExceptionDetails = ex.ToString(); 
+            logDetail.ExceptionDetails = ex.ToString();
 
             if (ex is FluentValidationException validationEx)
             {
@@ -85,7 +85,7 @@ public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
                     .GroupBy(validationErrorModel => validationErrorModel.Property)
                     .ToDictionary(
                         group => group.Key,
-                        group => group.SelectMany(validationErrorModel => validationErrorModel.Errors).ToArray() 
+                        group => group.SelectMany(validationErrorModel => validationErrorModel.Errors).ToArray()
                     );
             }
 
@@ -97,7 +97,7 @@ public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
     {
         return new JsonSerializerOptions
         {
-            WriteIndented = false, 
+            WriteIndented = false,
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         };
     }

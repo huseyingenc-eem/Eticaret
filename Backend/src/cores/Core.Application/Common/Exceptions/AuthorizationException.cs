@@ -2,15 +2,17 @@
 
 namespace Core.Application.Common.Exceptions;
 
+/// <summary>
+/// Yetkilendirme (authorization) hatası olduğunda fırlatılan hata.
+/// </summary>
 public class AuthorizationException : ApplicationException
 {
-    public AuthorizationException(string errorCode, string message, string? userFriendlyMessage = null, object? additionalData = null, Exception? innerException = null)
-        : base(errorCode, message, userFriendlyMessage, additionalData, innerException)
-    {
-    }
-
-    public AuthorizationException(string message)
-        : base(ApplicationErrorCodes.AuthGeneral, message, message, null, null)
+    public AuthorizationException(
+        string message,
+        string? userFriendlyMessage = null,
+        string? errorCode = ApplicationErrorCodes.AuthGeneral, // Varsayılan bir hata kodu
+        object? additionalData = null)
+        : base(message, userFriendlyMessage, errorCode, additionalData)
     {
     }
 }

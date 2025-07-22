@@ -1,25 +1,30 @@
 ﻿using Core.Application.Abstractions.Services;
+using Core.Infrastructure.Adapters.Converters;
 using System.Text.Json;
 
 namespace Core.Infrastructure.Adapters;
 
+/// <summary>
+/// ISerializerService arayüzünün System.Text.Json kütüphanesini kullanarak somut implementasyonu.
+/// </summary>
 public class JsonSerializerService : ISerializerService
 {
-    private readonly JsonSerializerOptions _options;
-
-    public JsonSerializerService()
+    // JsonSerializerOptions'ı static ve readonly olarak tanımlayarak
+    // her seferinde yeniden oluşturulmasını önlüyor ve performansı artırıyoruz.
+    private static readonly JsonSerializerOptions _options = new()
     {
-        _options = new JsonSerializerOptions();
-        _options.Converters.Add(new PaginateJsonConverterFactory());
-    }
+        Converters = { new PagedResultJsonConverterFactory() }
+    };
 
+    /// <inheritdoc/>
     public T? Deserialize<T>(byte[] data)
     {
         return JsonSerializer.Deserialize<T>(data, _options);
     }
 
-    public byte[] Serialize<T>(T obj)
+    /// <inheritdoc/>
+    public byte[] SerializeToUtf8Bytes<T>(T value)
     {
-        return JsonSerializer.SerializeToUtf8Bytes(obj, _options);
+        return JsonSerializer.SerializeToUtf8Bytes(value, _options);
     }
 }

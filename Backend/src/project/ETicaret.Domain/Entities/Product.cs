@@ -10,7 +10,7 @@ public class Product : Entity<Guid>
     public int CategoryId { get; set; }
     public virtual Category Category { get; set; } = null!;
 
-    public int? SupplierId { get; set; }
+    public Guid? SupplierId { get; set; }
     public virtual Supplier? Supplier { get; set; } = null!;
     public bool IsActive { get; set; } = true;
 

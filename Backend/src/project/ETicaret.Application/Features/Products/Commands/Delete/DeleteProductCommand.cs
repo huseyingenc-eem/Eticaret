@@ -1,7 +1,8 @@
-﻿using Core.Application.Pipelines.Caching;
-using Core.Application.Pipelines.Transactional;
-using Core.Shared.Exceptions;
-using ETicaret.Application.Services.Repositories;
+﻿using Core.Application.Abstractions.Repositories;
+using Core.Application.Behaviors.Caching;
+using Core.Application.Behaviors.Transactional;
+using Core.Application.Common.Exceptions;
+using ETicaret.Application.Features.Products.Specifications; // <-- Our new specification
 using MediatR;
 
 namespace ETicaret.Application.Features.Products.Commands.Delete;
@@ -12,43 +13,43 @@ public class DeleteProductCommand : IRequest<DeleteProductResponseDto>, ITransac
 
     public string CacheKey => $"product:{Id}";
     public string? CacheGroupKey => "ProductsGroup";
-    public bool ByPassCache { get; set; }
+    public bool BypassCache { get; set; }
 
     public class DeleteProductCommandHandler : IRequestHandler<DeleteProductCommand, DeleteProductResponseDto>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IRepository<Domain.Entities.Product, Guid> _productRepository;
+        // private readonly ProductBusinessRules _productBusinessRules;
 
-        public DeleteProductCommandHandler(IUnitOfWork unitOfWork /*, ProductBusinessRules productBusinessRules */)
+        public DeleteProductCommandHandler(IUnitOfWork unitOfWork)
         {
-            _unitOfWork = unitOfWork;
+            // Get the generic repository from the Unit of Work.
+            _productRepository = unitOfWork.GetRepository<Domain.Entities.Product, Guid>();
             // _productBusinessRules = productBusinessRules;
         }
 
         public async Task<DeleteProductResponseDto> Handle(DeleteProductCommand request, CancellationToken cancellationToken)
         {
-            
-            Domain.Entities.Product? productToDelete = await _unitOfWork.ProductRepository.GetAsync(
-                filter: p => p.Id == request.Id, // Product.Id string ise bu karşılaştırma doğru.
-                enableTracking: true, // Soft delete için entity'nin takip edilmesi iyi bir pratiktir.
-                cancellationToken: cancellationToken
-            );
+            // 1. Use our new, reusable specification to find the product.
+            var spec = new ProductByIdSpecification(request.Id);
+            Domain.Entities.Product? productToDelete = await _productRepository.GetAsync(spec, cancellationToken);
 
             if (productToDelete == null)
             {
-                throw new NotFoundException($"Silinecek ürün bulunamadı (ID: {request.Id}).");
+                throw new NotFoundException($"Product to be deleted was not found (ID: {request.Id}).");
             }
 
-            // --- İş Kuralları Kontrolleri (Örnek) ---
-            // Örneğin, ürünün aktif bir siparişte olup olmadığını kontrol et.
+            // --- Business Rule Checks (Example) ---
             // await _productBusinessRules.CheckIfProductIsInActiveOrderAsync(request.Id, cancellationToken);
-            // --- İş Kuralları Kontrolleri Sonu ---
+            // --- End Business Rule Checks ---
 
-            await _unitOfWork.ProductRepository.DeleteAsync(productToDelete, permanent: false, cancellationToken);
+            // 2. Perform the soft delete.
+            await _productRepository.DeleteAsync(productToDelete, permanent: false, cancellationToken);
 
+            // 3. No need to call CompleteAsync; TransactionBehavior handles it.
             return new DeleteProductResponseDto
             {
                 Id = request.Id,
-                Message = "Ürün başarıyla silindi (pasif hale getirildi).",
+                Message = "Product successfully deleted (deactivated).",
                 IsSuccess = true
             };
         }

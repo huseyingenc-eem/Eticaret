@@ -1,44 +1,45 @@
-﻿// Core.Application/ApplicationServiceRegistration.cs
-
+﻿using Core.Application.Behaviors.Authorization;
+using Core.Application.Behaviors.Caching;
+using Core.Application.Behaviors.Logging;
+using Core.Application.Behaviors.Performance;
 using Core.Application.Behaviors.RequestInfo;
-// Diğer behavior'larınızın using'leri de buraya gelecek...
-// using Core.Application.Behaviors.Validation;
-// using Core.Application.Behaviors.Authorization;
-using MediatR;
+using Core.Application.Behaviors.Transactional;
+using Core.Application.Behaviors.Validation;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
 namespace Core.Application;
 
+/// <summary>
+/// Core.Application katmanının temel servislerini DI container'ına ekler.
+/// </summary>
 public static class ApplicationServiceRegistration
 {
-    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+    public static IServiceCollection AddCoreApplicationServices(this IServiceCollection services)
     {
-        services.AddMediatR(cfg =>
+        // AutoMapper'ı bu katmanın assembly'si için ekle
+        //services.AddAutoMapper(Assembly.GetExecutingAssembly());
+
+        // MediatR'ı ve temel pipeline davranışlarını ekle
+        services.AddMediatR(configuration =>
         {
-            cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+            configuration.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
 
-            // --- PİPELİNE DAVRANIŞLARINI DOĞRU SIRAYLA BURADA EKLE ---
-            // Bu sıralama, yukarıda anlatılan soğan mimarisine uygun olmalıdır.
-
-            // En dış katman: Genel loglama veya performans takibi
-            // services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
-
-            // Yetkilendirme
-            // services.AddTransient(typeof(IPipelineBehavior<,>), typeof(AuthorizationBehavior<,>));
-
-            // Doğrulama
-            // services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
-
-            // Otomatik bilgi ekleme (Kullanıcı ID, Culture vb.)
-            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestInfoBehavior<,>));
-
-            // Önbelleğe alma
-            // services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CachingBehavior<,>));
-
-            // Transaction yönetimi (Handler'a en yakın)
-            // services.AddTransient(typeof(IPipelineBehavior<,>), typeof(TransactionalBehavior<,>));
+            // --- GENEL PİPELİNE DAVRANIŞLARI ---
+            // Bu sıralama, isteğin işlenme hattını belirler (en dıştan en içe doğru).
+            configuration.AddOpenBehavior(typeof(LoggingBehavior<,>));
+            configuration.AddOpenBehavior(typeof(RequestInfoBehavior<,>));
+            configuration.AddOpenBehavior(typeof(AuthorizationBehavior<,>));
+            configuration.AddOpenBehavior(typeof(ValidationBehavior<,>));
+            configuration.AddOpenBehavior(typeof(CachingBehavior<,>));
+            configuration.AddOpenBehavior(typeof(CacheRemoveBehavior<,>));
+            configuration.AddOpenBehavior(typeof(PerformanceBehavior<,>));
+            configuration.AddOpenBehavior(typeof(TransactionBehavior<,>));
         });
+
+        // FluentValidation validatörlerini bu assembly için ekle
+        services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
         return services;
     }

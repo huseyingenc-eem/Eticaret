@@ -6,61 +6,79 @@ namespace Core.Domain.Entities;
 
 /// <summary>
 /// Tüm domain varlıkları için ortak işlevsellik sağlayan temel bir sınıfı temsil eder.
-/// Bu sınıf kimlik, eşitlik karşılaştırması ve domain event yönetimi gibi özellikleri barındırır.
+/// Bu sınıf kimlik, eşitlik karşılaştırması, soft-delete ve domain event yönetimi gibi özellikleri barındırır.
 /// </summary>
 /// <typeparam name="TId">Varlığın benzersiz kimliğinin türü (örn: int, Guid).</typeparam>
-public abstract class Entity<TId> : IEntity<TId>, IEquatable<Entity<TId>> where TId : notnull
+public abstract class Entity<TId> : IEntity<TId>, ISoftDeletable, IEquatable<Entity<TId>> where TId : notnull
 {
+    #region Constructors
+
     /// <summary>
-    /// Varlığın benzersiz kimliğini alır.
-    /// 'setter' metodunun 'protected' olması, kimliğin varlık sınırı dışından değiştirilemez olmasını sağlar.
+    /// Parametresiz kurucu metot. Varlık oluşturulduğunda CreatedTime'ı otomatik olarak UTC zaman damgası ile ayarlar.
+    /// Bu constructor, Entity Framework Core gibi ORM'ler tarafından gereklidir.
     /// </summary>
+    protected Entity()
+    {
+        CreatedTime = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Belirtilen kimlik ile yeni bir varlık örneği başlatır.
+    /// </summary>
+    /// <param name="id">Varlığın benzersiz kimliği.</param>
+    protected Entity(TId id) : this()
+    {
+        Id = id;
+    }
+
+    #endregion
+
+    #region Properties
+
+    /// <summary>Varlığın benzersiz kimliği. 'init' ile sadece oluşturma anında veya başlatıcıda atanabilir.</summary>
     public TId Id { get; init; }
 
-    /// <summary>
-    /// Varlığın oluşturulduğu zaman damgasını alır.
-    /// </summary>
+    /// <summary>Varlığın oluşturulma zamanı (UTC).</summary>
     public DateTime CreatedTime { get; protected set; }
 
-    /// <summary>
-    /// Varlığın son güncellendiği zaman damgasını alır. Varlık hiç güncellenmemişse null'dır.
-    /// </summary>
+    /// <summary>Varlığın son güncellenme zamanı (UTC). Hiç güncellenmemişse null olabilir.</summary>
     public DateTime? UpdateTime { get; protected set; }
 
-    /// <summary>
-    /// Varlığın silindi olarak işaretlendiği zaman damgasını alır. Silinmemişse null'dır.
-    /// </summary>
+    /// <summary>Varlığın silinme zamanı (UTC). Varlık silinmemişse (soft-delete) null'dır.</summary>
     public DateTime? DeletedTime { get; protected set; }
 
-    /// <summary>
-    /// Varlığın mevcut durumunu alır.
-    /// </summary>
+    /// <summary>Varlığın mevcut durumu (örn: Aktif, Pasif, Silinmiş).</summary>
     public EntityStatus Status { get; protected set; }
 
-    [NotMapped]
+    #endregion
+
+    #region Domain Events
+
+    [NotMapped] // Bu alanın veritabanı şemasına dahil edilmemesini sağlar.
     private readonly List<IDomainEvent> _domainEvents = new();
 
     /// <summary>
-    /// Bu varlık tarafından tetiklenen domain event'lerinin salt okunur bir koleksiyonunu alır.
-    /// Bu event'ler, varlığın yaşam döngüsündeki önemli değişiklikleri temsil eder.
+    /// Bu varlık tarafından tetiklenen domain olaylarının salt okunur bir koleksiyonunu alır.
+    /// Bu olaylar, varlığın yaşam döngüsündeki önemli değişiklikleri temsil eder.
     /// </summary>
     [NotMapped]
     public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
 
     /// <summary>
-    /// <see cref="Entity{TId}"/> sınıfının yeni bir örneğini belirli bir kimlikle başlatır.
+    /// Varlığın iç olay listesine bir domain olayı ekler.
     /// </summary>
-    /// <param name="id">Varlık için benzersiz kimlik.</param>
-    protected Entity(TId id)
-    {
-        Id = id;
-    }
+    /// <param name="domainEvent">Eklenecek domain olayı.</param>
+    public void AddDomainEvent(IDomainEvent domainEvent) => _domainEvents.Add(domainEvent);
 
     /// <summary>
-    /// <see cref="Entity{TId}"/> sınıfının yeni bir örneğini başlatır.
-    /// Bu parametresiz kurucu metot, Entity Framework Core gibi ORM'ler için gereklidir.
+    /// Varlıktaki tüm domain olaylarını temizler.
+    /// Bu metot, olaylar dağıtılıp işlendikten sonra çağrılmalıdır.
     /// </summary>
-    protected Entity() { }
+    public void ClearDomainEvents() => _domainEvents.Clear();
+
+    #endregion
+
+    #region Methods
 
     /// <summary>
     /// Varlığın oluşturulma zaman damgasını ayarlar.
@@ -81,16 +99,14 @@ public abstract class Entity<TId> : IEntity<TId>, IEquatable<Entity<TId>> where 
     public virtual void SetDeletedTime(DateTime deletedTime) => DeletedTime = deletedTime;
 
     /// <summary>
-    /// Varlığın iç olay listesine bir domain event ekler.
+    /// Varlığın geçici (transient) olup olmadığını, yani henüz bir kimliğe sahip olup olmadığını kontrol eder.
     /// </summary>
-    /// <param name="domainEvent">Eklenecek domain event.</param>
-    public void AddDomainEvent(IDomainEvent domainEvent) => _domainEvents.Add(domainEvent);
+    /// <returns>Kimlik varsayılan değere sahipse true, aksi takdirde false.</returns>
+    private bool IsTransient() => Id.Equals(default(TId));
 
-    /// <summary>
-    /// Varlıktaki tüm domain event'leri temizler.
-    /// Bu metot, olaylar dağıtılıp işlendikten sonra çağrılmalıdır.
-    /// </summary>
-    public void ClearDomainEvents() => _domainEvents.Clear();
+    #endregion
+
+    #region Equality & Operators
 
     /// <summary>
     /// Belirtilen nesnenin mevcut varlığa eşit olup olmadığını belirler.
@@ -111,14 +127,15 @@ public abstract class Entity<TId> : IEntity<TId>, IEquatable<Entity<TId>> where 
     {
         if (other is null) return false;
         if (ReferenceEquals(this, other)) return true;
+
+        // Geçici (henüz veritabanına kaydedilmemiş) varlıklar veya farklı tiplerdeki varlıklar Id'leri üzerinden karşılaştırılamaz.
         if (IsTransient() || other.IsTransient() || GetType() != other.GetType())
         {
             return false;
         }
+
         return Id.Equals(other.Id);
     }
-
-    private bool IsTransient() => Id.Equals(default(TId));
 
     /// <summary>
     /// Varsayılan karma işlevi olarak hizmet eder. Karma kod, varlığın kimliğine dayanır.
@@ -126,7 +143,8 @@ public abstract class Entity<TId> : IEntity<TId>, IEquatable<Entity<TId>> where 
     /// <returns>Mevcut varlık için bir karma kod.</returns>
     public override int GetHashCode()
     {
-        return Id.GetHashCode() * 31;
+        // Varlık transient değilse kimliğinin hash kodunu kullan.
+        return IsTransient() ? base.GetHashCode() : Id.GetHashCode() * 31;
     }
 
     /// <summary>
@@ -137,11 +155,8 @@ public abstract class Entity<TId> : IEntity<TId>, IEquatable<Entity<TId>> where 
     /// <returns>Varlıklar eşitse true; aksi takdirde false.</returns>
     public static bool operator ==(Entity<TId>? left, Entity<TId>? right)
     {
-        if (left is null)
-        {
-            return right is null;
-        }
-        return left.Equals(right);
+        // Eğer her ikisi de null ise veya sadece soldaki null ise, sol'un Equals metodu doğru sonucu verir.
+        return left is null ? right is null : left.Equals(right);
     }
 
     /// <summary>
@@ -154,4 +169,6 @@ public abstract class Entity<TId> : IEntity<TId>, IEquatable<Entity<TId>> where 
     {
         return !(left == right);
     }
+
+    #endregion
 }

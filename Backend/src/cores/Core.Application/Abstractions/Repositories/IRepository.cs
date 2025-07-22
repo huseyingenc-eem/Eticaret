@@ -1,266 +1,110 @@
-﻿using Core.Domain.Entities;
-using System.Linq.Expressions;
-using Core.Application.Abstractions.Paging;
+﻿using Core.Application.Abstractions.Paging;
+using Core.Application.Abstractions.Specifications;
+using Core.Domain.Entities;
 
 namespace Core.Application.Abstractions.Repositories;
 
 /// <summary>
-/// Veri erişim katmanı için temel kontratları tanımlayan genel (generic) repository arayüzü.
-/// Bu arayüz, CRUD (Create, Read, Update, Delete) operasyonlarını ve yaygın sorgulama desenlerini içerir.
-/// Tamamen asenkron bir yapıya sahiptir.
+/// Tüm varlık türleri için temel veri erişim operasyonlarını tanımlayan jenerik repository arayüzü.
+/// Bu arayüz, Clean Architecture'da Application ve Infrastructure katmanları arasında bir soyutlama katmanı görevi görür.
+/// Sorgu mantığı, yeniden kullanılabilir ve test edilebilir bir yapı sunan Specification deseni ile yönetilir.
 /// </summary>
-/// <typeparam name="TEntity">Repository'nin yöneteceği varlık (entity) tipi.</typeparam>
-/// <typeparam name="TId">Varlığın birincil anahtar (primary key) tipi.</typeparam>
-public interface IRepository<TEntity, TId> where TEntity : Entity<TId>
+/// <typeparam name="TEntity">Repository'nin yöneteceği, IEntity arayüzünü uygulayan varlık türü.</typeparam>
+/// <typeparam name="TId">Varlığın kimlik (ID) türü (Örn: Guid, int).</typeparam>
+public interface IRepository<TEntity, TId>
+    where TEntity : class, IEntity<TId>
+    where TId : IEquatable<TId>
 {
-    #region Yazma (Command) Operasyonları
+    #region Yazma Operasyonları (Write Operations)
 
     /// <summary>
-    /// Veritabanına yeni bir varlık (entity) asenkron olarak ekler.
-    /// Değişikliklerin kalıcı olması için <c>IUnitOfWork.SaveChangesAsync()</c> çağrılmalıdır.
-    /// <example>
-    /// <code>
-    /// var newProduct = new Product { Name = "Yeni Ürün", Price = 150 };
-    /// await _productRepository.AddAsync(newProduct);
-    /// await _unitOfWork.SaveChangesAsync(); // Değişikliği veritabanına kaydeder.
-    /// </code>
-    /// </example>
+    /// Yeni bir varlığı veritabanına asenkron olarak eklenmek üzere işaretler.
+    /// Değişiklikler, UnitOfWork kapsamında SaveChangesAsync çağrıldığında veritabanına yansıtılır.
     /// </summary>
     /// <param name="entity">Eklenecek varlık.</param>
-    /// <param name="cancellationToken">İşlemin iptal edilmesini sağlayan token.</param>
-    /// <returns>Eklenen varlığın takibini sağlayan bir Task.</returns>
+    /// <param name="cancellationToken">Operasyonun iptal edilmesini sağlayan token.</param>
+    /// <returns>Eklenen varlığın kendisini döndüren bir Task.</returns>
     Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Veritabanına birden fazla varlığı asenkron olarak ekler.
-    /// <example>
-    /// <code>
-    /// var products = new List&lt;Product&gt;
-    /// {
-    ///     new Product { Name = "Ürün A", Price = 100 },
-    ///     new Product { Name = "Ürün B", Price = 200 }
-    /// };
-    /// await _productRepository.AddRangeAsync(products);
-    /// await _unitOfWork.SaveChangesAsync();
-    /// </code>
-    /// </example>
+    /// Birden fazla yeni varlığı toplu olarak veritabanına asenkron olarak eklenmek üzere işaretler.
+    /// Bu, tek tek eklemekten daha performanslıdır.
     /// </summary>
-    /// <param name="entities">Eklenecek varlık koleksiyonu.</param>
-    /// <param name="cancellationToken">İşlemin iptal edilmesini sağlayan token.</param>
-    /// <returns>Eklenen varlıkların takibini sağlayan bir Task.</returns>
-    Task<IEnumerable<TEntity>> AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
+    /// <param name="entities">Eklenecek varlıkların listesi.</param>
+    /// <param name="cancellationToken">Operasyonun iptal edilmesini sağlayan token.</param>
+    Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Mevcut bir varlığı asenkron olarak günceller.
-    /// <example>
-    /// <code>
-    /// var productToUpdate = await _productRepository.GetByIdAsync(1);
-    /// if (productToUpdate != null)
-    /// {
-    ///     productToUpdate.Price = 250;
-    ///     await _productRepository.UpdateAsync(productToUpdate);
-    ///     await _unitOfWork.SaveChangesAsync();
-    /// }
-    /// </code>
-    /// </example>
+    /// Mevcut bir varlığın durumunu güncellenmiş olarak asenkron bir şekilde işaretler.
     /// </summary>
     /// <param name="entity">Güncellenecek varlık.</param>
-    /// <param name="cancellationToken">İşlemin iptal edilmesini sağlayan token.</param>
-    /// <returns>Güncellenen varlığın takibini sağlayan bir Task.</returns>
-    Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
+    /// <param name="cancellationToken">Operasyonun iptal edilmesini sağlayan token.</param>
+    Task UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Mevcut bir dizi varlığı asenkron olarak günceller.
-    /// </summary>
-    /// <param name="entities">Güncellenecek varlık koleksiyonu.</param>
-    /// <param name="cancellationToken">İşlemin iptal edilmesini sağlayan token.</param>
-    /// <returns>Güncellenen varlıkların takibini sağlayan bir Task.</returns>
-    Task<IEnumerable<TEntity>> UpdateRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Bir varlığı asenkron olarak siler.
+    /// Mevcut bir varlığı silinmiş olarak asenkron bir şekilde işaretler.
     /// </summary>
     /// <param name="entity">Silinecek varlık.</param>
-    /// <param name="permanent">True ise kalıcı (fiziksel) silme, false ise yumuşak (soft) silme yapar.</param>
-    /// <param name="cancellationToken">İşlemin iptal edilmesini sağlayan token.</param>
-    /// <returns>Silinen varlığın takibini sağlayan bir Task.</returns>
-    Task<TEntity> DeleteAsync(TEntity entity, bool permanent = false, CancellationToken cancellationToken = default);
+    /// <param name="permanent">
+    /// Varlığın kalıcı olarak mı (hard delete) yoksa geçici olarak mı (soft delete) silineceğini belirtir.
+    /// False ise ve varlık ISoftDeletable arayüzünü uyguluyorsa, DeletedTime alanı doldurulur.
+    /// </param>
+    /// <param name="cancellationToken">Operasyonun iptal edilmesini sağlayan token.</param>
+    Task DeleteAsync(TEntity entity, bool permanent = false, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Belirtilen ID'ye sahip varlığı asenkron olarak siler.
-    /// <example>
-    /// <code>
-    /// // Yumuşak silme (önerilen):
-    /// await _productRepository.DeleteByIdAsync(1, permanent: false);
-    /// 
-    /// // Kalıcı silme (dikkatli kullanılmalı):
-    /// await _productRepository.DeleteByIdAsync(2, permanent: true);
-    /// 
-    /// await _unitOfWork.SaveChangesAsync();
-    /// </code>
-    /// </example>
+    /// Belirtilen kimliğe (ID) sahip varlığı bularak asenkron olarak siler.
     /// </summary>
-    /// <param name="id">Silinecek varlığın ID'si.</param>
-    /// <param name="permanent">True ise kalıcı (fiziksel) silme, false ise yumuşak (soft) silme yapar.</param>
-    /// <param name="cancellationToken">İşlemin iptal edilmesini sağlayan token.</param>
-    /// <returns>Silinen varlığı veya bulunamazsa null döndüren bir Task.</returns>
-    Task<TEntity?> DeleteByIdAsync(TId id, bool permanent = false, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Verilen bir dizi varlığı asenkron olarak siler.
-    /// <example>
-    /// <code>
-    /// var productsToDelete = await _productRepository.GetAllAsync(p => p.Stock == 0);
-    /// if (productsToDelete.Any())
-    /// {
-    ///     await _productRepository.DeleteRangeAsync(productsToDelete, permanent: false);
-    ///     await _unitOfWork.SaveChangesAsync();
-    /// }
-    /// </code>
-    /// </example>
-    /// </summary>
-    /// <param name="entities">Silinecek varlık koleksiyonu.</param>
-    /// <param name="permanent">True ise kalıcı (fiziksel) silme, false ise yumuşak (soft) silme yapar.</param>
-    /// <param name="cancellationToken">İşlemin iptal edilmesini sağlayan token.</param>
-    /// <returns>Silinen varlıkların takibini sağlayan bir Task.</returns>
-    Task<IEnumerable<TEntity>> DeleteRangeAsync(IEnumerable<TEntity> entities, bool permanent = false, CancellationToken cancellationToken = default);
+    /// <param name="id">Silinecek varlığın kimliği.</param>
+    /// <param name="permanent">Kalıcı (hard delete) veya geçici (soft delete) silme tercihi.</param>
+    /// <param name="cancellationToken">Operasyonun iptal edilmesini sağlayan token.</param>
+    Task DeleteByIdAsync(TId id, bool permanent = false, CancellationToken cancellationToken = default);
 
     #endregion
 
-    #region Okuma (Query) Operasyonları
+    #region Okuma Operasyonları (Read Operations)
 
     /// <summary>
-    /// Belirtilen ID'ye sahip varlığı, ilişkili alt varlıklarıyla (includes) birlikte asenkron olarak getirir.
-    /// <example>
-    /// İlişkili verilerle birlikte tek bir kayıt getirme:
-    /// <code>
-    /// // Ürünü, Kategori ve Marka bilgileriyle birlikte getir.
-    /// var product = await _productRepository.GetByIdAsync(
-    ///     productId,
-    ///     p => p.Category,
-    ///     p => p.Brand
-    /// );
-    /// </code>
-    /// </example>
+    /// Verilen spesifikasyona uyan tek bir varlığı asenkron olarak getirir.
+    /// Birden fazla sonuç bulunursa ilkini, hiç bulunmazsa null döner.
     /// </summary>
-    /// <param name="id">Getirilecek varlığın ID'si.</param>
-    /// <param name="includes">Sorguya dahil edilecek ilişkili varlıkları belirten lambda ifadeleri (örn: x => x.Category).</param>
-    /// <returns>Bulunan varlığı veya null döndüren bir Task.</returns>
-    Task<TEntity?> GetByIdAsync(TId id, params Expression<Func<TEntity, object>>[] includes);
+    /// <param name="spec">Filtre, sıralama ve include bilgilerini içeren spesifikasyon.</param>
+    /// <param name="cancellationToken">Operasyonun iptal edilmesini sağlayan token.</param>
+    /// <returns>Bulunan varlık veya null.</returns>
+    Task<TEntity?> GetAsync(ISpecification<TEntity> spec, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Belirtilen filtre koşuluna uyan ilk varlığı, ilişkili alt varlıklarıyla (includes) birlikte asenkron olarak getirir.
-    /// <example>
-    /// <code>
-    /// // SKU koduna göre ürünü bulma
-    /// var product = await _productRepository.GetAsync(
-    ///     p => p.Sku == "ABC-123",
-    ///     p => p.Category
-    /// );
-    /// </code>
-    /// </example>
+    /// Verilen spesifikasyona uyan tüm varlıkların listesini asenkron olarak getirir.
     /// </summary>
-    /// <param name="filter">Filtreleme koşulu.</param>
-    /// <param name="includes">Sorguya dahil edilecek ilişkili varlıkları belirten lambda ifadeleri.</param>
-    /// <returns>Koşula uyan ilk varlığı veya null döndüren bir Task.</returns>
-    Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> filter, params Expression<Func<TEntity, object>>[] includes);
+    /// <param name="spec">Filtre, sıralama ve include bilgilerini içeren spesifikasyon.</param>
+    /// <param name="cancellationToken">Operasyonun iptal edilmesini sağlayan token.</param>
+    /// <returns>Sonuçları içeren bir liste. Sonuç yoksa boş liste döner.</returns>
+    Task<List<TEntity>> GetListAsync(ISpecification<TEntity> spec, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Belirtilen filtre koşuluna uyan tüm varlıkları, ilişkili alt varlıklarıyla (includes) birlikte bir liste halinde asenkron olarak getirir.
-    /// <example>
-    /// <code>
-    /// // Stoğu 10'dan az olan tüm aktif ürünleri getir.
-    /// var lowStockProducts = await _productRepository.GetAllAsync(
-    ///     p => p.IsActive &amp;&amp; p.Stock &lt; 10,
-    ///     p => p.Brand
-    /// );
-    /// </code>
-    /// </example>
+    /// Verilen spesifikasyona uyan varlıkları sayfalanmış bir yapıda asenkron olarak getirir.
     /// </summary>
-    /// <param name="filter">Filtreleme koşulu (opsiyonel).</param>
-    /// <param name="includes">Sorguya dahil edilecek ilişkili varlıkları belirten lambda ifadeleri.</param>
-    /// <returns>Varlıkların listesini içeren bir Task.</returns>
-    Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>>? filter = null, params Expression<Func<TEntity, object>>[] includes);
+    /// <param name="spec">Sayfalama dahil filtre, sıralama ve include bilgilerini içeren spesifikasyon.</param>
+    /// <param name="cancellationToken">Operasyonun iptal edilmesini sağlayan token.</param>
+    /// <returns>Sayfalama bilgilerini ve sonuç listesini içeren bir IPaginate nesnesi.</returns>
+    Task<IPaginate<TEntity>> GetPaginatedListAsync(ISpecification<TEntity> spec, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Verileri filtreleyerek, sıralayarak, sayfalayarak ve ilişkili alt varlıklarını da dahil ederek asenkron olarak getirir.
-    /// <example>
-    /// Filtreli, sıralı ve sayfalı veri listesi getirme:
-    /// <code>
-    /// var paginatedResult = await _productRepository.GetListAsync(
-    ///     filter: p => p.Stock > 0 &amp;&amp; p.IsActive,
-    ///     orderBy: q => q.OrderByDescending(p => p.Price),
-    ///     index: 0,
-    ///     size: 10,
-    ///     includes: p => p.Category
-    /// );
-    /// 
-    /// // Dönen sonuçlar kullanılabilir:
-    /// foreach(var product in paginatedResult.Items)
-    /// {
-    ///     Console.WriteLine(product.Name);
-    /// }
-    /// Console.WriteLine($"Toplam Sayfa: {paginatedResult.Pages}");
-    /// </code>
-    /// </example>
+    /// Verilen spesifikasyona uyan varlık sayısını asenkron olarak sayar.
     /// </summary>
-    /// <param name="filter">Filtreleme koşulu (opsiyonel).</param>
-    /// <param name="orderBy">Sıralama koşulu (opsiyonel).</param>
-    /// <param name="index">Getirilecek sayfanın indeksi (0'dan başlar).</param>
-    /// <param name="size">Bir sayfadaki kayıt sayısı.</param>
-    /// <param name="includes">Sorguya dahil edilecek ilişkili varlıkları belirten lambda ifadeleri.</param>
-    /// <returns>Sayfalanmış veri yapısını (`IPaginate`) içeren bir Task.</returns>
-    Task<IPaginate<TEntity>> GetListAsync(Expression<Func<TEntity, bool>>? filter = null, Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null, int index = 0, int size = 20, params Expression<Func<TEntity, object>>[] includes);
+    /// <param name="spec">Filtre koşullarını içeren spesifikasyon (isteğe bağlı).</param>
+    /// <param name="cancellationToken">Operasyonun iptal edilmesini sağlayan token.</param>
+    /// <returns>Toplam kayıt sayısı.</returns>
+    Task<int> CountAsync(ISpecification<TEntity>? spec = null, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Belirtilen koşula uyan en az bir varlık olup olmadığını asenkron olarak kontrol eder.
-    /// <example>
-    /// <code>
-    /// bool anyCheapProducts = await _productRepository.AnyAsync(p => p.Price &lt; 10);
-    /// </code>
-    /// </example>
+    /// Verilen spesifikasyona uyan en az bir varlık olup olmadığını asenkron olarak kontrol eder.
+    /// Bu, CountAsync() > 0'dan daha performanslıdır.
     /// </summary>
-    /// <param name="filter">Filtreleme koşulu (opsiyonel).</param>
-    /// <param name="cancellationToken">İşlemin iptal edilmesini sağlayan token.</param>
-    /// <returns>Varlık varsa true, yoksa false döndüren bir Task.</returns>
-    Task<bool> AnyAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Belirtilen koşula uyan varlıkların toplam sayısını asenkron olarak döndürür.
-    /// <example>
-    /// <code>
-    /// // Stokta olmayan ürünlerin sayısı
-    /// int count = await _productRepository.CountAsync(p => p.Stock == 0);
-    /// </code>
-    /// </example>
-    /// </summary>
-    /// <param name="filter">Filtreleme koşulu (opsiyonel).</param>
-    /// <param name="cancellationToken">İşlemin iptal edilmesini sağlayan token.</param>
-    /// <returns>Toplam kayıt sayısını içeren bir Task.</returns>
-    Task<int> CountAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken cancellationToken = default);
-
-    #endregion
-
-    #region Gelişmiş Sorgulama
-
-    /// <summary>
-    /// Standart metotların yetersiz kaldığı karmaşık ve özel sorgu senaryoları için
-    /// veritabanı sorgu nesnesini (`IQueryable`) doğrudan erişime açar.
-    /// Not: Bu metot, soyutlama katmanını (abstraction layer) delebileceği için dikkatli ve
-    /// sadece zorunlu durumlarda kullanılmalıdır.
-    /// <example>
-    /// <code>
-    /// // DİKKAT: Bu kullanım, Application katmanını Infrastructure detaylarına (EF Core)
-    /// // bağımlı hale getirebilir ve sadece özel durumlarda düşünülmelidir.
-    /// var complexQuery = _repository.Query()
-    ///     .Where(p => p.Name.StartsWith("A"))
-    ///     .GroupBy(p => p.CategoryId)
-    ///     .Select(g => new { CategoryId = g.Key, Count = g.Count() });
-    /// </code>
-    /// </example>
-    /// </summary>
-    /// <returns>Sorgulanabilir bir `IQueryable&lt;TEntity&gt;` nesnesi.</returns>
-    IQueryable<TEntity> Query();
+    /// <param name="spec">Filtre koşullarını içeren spesifikasyon (isteğe bağlı).</param>
+    /// <param name="cancellationToken">Operasyonun iptal edilmesini sağlayan token.</param>
+    /// <returns>Eşleşen kayıt varsa true, yoksa false.</returns>
+    Task<bool> AnyAsync(ISpecification<TEntity>? spec = null, CancellationToken cancellationToken = default);
 
     #endregion
 }

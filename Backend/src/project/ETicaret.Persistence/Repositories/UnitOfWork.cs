@@ -1,276 +1,127 @@
-﻿using ETicaret.Persistence.Contexts;
-using Core.Application.Abstractions.Repositories;
+﻿using Core.Application.Abstractions.Repositories;
+using Core.Domain.Entities;
+using Core.Infrastructure.Persistence.Repositories;
+using ETicaret.Persistence.Contexts;
+using Microsoft.EntityFrameworkCore.Storage;
+using System.Collections;
 
 namespace ETicaret.Persistence.Repositories;
 
 /// <summary>
-/// Unit of Work deseninin somut implementasyonu.
-/// DbContext'i ve repository örneklerini yönetir,
-/// değişikliklerin tek bir transaction'da kaydedilmesini sağlar.
-/// Hem IDisposable hem de IAsyncDisposable implemente eder.
+/// Unit of Work deseninin modern ve esnek implementasyonu.
+/// DbContext'i yönetir, repository'leri dinamik olarak sağlar ve transaction bütünlüğünü korur.
 /// </summary>
-public class UnitOfWork : IUnitOfWork, IDisposable
+public sealed class UnitOfWork : IUnitOfWork
 {
     private readonly BaseDBContexts _context;
-    private bool disposed = false;
+    private Hashtable _repositories;
+    private IDbContextTransaction? _transaction;
+    private bool _disposed;
 
-    #region Repository Dependencies
-    private readonly IAddressRepository _addressRepository;
-    private readonly ICategoryRepository _categoryRepository;
-    private readonly IOperationClaimRepository _operationClaimRepository;
-    private readonly IOrderRepository _orderRepository;
-    private readonly IOrderItemRepository _orderItemRepository;
-    private readonly IProductRepository _productRepository;
-    private readonly ISupplierRepository _supplierRepository;
-    private readonly IProductImageRepository _productImageRepository;
-    private readonly IProductVariantRepository _productVariantRepository;
-    private readonly IReviewRepository _reviewRepository;
-    private readonly IShoppingCartRepository _shoppingCartRepository;
-    private readonly ICardItemRepository _cardItemRepository;
-    private readonly IWishlistRepository _wishlistRepository;
-    private readonly IWishlistItemRepository _wishlistItemRepository;
-    private readonly IPaymentRepository _paymentRepository;
-    private readonly IShipmentRepository _shipmentRepository;
-    private readonly IShipmentItemRepository _shipmentItemRepository;
-    private readonly IDiscountRepository _discountRepository;
-    private readonly IDiscountUsageRepository _discountUsageRepository;
-    #endregion
-
-    /// <summary>
-    /// UnitOfWork sınıfının bir örneğini başlatır.
-    /// </summary>
-    /// <param name="context">Kullanılacak veritabanı context'i.</param>
-    /// <param name="addressRepository">Adres repository'si.</param>
-    /// <param name="categoryRepository">Kategori repository'si.</param>
-    /// <param name="operationClaimRepository">Operasyon yetki repository'si.</param>
-    /// <param name="orderRepository">Sipariş repository'si.</param>
-    /// <param name="orderItemRepository">Sipariş kalem repository'si.</param>
-    /// <param name="productRepository">Ürün repository'si.</param>
-    /// <param name="supplierRepository">Tedarikçi repository'si.</param>
-    /// <param name="productImageRepository">Ürün resim repository'si.</param>
-    /// <param name="productVariantRepository">Ürün varyant repository'si.</param>
-    /// <param name="reviewRepository">Değerlendirme repository'si.</param>
-    /// <param name="shoppingCartRepository">Sepet repository'si.</param>
-    /// <param name="cardItemRepository">Sepet kalem repository'si.</param>
-    /// <param name="wishlistRepository">İstek listesi repository'si.</param>
-    /// <param name="wishlistItemRepository">İstek listesi kalem repository'si.</param>
-    /// <param name="paymentRepository">Ödeme repository'si.</param>
-    /// <param name="shipmentRepository">Kargo repository'si.</param>
-    /// <param name="shipmentItemRepository">Kargo kalem repository'si.</param>
-    /// <param name="discountRepository">İndirim repository'si.</param>
-    /// <param name="discountUsageRepository">İndirim kullanım repository'si.</param>
-    /// <exception cref="ArgumentNullException">Herhangi bir parametre null ise fırlatılır.</exception>
-    public UnitOfWork(
-        BaseDBContexts context,
-        IAddressRepository addressRepository,
-        ICategoryRepository categoryRepository,
-        IOperationClaimRepository operationClaimRepository,
-        IOrderRepository orderRepository,
-        IOrderItemRepository orderItemRepository,
-        IProductRepository productRepository,
-        ISupplierRepository supplierRepository,
-        IProductImageRepository productImageRepository,
-        IProductVariantRepository productVariantRepository,
-        IReviewRepository reviewRepository,
-        IShoppingCartRepository shoppingCartRepository,
-        ICardItemRepository cardItemRepository,
-        IWishlistRepository wishlistRepository,
-        IWishlistItemRepository wishlistItemRepository,
-        IPaymentRepository paymentRepository,
-        IShipmentRepository shipmentRepository,
-        IShipmentItemRepository shipmentItemRepository,
-        IDiscountRepository discountRepository,
-        IDiscountUsageRepository discountUsageRepository)
+    public UnitOfWork(BaseDBContexts context)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
-        _addressRepository = addressRepository ?? throw new ArgumentNullException(nameof(addressRepository));
-        _categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
-        _operationClaimRepository = operationClaimRepository ?? throw new ArgumentNullException(nameof(operationClaimRepository));
-        _orderRepository = orderRepository ?? throw new ArgumentNullException(nameof(orderRepository));
-        _orderItemRepository = orderItemRepository ?? throw new ArgumentNullException(nameof(orderItemRepository));
-        _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
-        _supplierRepository = supplierRepository ?? throw new ArgumentNullException(nameof(supplierRepository));
-        _productImageRepository = productImageRepository ?? throw new ArgumentNullException(nameof(productImageRepository));
-        _productVariantRepository = productVariantRepository ?? throw new ArgumentNullException(nameof(productVariantRepository));
-        _reviewRepository = reviewRepository ?? throw new ArgumentNullException(nameof(reviewRepository));
-        _shoppingCartRepository = shoppingCartRepository ?? throw new ArgumentNullException(nameof(shoppingCartRepository));
-        _cardItemRepository = cardItemRepository ?? throw new ArgumentNullException(nameof(cardItemRepository));
-        _wishlistRepository = wishlistRepository ?? throw new ArgumentNullException(nameof(wishlistRepository));
-        _wishlistItemRepository = wishlistItemRepository ?? throw new ArgumentNullException(nameof(wishlistItemRepository));
-        _paymentRepository = paymentRepository ?? throw new ArgumentNullException(nameof(paymentRepository));
-        _shipmentRepository = shipmentRepository ?? throw new ArgumentNullException(nameof(shipmentRepository));
-        _shipmentItemRepository = shipmentItemRepository ?? throw new ArgumentNullException(nameof(shipmentItemRepository));
-        _discountRepository = discountRepository ?? throw new ArgumentNullException(nameof(discountRepository));
-        _discountUsageRepository = discountUsageRepository ?? throw new ArgumentNullException(nameof(discountUsageRepository));
     }
 
-    #region Repository Properties
-    #region Temel Varlık Repository'leri
-    /// <summary>
-    /// Adres işlemleri için repository'ye erişim sağlar.
-    /// </summary>
-    public IAddressRepository AddressRepository => _addressRepository;
+    #region Repository Erişimi (Dinamik)
 
     /// <summary>
-    /// Kategori işlemleri için repository'ye erişim sağlar.
+    /// Belirtilen varlık tipi için repository'nin bir örneğini dinamik olarak döndürür.
+    /// Eğer istenen repository daha önce oluşturulduysa, mevcut örnek döndürülür (cache).
+    /// Bu, constructor kalabalığını tamamen ortadan kaldırır.
     /// </summary>
-    public ICategoryRepository CategoryRepository => _categoryRepository;
+    /// <typeparam name="TEntity">Repository'si istenen varlık tipi.</typeparam>
+    /// <typeparam name="TId">Varlığın ID tipi.</typeparam>
+    /// <returns>IRepository arayüzünün bir örneği.</returns>
+    public IRepository<TEntity, TId> GetRepository<TEntity, TId>()
+        where TEntity : Entity<TId>
+        where TId : IEquatable<TId>
+    {
+        _repositories ??= new Hashtable();
 
-    /// <summary>
-    /// Ürün işlemleri için repository'ye erişim sağlar.
-    /// </summary>
-    public IProductRepository ProductRepository => _productRepository;
+        var type = typeof(TEntity).Name;
 
-    /// <summary>
-    /// Tedarikçi işlemleri için repository'ye erişim sağlar.
-    /// </summary>
-    public ISupplierRepository SupplierRepository => _supplierRepository;
+        if (!_repositories.ContainsKey(type))
+        {
+            var repositoryInstance = new EfRepositoryBase<TEntity, TId, BaseDBContexts>(_context);
+            _repositories.Add(type, repositoryInstance);
+        }
+
+        return (IRepository<TEntity, TId>)_repositories[type]!;
+    }
+
     #endregion
 
-    #region Sipariş ve Ödeme Repository'leri
-    /// <summary>
-    /// Sipariş işlemleri için repository'ye erişim sağlar.
-    /// </summary>
-    public IOrderRepository OrderRepository => _orderRepository;
+    #region Transaction Yönetimi
 
-    /// <summary>
-    /// Sipariş kalemleri için repository'ye erişim sağlar.
-    /// </summary>
-    public IOrderItemRepository OrderItemRepository => _orderItemRepository;
+    public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        _transaction ??= await _context.Database.BeginTransactionAsync(cancellationToken);
+    }
 
-    /// <summary>
-    /// Ödeme işlemleri için repository'ye erişim sağlar.
-    /// </summary>
-    public IPaymentRepository PaymentRepository => _paymentRepository;
+    public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _transaction?.CommitAsync(cancellationToken)!;
+        }
+        catch
+        {
+            await RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
+        finally
+        {
+            if (_transaction != null)
+            {
+                await _transaction.DisposeAsync();
+                _transaction = null;
+            }
+        }
+    }
+
+    public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _transaction?.RollbackAsync(cancellationToken)!;
+        }
+        finally
+        {
+            if (_transaction != null)
+            {
+                await _transaction.DisposeAsync();
+                _transaction = null;
+            }
+        }
+    }
+
     #endregion
 
-    #region Kullanıcı Etkileşim Repository'leri
-    /// <summary>
-    /// Ürün yorumları (değerlendirmeler) için repository'ye erişim sağlar.
-    /// </summary>
-    public IReviewRepository ReviewRepository => _reviewRepository;
+    #region Kaydetme İşlemi
 
-    /// <summary>
-    /// Alışveriş sepeti işlemleri için repository'ye erişim sağlar.
-    /// </summary>
-    public IShoppingCartRepository ShoppingCartRepository => _shoppingCartRepository;
-
-    /// <summary>
-    /// Alışveriş sepeti kalemleri için repository'ye erişim sağlar.
-    /// </summary>
-    public ICardItemRepository CardItemRepository => _cardItemRepository;
-
-    /// <summary>
-    /// İstek listesi işlemleri için repository'ye erişim sağlar.
-    /// </summary>
-    public IWishlistRepository WishlistRepository => _wishlistRepository;
-
-    /// <summary>
-    /// İstek listesi kalemleri için repository'ye erişim sağlar.
-    /// </summary>
-    public IWishlistItemRepository WishlistItemRepository => _wishlistItemRepository;
-    #endregion
-
-    #region Ürün Detay Repository'leri
-    /// <summary>
-    /// Ürün resimleri için repository'ye erişim sağlar.
-    /// </summary>
-    public IProductImageRepository ProductImageRepository => _productImageRepository;
-
-    /// <summary>
-    /// Ürün varyantları için repository'ye erişim sağlar.
-    /// </summary>
-    public IProductVariantRepository ProductVariantRepository => _productVariantRepository;
-    #endregion
-
-    #region Kargo ve İndirim Repository'leri
-    /// <summary>
-    /// Kargo/Gönderi işlemleri için repository'ye erişim sağlar.
-    /// </summary>
-    public IShipmentRepository ShipmentRepository => _shipmentRepository;
-
-    /// <summary>
-    /// Kargo/Gönderi kalemleri için repository'ye erişim sağlar.
-    /// </summary>
-    public IShipmentItemRepository ShipmentItemRepository => _shipmentItemRepository;
-
-    /// <summary>
-    /// İndirim işlemleri için repository'ye erişim sağlar.
-    /// </summary>
-    public IDiscountRepository DiscountRepository => _discountRepository;
-
-    /// <summary>
-    /// İndirim kullanımı takibi için repository'ye erişim sağlar.
-    /// </summary>
-    public IDiscountUsageRepository DiscountUsageRepository => _discountUsageRepository;
-    #endregion
-
-    #region Yetkilendirme Repository'leri
-    /// <summary>
-    /// Operasyon yetkileri (roller/izinler) için repository'ye erişim sağlar.
-    /// </summary>
-    public IOperationClaimRepository OperationClaimRepository => _operationClaimRepository;
-    #endregion
-    #endregion
-
-    /// <summary>
-    /// Değişiklikleri asenkron olarak kaydeder.
-    /// </summary>
     public async Task<int> CompleteAsync(CancellationToken cancellationToken = default)
     {
         return await _context.SaveChangesAsync(cancellationToken);
     }
 
-    // --- IDisposable Implementasyonu ---
+    #endregion
 
-    /// <summary>
-    /// UnitOfWork tarafından kullanılan kaynakları senkron olarak serbest bırakır.
-    /// </summary>
-    public void Dispose()
-    {
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
-    }
+    #region Dispose Metotları (Sadeleştirilmiş)
 
-    /// <summary>
-    /// Kaynakları serbest bırakan asıl metot (hem senkron hem asenkron için).
-    /// </summary>
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!this.disposed)
-        {
-            if (disposing)
-                _context.Dispose();
-            disposed = true;
-        }
-    }
-
-    // --- IAsyncDisposable Implementasyonu ---
-
-    /// <summary>
-    /// UnitOfWork tarafından kullanılan kaynakları asenkron olarak serbest bırakır.
-    /// </summary>
     public async ValueTask DisposeAsync()
     {
-        await DisposeAsyncCore();
-
-        Dispose(disposing: false); 
+        if (!_disposed)
+        {
+            if (_transaction != null)
+            {
+                await _transaction.DisposeAsync();
+            }
+            await _context.DisposeAsync();
+            _disposed = true;
+        }
         GC.SuppressFinalize(this);
     }
 
-    /// <summary>
-    /// Asenkron olarak kaynakları serbest bırakan asıl metot.
-    /// </summary>
-    protected virtual async ValueTask DisposeAsyncCore()
-    {
-        if (!this.disposed)
-        {
-            await _context.DisposeAsync();
-        }
-    }
-
-    ~UnitOfWork()
-    {
-        Dispose(disposing: false);
-    }
+    #endregion
 }

@@ -3,7 +3,7 @@ using System.Text;
 using System.Text.Json;
 using Core.Application.Abstractions.Services;
 
-namespace Core.Infrastructure.Services.Caching;
+namespace ETicaret.Application.Services.RedisServices;
 
 /// <summary>
 /// Redis gibi dağıtık bir önbellek mekanizması kullanarak veri ekleme, alma ve silme işlemlerini yöneten somut servis sınıfı.

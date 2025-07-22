@@ -7,7 +7,5 @@ namespace ETicaret.Persistence.Repositories;
 
 public sealed class OrderItemRepository : EfRepositoryBase<OrderItem, Guid , BaseDBContexts>, IOrderItemRepository
 {
-    public OrderItemRepository(BaseDBContexts context) : base(context)
-    {
-    }
+    public OrderItemRepository(BaseDBContexts context) : base(context){}
 }

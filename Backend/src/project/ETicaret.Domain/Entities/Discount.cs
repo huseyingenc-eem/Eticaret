@@ -17,8 +17,6 @@ public class Discount : Entity<Guid>
     public int? MaxUses { get; set; } // Toplam maksimum kullanım sayısı
     public int? MaxUsesPerUser { get; set; } // Kullanıcı başına maksimum kullanım
     public bool IsActive { get; set; } = true;
-    // public bool AppliesToProducts { get; set; } // DiscountProduct ile yönetilecek
-    // public bool AppliesToCategories { get; set; } // DiscountCategory ile yönetilecek
     public bool IsGlobal { get; set; } = false; // True ise tüm sepete uygulanır (MinPurchase dikkate alınarak)
 
     // Navigation Properties

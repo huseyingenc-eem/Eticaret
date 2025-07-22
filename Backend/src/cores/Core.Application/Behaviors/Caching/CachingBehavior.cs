@@ -1,16 +1,14 @@
 ﻿using Core.Application.Abstractions.Services;
-using Core.Application.Interfaces.Paging;
 using MediatR;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Core.Application.Behaviors.Caching;
 
 /// <summary>
-/// MediatR pipeline'ı için önbelleğe ekleme ve önbellekten okuma işlemlerini yöneten davranış (behavior).
+/// MediatR pipeline'ı için önbelleğe ekleme ve okuma işlemlerini yöneten davranış.
 /// ICachableRequest arayüzünü uygulayan isteklerin yanıtlarını önbelleğe alır veya önbellekten döner.
 /// </summary>
 /// <typeparam name="TRequest">İşlenecek MediatR isteği (ICachableRequest olmalı).</typeparam>
@@ -18,31 +16,27 @@ namespace Core.Application.Behaviors.Caching;
 public class CachingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>, ICachableRequest
 {
-    private readonly CacheSettings _cacheSettings;
-    
-    private readonly JsonSerializerOptions _jsonSerializerOptions;
-
-
     private readonly IDistributedCache _cache;
     private readonly ISerializerService _serializerService;
+    private readonly CacheSettings _cacheSettings;
 
+    private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
 
     /// <summary>
-    /// AddCachePipeline sınıfının bir örneğini oluşturur.
+    /// CachingBehavior sınıfının bir örneğini oluşturur.
     /// </summary>
     /// <param name="cache">Veri önbellekleme işlemleri için kullanılacak IDistributedCache servisi.</param>
     /// <param name="cacheSettingsOptions">Uygulama genelindeki önbellek ayarlarını içeren yapılandırma.</param>
-    /// <param name="serializerService">Nesneleri JSON'a çevirme ve JSON'dan nesneye dönüştürme işlemleri için servis.</param>
+    /// <param name="serializerService">Nesneleri serileştirme ve deserileştirme işlemleri için servis.</param>
     public CachingBehavior(IDistributedCache cache, IOptions<CacheSettings> cacheSettingsOptions, ISerializerService serializerService)
     {
         _cache = cache;
-        _cacheSettings = cacheSettingsOptions.Value;
         _serializerService = serializerService;
-        _jsonSerializerOptions = new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        };
+        _cacheSettings = cacheSettingsOptions.Value;
     }
 
     /// <summary>
@@ -51,10 +45,10 @@ public class CachingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
     /// <param name="request">İşlenecek MediatR isteği.</param>
     /// <param name="next">Pipeline'daki bir sonraki adıma geçişi sağlayan delege.</param>
     /// <param name="cancellationToken">İşlemin iptal edilmesini sağlayan token.</param>
-    /// <returns>İsteğin yanıtı.</returns>
+    /// <returns>İsteğin önbellekten veya handler'dan gelen yanıtı.</returns>
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
-        if (request.ByPassCache || string.IsNullOrWhiteSpace(request.CacheKey))
+        if (request.BypassCache || string.IsNullOrWhiteSpace(request.CacheKey))
         {
             return await next();
         }
@@ -89,7 +83,7 @@ public class CachingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
             AbsoluteExpirationRelativeToNow = absoluteExpiration > TimeSpan.Zero ? absoluteExpiration : null
         };
 
-        byte[] serializedData = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(response, _jsonSerializerOptions));
+        byte[] serializedData = _serializerService.SerializeToUtf8Bytes(response);
 
         await _cache.SetAsync(request.CacheKey!, serializedData, cacheEntryOptions, cancellationToken);
 
@@ -103,18 +97,19 @@ public class CachingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
 
     /// <summary>
     /// Verilen bir önbellek anahtarını, belirtilen grup anahtarı altındaki bir sete ekler.
+    /// Bu, belirli bir gruba ait tüm önbellek girişlerini tek seferde geçersiz kılmayı kolaylaştırır.
     /// </summary>
     private async Task AddCacheKeyToGroupAsync(string groupKey, string cacheKey, DistributedCacheEntryOptions itemEntryOptions, CancellationToken cancellationToken)
     {
         byte[]? cachedGroupBytes = await _cache.GetAsync(groupKey, cancellationToken);
 
         HashSet<string> cacheKeysInGroup = (cachedGroupBytes != null && cachedGroupBytes.Length > 0)
-            ? (JsonSerializer.Deserialize<HashSet<string>>(Encoding.UTF8.GetString(cachedGroupBytes), _jsonSerializerOptions) ?? new HashSet<string>())
+            ? (_serializerService.Deserialize<HashSet<string>>(cachedGroupBytes) ?? new HashSet<string>())
             : new HashSet<string>();
 
         if (cacheKeysInGroup.Add(cacheKey))
         {
-            byte[] newGroupBytes = JsonSerializer.SerializeToUtf8Bytes(cacheKeysInGroup, _jsonSerializerOptions);
+            byte[] newGroupBytes = _serializerService.SerializeToUtf8Bytes(cacheKeysInGroup);
             await _cache.SetAsync(groupKey, newGroupBytes, itemEntryOptions, cancellationToken);
         }
     }

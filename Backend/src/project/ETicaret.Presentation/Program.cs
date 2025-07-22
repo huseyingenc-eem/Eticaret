@@ -1,153 +1,209 @@
-using Core.Infrastructure.Logger.Serilog;
-using Core.Infrastructure.Logger;
+using Core.Application.Abstractions.Services;
+using Core.Infrastructure.Extensions;
 using ETicaret.Application;
+using ETicaret.Application.Services.Authorization;
 using ETicaret.Application.Services.JwtServices;
-using ETicaret.Domain.Entities;
 using ETicaret.Persistence;
-using ETicaret.Persistence.Contexts;
 using ETicaret.Presentation.Middlewares;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using ETicaret.Application.Services.RedisServices;
-using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
-using Core.Application.Abstractions.Services;
+using Serilog;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+var configuration = builder.Configuration;
 
-// Add services to the container.
-string ReactCors = "ReactCors";
+#region Servis Kayýtlarý (Service Registration)
+// =================================================================================================
+// Bu bölümde, uygulamanýn ihtiyaç duyduðu tüm servisler Dependency Injection (DI)
+// konteynerine kaydedilir.
+// =================================================================================================
+
+/// <summary>
+/// Serilog'u yapýlandýrýr ve .NET'in loglama sistemine entegre eder.
+/// Ayarlarý appsettings.json dosyasýndan okur ve loglarý konsola yazar.
+/// </summary>
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .WriteTo.Console()
+    .CreateLogger();
+
+builder.Host.UseSerilog(Log.Logger);
+
+/// <summary>
+/// appsettings.json dosyasýndaki "TokenOptions" bölümünü CustomTokenOptions sýnýfýna baðlar.
+/// Bu sayede IOptions<CustomTokenOptions> aracýlýðýyla ayarlara eriþilebilir.
+/// </summary>
+builder.Services.Configure<CustomTokenOptions>(configuration.GetSection("TokenOptions"));
+
+/// <summary>
+/// Farklý katmanlardaki servis kayýtlarýný merkezi olarak çaðýrýr.
+/// Bu yaklaþým, Program.cs dosyasýný temiz tutar ve katmanlarýn kendi baðýmlýlýklarýný
+/// yönetmesini saðlar.
+/// </summary>
+builder.Services
+    .AddApplicationServices(configuration)
+    .AddInfrastructureServices(configuration)
+    .AddPersistenceServices(configuration);
+
+/// <summary>
+/// Redis'i daðýtýk önbellekleme (distributed cache) saðlayýcýsý olarak yapýlandýrýr.
+/// Bu kayýt, IDistributedCache arayüzünün çözümlenmesini saðlar.
+/// </summary>
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("RedisConnectionString");
+    options.InstanceName = "ETicaret_"; // Cache anahtarlarýna karýþýklýðý önlemek için bir ön ek ekler.
+});
+
+/// <summary>
+/// ASP.NET Core'un temel servislerini kaydeder.
+/// </summary>
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+
+/// <summary>
+/// Cross-Origin Resource Sharing (CORS) politikasýný tanýmlar.
+/// Belirtilen origin'den (React uygulamasý) gelen isteklere izin verir.
+/// </summary>
+const string ReactCorsPolicy = "ReactCorsPolicy";
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(ReactCors, policy =>
+    options.AddPolicy(ReactCorsPolicy, policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
-        .AllowAnyMethod()
-        .AllowAnyHeader();
+        policy.WithOrigins("http://localhost:5173") // Frontend uygulamanýzýn adresi
+              .AllowAnyMethod()
+              .AllowAnyHeader();
     });
 });
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(opt => // Mevcut AddSwaggerGen'inizi bu þekilde düzenleyin
+/// <summary>
+/// JWT (JSON Web Token) tabanlý kimlik doðrulama (Authentication) mekanizmasýný yapýlandýrýr.
+/// </summary>
+var tokenOptions = configuration.GetSection("TokenOptions").Get<CustomTokenOptions>();
+builder.Services.AddAuthentication(options =>
 {
-    // Eðer zaten bir SwaggerDoc tanýmýnýz varsa, o kalabilir:
-    // opt.SwaggerDoc("v1", new OpenApiInfo { Title = "ETicaret API", Version = "v1" });
-
-    // JWT Authentication için Swagger yapýlandýrmasý
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidIssuer = tokenOptions.Issuer,
+        ValidAudience = tokenOptions.Audience[0],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenOptions.SecurityKey)),
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ClockSkew = TimeSpan.Zero
+    };
+});
+/// <summary>
+/// Swagger/OpenAPI yapýlandýrmasýný yapar. API dokümantasyonu oluþturur ve
+/// Swagger UI'da JWT token ile yetkilendirme desteði ekler.
+/// </summary>
+builder.Services.AddSwaggerGen(opt =>
+{
+    opt.SwaggerDoc("v1", new OpenApiInfo { Title = "ETicaret API", Version = "v1" });
     opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
-        Description = "Lütfen geçerli bir token girin (baþýna 'Bearer ' ekleyerek). Örnek: \"Bearer {token}\"",
+        Description = "Lütfen geçerli bir token girin (baþýna 'Bearer ' ekleyerek).",
         Name = "Authorization",
-        Type = SecuritySchemeType.Http, // HTTP tabanlý kimlik doðrulama
-        BearerFormat = "JWT",           // Token formatý JWT
-        Scheme = "Bearer"               // Kullanýlan þema "Bearer"
+        Type = SecuritySchemeType.Http,
+        BearerFormat = "JWT",
+        Scheme = "Bearer"
     });
     opt.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
             new OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer" // Yukarýdaki AddSecurityDefinition'daki "Bearer" adýyla eþleþmeli
-                }
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
             },
-            new string[]{} // Bu boþ dizi, global olarak tüm endpoint'lere uygulanmasýný saðlar (opsiyonel, sadece [Authorize] olanlara da uygulanabilir)
+            new string[]{}
         }
     });
+    // Not: AuthorizeCheckOperationFilter sýnýfýnýn projenizde tanýmlý olmasý gerekir.
+    // Bu filtre, Swagger UI'da kilit ikonu gibi görselleþtirmeler saðlar.
+    // opt.OperationFilter<AuthorizeCheckOperationFilter>(); 
 });
-builder.Services.AddApplicationServices(builder.Configuration);
 
-builder.Services.Configure<LoggingConfiguration>(builder.Configuration.GetSection("SerilogLogConfigurations"));
-builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<LoggingConfiguration>>().Value);
-
-builder.Services.AddScoped<ILoggerService, FileLogger>();
-builder.Services.AddScoped<IRedisService, RedisCasheService>();
-
-
-builder.Services.AddPersistenceServices(builder.Configuration);
-builder.Services.Configure<CustomTokenOptions>(builder.Configuration.GetSection("TokenOptions"));
-
-builder.Services.AddStackExchangeRedisCache(opt=>
-{
-    opt.Configuration = "localhost:6379";
-    opt.InstanceName = "ETICARET_CACHE";
-});
-builder.Services.AddIdentity<User, IdentityRole>(opt =>
-{
-    opt.User.RequireUniqueEmail = true;
-    opt.Password.RequireNonAlphanumeric = false;
-    opt.Password.RequiredLength = 6;
-}).AddEntityFrameworkStores<BaseDBContexts>();
-
-var tokenOption = builder.Configuration.GetSection("TokenOptions").Get<CustomTokenOptions>();
-builder.Services.AddAuthentication(opt =>
-{
-    opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, opt =>
-{
-    opt.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
-    {
-        ValidIssuer = tokenOption.Issuer,
-        ValidAudience = tokenOption.Audience[0],
-        ValidateIssuerSigningKey = true,
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ClockSkew = TimeSpan.Zero,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenOption.SecurityKey))
-    };
-});
+#endregion
 
 var app = builder.Build();
 
-// --- OperationClaim Seeding Baþlangýcý ---
-// Uygulama baþlarken OperationClaims tablosunu doldurmak için Seeder'ý çalýþtýr.
-// using ifadesi scope'un doðru þekilde dispose edilmesini saðlar.
-using (var scope = app.Services.CreateScope())
-{
-    var serviceProvider = scope.ServiceProvider;
-    try
-    {
-        var seeder = serviceProvider.GetRequiredService<ETicaret.Application.Services.Authorization.IOperationClaimSeeder>();
+#region Middleware Pipeline Yapýlandýrmasý
+// =================================================================================================
+// Bu bölümde, HTTP istek pipeline'ýna eklenecek olan middleware'ler sýrasýyla tanýmlanýr.
+// Middleware'lerin sýrasý çok önemlidir!
+// =================================================================================================
 
-        await seeder.SeedOperationClaimsAsync();
-
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"OperationClaim seeding sýrasýnda bir hata oluþtu: {ex.ToString()}");
-    }
-}
-
+// Geliþtirme ortamýnda Swagger ve Swagger UI'ý etkinleþtir.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// 1. Hata Yakalama Middleware'i: Pipeline'ýn en baþýna konur ki tüm hatalarý yakalayabilsin.
 app.UseMiddleware<HttpExceptionHandler>();
 
+// 2. HTTPS Yönlendirmesi: Gelen HTTP isteklerini otomatik olarak HTTPS'e yönlendirir.
 app.UseHttpsRedirection();
 
-app.UseCors(ReactCors);
+// 3. CORS: Tanýmlanan CORS politikasýný uygular.
+app.UseCors(ReactCorsPolicy);
 
-
+// 4. Kimlik Doðrulama (Authentication): Gelen istekteki token'ý doðrular ve kullanýcýnýn kimliðini belirler.
 app.UseAuthentication();
+
+// 5. Yetkilendirme (Authorization): Kimliði belirlenen kullanýcýnýn, istenen kaynaða eriþim yetkisi olup olmadýðýný kontrol eder.
 app.UseAuthorization();
 
-
-app.UseExceptionHandler(_ => { });
-if (app.Environment.IsDevelopment())
-{
-    app.UseDeveloperExceptionPage();
-}
+// 6. Controller Endpoint'lerini Haritalama: Gelen istekleri ilgili Controller Action'larýna yönlendirir.
 app.MapControllers();
 
+#endregion
+
+#region Uygulama Baþlangýç Ýþlemleri (Startup Tasks)
+// =================================================================================================
+// Uygulama ilk kez çalýþtýrýldýðýnda yapýlmasý gereken tek seferlik iþlemler burada yer alýr.
+// =================================================================================================
+
+// Veritabanýndaki OperationClaims tablosunu, uygulamadaki mevcut yetkilerle doldurur.
+await SeedOperationClaimsAsync(app);
+
+#endregion
+
+// Uygulamayý çalýþtýrýr.
 app.Run();
+
+
+#region Yardýmcý Metotlar (Helper Methods)
+
+/// <summary>
+/// Uygulama baþlarken veritabanýndaki yetkileri (Operation Claims) seeder servisi aracýlýðýyla doldurur.
+/// </summary>
+/// <param name="host">Uygulama host'u.</param>
+async Task SeedOperationClaimsAsync(IHost host)
+{
+    // Seeder gibi scoped servisleri çalýþtýrmak için geçici bir scope oluþturulur.
+    await using var scope = host.Services.CreateAsyncScope();
+    var serviceProvider = scope.ServiceProvider;
+    try
+    {
+        var seeder = serviceProvider.GetRequiredService<IOperationClaimSeeder>();
+        await seeder.SeedOperationClaimsAsync();
+    }
+    catch (Exception ex)
+    {
+        // Baþlangýçta loglama servisi hazýr olmayabilir, bu yüzden Console'a yazmak daha güvenlidir.
+        Console.WriteLine($"OperationClaim seeding sýrasýnda bir hata oluþtu: {ex}");
+    }
+}
+
+#endregion

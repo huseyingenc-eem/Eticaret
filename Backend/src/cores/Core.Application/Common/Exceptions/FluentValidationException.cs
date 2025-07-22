@@ -1,21 +1,29 @@
 ﻿using Core.Application.Common.Constants;
 
 namespace Core.Application.Common.Exceptions;
+
+/// <summary>
+/// FluentValidation ile doğrulama başarısız olduğunda fırlatılan hata.
+/// </summary>
 public class FluentValidationException : ApplicationException
 {
-    public IEnumerable<ValidationExceptionModel> Errors { get; }
+    /// <summary>
+    /// Oluşan doğrulama hatalarının listesi.
+    /// </summary>
+    public IReadOnlyList<ValidationExceptionModel> Errors { get; }
 
-    public FluentValidationException(IEnumerable<ValidationExceptionModel> errors)
+    /// <summary>
+    /// FluentValidationException sınıfının yeni bir örneğini oluşturur.
+    /// </summary>
+    /// <param name="message">Genel hata mesajı.</param>
+    /// <param name="errors">Gruplanmış ve modele dönüştürülmüş hata listesi.</param>
+    public FluentValidationException(string message, IReadOnlyList<ValidationExceptionModel> errors)
         : base(
-            ApplicationErrorCodes.ValidationError,
-            "Bir veya daha fazla doğrulama hatası oluştu.",
-            "Lütfen girdiğiniz bilgileri kontrol ediniz.",
-            errors.GroupBy(e => e.Property ?? "GeneralErrors")
-                  .ToDictionary(
-                      g => g.Key,
-                      g => g.SelectMany(e => e.Errors ?? Enumerable.Empty<string>()).Distinct().ToArray()
-                  ),
-            null)
+            message: message,
+            userFriendlyMessage: "Lütfen girdiğiniz bilgileri kontrol ediniz.",
+            errorCode: ApplicationErrorCodes.ValidationError,
+            additionalData: errors
+        )
     {
         Errors = errors;
     }

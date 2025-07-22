@@ -1,13 +1,22 @@
 ﻿using AutoMapper;
-using ETicaret.Application.Services.RedisServices;
-using ETicaret.Application.Services.Repositories;
+using Core.Application.Abstractions.Repositories;
+using Core.Application.Behaviors.Caching;
+using Core.Application.Behaviors.Transactional;
+using Core.Application.Common.Exceptions;
+using ETicaret.Application.Features.Products.Specifications; // <-- Spesifikasyonumuzu ekliyoruz
+using ETicaret.Domain.Entities;
 using MediatR;
-using Core.Shared.Exceptions;
 
 namespace ETicaret.Application.Features.Products.Commands.Update;
 
-public class UpdateProductCommand : IRequest<UpdateProductResponseDto>
+/// <summary>
+/// Mevcut bir ürünü güncelleme işlemini temsil eden komut.
+/// ITransactionalRequest: Bu komutun bir transaction içinde çalışmasını sağlar.
+/// ICacheRemoverRequest: Bu komut başarılı olduğunda ilgili önbelleği otomatik olarak temizler.
+/// </summary>
+public class UpdateProductCommand : IRequest<UpdateProductResponseDto>, ITransactionalRequest, ICacheRemoverRequest
 {
+    #region Komut Parametreleri
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public decimal Price { get; set; }
@@ -18,34 +27,50 @@ public class UpdateProductCommand : IRequest<UpdateProductResponseDto>
     public string? SKU { get; set; }
     public string? ImageUrl { get; set; }
     public bool IsActive { get; set; }
+    #endregion
 
+    #region Önbellek Ayarları
+    // Bu komut başarılı olduğunda, hem bu ürüne ait spesifik cache'i
+    // hem de tüm ürün listelerini içeren grubu temizle.
+    public string CacheKey => $"product:{Id}";
+    public string? CacheGroupKey => "ProductsGroup";
+    public bool BypassCache { get; set; }
+    #endregion
+
+    /// <summary>
+    /// UpdateProductCommand isteğini işleyen Handler.
+    /// </summary>
     public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand, UpdateProductResponseDto>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IRepository<Product, Guid> _productRepository;
         private readonly IMapper _mapper;
-        private readonly IRedisService _redisService;
 
-        public UpdateProductCommandHandler(IUnitOfWork unitOfWork, IMapper mapper, IRedisService redisService) // Constructor güncellendi
+        // IRedisService ve IUnitOfWork bağımlılıkları, Behavior'lar sayesinde artık gerekli değil.
+        public UpdateProductCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _redisService = redisService;
+            // Repository'yi IUnitOfWork üzerinden alıyoruz.
+            _productRepository = unitOfWork.GetRepository<Product, Guid>();
         }
 
         public async Task<UpdateProductResponseDto> Handle(UpdateProductCommand request, CancellationToken cancellationToken)
         {
-            var productToUpdate = await _unitOfWork.ProductRepository.GetAsync(p => p.Id == request.Id, cancellationToken: cancellationToken);
+            // 1. Spesifikasyonu kullanarak güncellenecek ürünü al.
+            var spec = new ProductByIdSpecification(request.Id);
+            Product? productToUpdate = await _productRepository.GetAsync(spec, cancellationToken);
 
             if (productToUpdate == null)
                 throw new NotFoundException($"{request.Id} kimliğine sahip ürün bulunamadı.");
 
+            // (Varsa) İş kurallarını burada çalıştır.
+            // await _productBusinessRules.CheckSomethingAsync(...);
+
+            // 2. Gelen verileri veritabanından çekilen entity'e map'le.
             _mapper.Map(request, productToUpdate);
 
-            await _unitOfWork.ProductRepository.UpdateAsync(productToUpdate, cancellationToken);
-            await _unitOfWork.CompleteAsync(cancellationToken);
+            // 3. Entity'nin güncellenmek üzere işaretlenmesini sağla.
+            await _productRepository.UpdateAsync(productToUpdate, cancellationToken);
 
-            await _redisService.RemoveDataAsync("products");
-            await _redisService.RemoveDataAsync($"product:{request.Id}");
 
             UpdateProductResponseDto response = _mapper.Map<UpdateProductResponseDto>(productToUpdate);
             response.Message = "Ürün başarıyla güncellendi.";

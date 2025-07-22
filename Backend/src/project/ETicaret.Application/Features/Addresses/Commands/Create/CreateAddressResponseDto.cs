@@ -5,7 +5,7 @@ public class CreateAddressResponseDto
     /// <summary>
     /// Oluşturulan adresin benzersiz kimliği.
     /// </summary>
-    public int Id { get; set; } 
+    public Guid Id { get; set; } 
 
     /// <summary>
     /// Adresin hangi kullanıcıya ait olduğu.
@@ -45,7 +45,7 @@ public class CreateAddressResponseDto
     /// <summary>
     /// Posta kodu (opsiyonel).
     /// </summary>
-    public string? zipCode { get; set; }
+    public string? ZipCode { get; set; }
 
     /// <summary>
     /// Bu adresin fatura adresi olup olmadığını belirtir.

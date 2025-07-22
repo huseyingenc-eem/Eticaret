@@ -1,4 +1,4 @@
-﻿using Core.Shared.Exceptions;
+﻿using Core.Application.Common.Exceptions;
 using ETicaret.Application.Services.JwtServices;
 using ETicaret.Domain.Entities;
 using MediatR;

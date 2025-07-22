@@ -1,72 +1,27 @@
 ﻿namespace Core.Application.Common.Exceptions;
 
 /// <summary>
-/// İş kuralları veya beklenen uygulama akışı dışındaki durumlar için fırlatılan özel exception sınıfı.
-/// Genellikle kullanıcıya gösterilebilecek veya loglanabilecek ek bilgiler içerir.
+/// İş kuralları ihlal edildiğinde fırlatılan hata.
 /// </summary>
-public class BusinessException : ApplicationException // CoreException'dan türetildi
+public class BusinessException : ApplicationException
 {
-    /// <summary>
-    /// Sadece bir mesaj ile BusinessException oluşturur.
-    /// </summary>
-    /// <param name="message">Hata mesajı.</param>
-    public BusinessException(string message)
-        : base(message) { }
-
-    /// <summary>
-    /// Bir mesaj ve iç exception ile BusinessException oluşturur.
-    /// </summary>
-    /// <param name="message">Hata mesajı.</param>
-    /// <param name="innerException">Bu exception'a neden olan iç exception.</param>
-    public BusinessException(string message, Exception innerException)
-        : base(message, innerException) { }
-
-    /// <summary>
-    /// Detaylı bilgilerle BusinessException oluşturur (iç exception olmadan).
-    /// Bu constructor, CoreException'ın (string, string?, string?, object?) imzalı bir constructor'a sahip olduğunu varsayar.
-    /// </summary>
-    /// <param name="message">Hata mesajı.</param>
-    /// <param name="errorCode">Özel hata kodu.</param>
-    /// <param name="userFriendlyMessage">Kullanıcıya gösterilebilecek dostane mesaj.</param>
-    /// <param name="additionalData">Hata ile ilgili ek veri.</param>
+    // Tek bir constructor yeterli. Gerekli tüm bilgileri base'e (ApplicationException) gönderir.
     public BusinessException(
         string message,
-        string? errorCode = null,
         string? userFriendlyMessage = null,
+        string? errorCode = null,
         object? additionalData = null)
-        : base(message, errorCode, userFriendlyMessage, additionalData) // Bu base çağrısının CoreException'da karşılığı olduğu varsayılır.
+        : base(message, userFriendlyMessage, errorCode, additionalData)
     {
     }
 
-    /// <summary>
-    /// Detaylı bilgiler ve iç exception ile BusinessException oluşturur.
-    /// CoreException'ın (string, Exception, string?, string?, object?) imzalı bir constructor'ı olmadığı
-    /// veya uyumsuz olduğu için, daha basit bir base constructor çağrılır ve özellikler ayrıca atanır.
-    /// Bu, CoreException'ın ErrorCode, UserFriendlyMessage, AdditionalData özelliklerine sahip olduğunu
-    /// ve bu özelliklerin (en azından protected set ile) atanabilir olduğunu varsayar.
-    /// </summary>
-    /// <param name="message">Hata mesajı.</param>
-    /// <param name="innerException">Bu exception'a neden olan iç exception.</param>
-    /// <param name="errorCode">Özel hata kodu.</param>
-    /// <param name="userFriendlyMessage">Kullanıcıya gösterilebilecek dostane mesaj.</param>
-    /// <param name="additionalData">Hata ile ilgili ek veri.</param>
-    
-
-    /// <summary>
-    /// Bir string listesinden (genellikle validasyon veya IdentityResult hataları) BusinessException oluşturur.
-    /// Hata mesajları yeni satırlarla birleştirilir.
-    /// Bu constructor, CoreException'ın (string, string?, string?, object?) imzalı bir constructor'a sahip olduğunu varsayar.
-    /// </summary>
-    /// <param name="errors">Hata mesajlarının listesi.</param>
-    /// <param name="errorCode">Özel hata kodu.</param>
-    /// <param name="userFriendlyMessage">Kullanıcıya gösterilebilecek dostane mesaj (opsiyonel, genellikle birleştirilmiş mesaj kullanılır).</param>
-    /// <param name="additionalData">Hata ile ilgili ek veri.</param>
+    // Hata listesinden oluşturan pratik bir constructor
     public BusinessException(
         IEnumerable<string> errors,
-        string? errorCode = null,
         string? userFriendlyMessage = null,
+        string? errorCode = null,
         object? additionalData = null)
-        : base(string.Join(Environment.NewLine, errors ?? Enumerable.Empty<string>()), errorCode, userFriendlyMessage, additionalData)
+        : base(string.Join(Environment.NewLine, errors ?? Enumerable.Empty<string>()), userFriendlyMessage, errorCode, additionalData)
     {
     }
 }

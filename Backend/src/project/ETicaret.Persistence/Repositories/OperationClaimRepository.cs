@@ -7,8 +7,5 @@ namespace ETicaret.Persistence.Repositories;
 
 public class OperationClaimRepository : EfRepositoryBase<OperationClaim, int, BaseDBContexts>, IOperationClaimRepository
 {
-    public OperationClaimRepository(BaseDBContexts context) : base(context)
-    {
-
-    }
+    public OperationClaimRepository(BaseDBContexts context) : base(context){}
 }

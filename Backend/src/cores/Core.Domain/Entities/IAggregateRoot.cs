@@ -6,4 +6,4 @@
 /// for a cluster of related objects.
 /// This is a marker interface.
 /// </summary>
-public interface IAggregateRoot {}
+public interface IAggregateRoot { }

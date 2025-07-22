@@ -17,8 +17,8 @@ public class Order : Entity<Guid>
     public decimal GrandTotal { get; set; } // Ödenecek Genel Toplam
     public string? CustomerNotes { get; set; }
 
-    public int ShippingAddressId { get; set; }
-    public int BillingAddressId { get; set; }
+    public Guid ShippingAddressId { get; set; }
+    public Guid BillingAddressId { get; set; }
 
     public virtual User User { get; set; } = null!;
     public virtual Address ShippingAddress { get; set; } = null!;

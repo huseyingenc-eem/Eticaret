@@ -1,8 +1,8 @@
-﻿using Core.Application.Common.Exceptions;
+﻿using Core.Application.Abstractions.Services;
+using Core.Application.Common.Exceptions;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
-using Core.Application.Abstractions.Services;
 
 namespace Core.Application.Behaviors.Authorization;
 public class AuthorizationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : IRequest<TResponse>
@@ -22,7 +22,7 @@ public class AuthorizationBehavior<TRequest, TResponse> : IPipelineBehavior<TReq
         {
             return await next();
         }
-        _loggerService.Info("AuthorizationPipeline Handle metodu başladı.");
+        _loggerService.Info("AuthorizationBehavior Handle metodu başladı.");
 
         var httpContext = _httpContextAccessor.HttpContext;
 
@@ -46,7 +46,7 @@ public class AuthorizationBehavior<TRequest, TResponse> : IPipelineBehavior<TReq
             throw new AuthorizationException("Yetkiniz yok.");
         }
 
-        _loggerService.Info("AuthorizationPipeline Handle metodu bitti.");
+        _loggerService.Info("AuthorizationBehavior Handle metodu bitti.");
 
         return await next();
     }

@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using PhoneNumbers;
+
 namespace ETicaret.Application.Features.Addresses.Commands.Create;
 
 public class CreateAddressCommandValidator : AbstractValidator<CreateAddressCommand>
@@ -33,11 +34,11 @@ public class CreateAddressCommandValidator : AbstractValidator<CreateAddressComm
             .NotEmpty().WithMessage("Cadde/Sokak boş olamaz.")
             .MaximumLength(100).WithMessage("Cadde/Sokak bilgisi en fazla 100 karakter olabilir.");
 
-        RuleFor(c => c.zipCode)
+        RuleFor(c => c.ZipCode)
             .MaximumLength(10).WithMessage("Posta kodu en fazla 10 karakter olabilir.")
-            .When(c => !string.IsNullOrEmpty(c.zipCode))
+            .When(c => !string.IsNullOrEmpty(c.ZipCode))
             .Matches("^[0-9]{5}$").WithMessage("Posta kodu 5 haneli rakam olmalıdır.")
-            .When(c => !string.IsNullOrEmpty(c.zipCode) && c.Country == "Türkiye");
+            .When(c => !string.IsNullOrEmpty(c.ZipCode) && c.Country == "Türkiye");
 
         RuleFor(c => c)
             .Must(c => c.IsDefaultBilling || c.IsDefaultShipping)

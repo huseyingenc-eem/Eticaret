@@ -2,7 +2,7 @@
 
 namespace ETicaret.Domain.Entities;
 
-public class Supplier : Entity<int>
+public class Supplier : Entity<Guid>
 {
     public string CompanyName { get; set; } = string.Empty;
     public string? ContactPerson { get; set; }

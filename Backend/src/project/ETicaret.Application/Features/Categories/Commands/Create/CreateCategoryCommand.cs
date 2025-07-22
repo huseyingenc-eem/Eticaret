@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using Core.Application.Pipelines.Caching;
-using Core.Application.Pipelines.Transactional;
+using Core.Application.Behaviors.Caching;
+using Core.Application.Behaviors.Transactional;
 using ETicaret.Application.Features.Categories.Rules;
-using ETicaret.Application.Services.Repositories;
+using Core.Application.Abstractions.Repositories;
 using ETicaret.Domain.Entities;
 using MediatR;
 
@@ -17,7 +17,7 @@ public class CreateCategoryCommand : IRequest<CreateCategoryResponseDto> , ITran
 
     public string? CacheKey => null;
     public string? CacheGroupKey => "CategoriesGroup";
-    public bool ByPassCache { get; set; }
+    public bool BypassCache { get; set; }
 
     public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryCommand, CreateCategoryResponseDto>
     {
@@ -41,7 +41,9 @@ public class CreateCategoryCommand : IRequest<CreateCategoryResponseDto> , ITran
             // --- İş Kuralları Kontrolleri Sonu ---
             Category category = _mapper.Map<Category>(request);
 
-            await _unitOfWork.CategoryRepository.AddAsync(category, cancellationToken);
+            var categoryRepository = _unitOfWork.GetRepository<Category, int>();
+
+            await categoryRepository.AddAsync(category, cancellationToken);
             CreateCategoryResponseDto response = _mapper.Map<CreateCategoryResponseDto>(category);
             response.Message = "Kategori başarıyla eklendi.";
 

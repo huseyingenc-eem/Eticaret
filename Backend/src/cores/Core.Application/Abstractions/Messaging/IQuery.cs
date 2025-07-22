@@ -7,4 +7,4 @@ namespace Core.Application.Abstractions.Messaging;
 /// CQRS desenindeki "Query" kısmıdır ve sistemin durumunu değiştirmez.
 /// </summary>
 /// <typeparam name="TResponse">Sorgu işlendikten sonra dönecek olan yanıtın türü.</typeparam>
-public interface IQuery<out TResponse> : IRequest<TResponse>{}
+public interface IQuery<out TResponse> : IRequest<TResponse> { }

@@ -38,7 +38,7 @@ public class SuppliersController : ControllerBase
 
     [HttpGet("{id}")]
     // [Authorize]
-    public async Task<IActionResult> GetById([FromRoute] int id)
+    public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
         GetByIdSupplierQuery getByIdSupplierQuery = new() { Id = id };
         GetByIdSupplierResponseDto result = await _mediator.Send(getByIdSupplierQuery);
@@ -64,7 +64,7 @@ public class SuppliersController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete([FromRoute] int id)
+    public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
         SupplierDeleteCommand supplierDeleteCommand = new() { Id = id };
         SupplierDeleteResponseDto result = await _mediator.Send(supplierDeleteCommand);

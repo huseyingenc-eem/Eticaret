@@ -1,4 +1,4 @@
-﻿namespace ETicaret.Application.Features.Categories.Commands.Update;
+﻿namespace ETicaret.Application.Features.Categories.Commands.Delete;
 
 public class DeleteCategoryResponseDto
 {

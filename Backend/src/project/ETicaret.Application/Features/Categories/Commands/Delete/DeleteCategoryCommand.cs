@@ -3,7 +3,6 @@ using Core.Application.Abstractions.Repositories;
 using Core.Application.Behaviors.Caching;
 using Core.Application.Behaviors.Transactional;
 using Core.Application.Common.Exceptions;
-using ETicaret.Application.Features.Categories.Commands.Update;
 using ETicaret.Application.Features.Categories.Rules;
 using ETicaret.Application.Features.Categories.Specifications;
 using ETicaret.Domain.Entities;

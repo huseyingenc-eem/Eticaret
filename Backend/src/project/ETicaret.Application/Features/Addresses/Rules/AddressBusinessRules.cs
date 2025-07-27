@@ -6,18 +6,74 @@ using Microsoft.AspNetCore.Identity;
 
 namespace ETicaret.Application.Features.Addresses.Rules;
 
+#region Address Business Rules Implementation
+
+/// <summary>
+/// Adres entity'si için temel iş kurallarını içeren sınıf.
+/// Bu sınıf sadece core business logic'i içerir, individual rule'lar tarafından kullanılır.
+/// Repository pattern ve Specification pattern kullanarak veritabanı işlemlerini yönetir.
+/// </summary>
 public class AddressBusinessRules
 {
-    private readonly IRepository<Address, Guid> _addressRepository;
-    private readonly UserManager<User> _userManager;
+    #region Constants
+
     private const int MAX_ADDRESSES_PER_USER = 10; // Kullanıcı başına maksimum adres sayısı
 
+    #endregion
+
+    #region Fields
+
+    private readonly IRepository<Address, Guid> _addressRepository;
+    private readonly UserManager<User> _userManager;
+
+    #endregion
+
+    #region Constructor
+
+    /// <summary>
+    /// AddressBusinessRules sınıfının yeni bir örneğini oluşturur.
+    /// </summary>
+    /// <param name="unitOfWork">Veritabanı işlemleri için Unit of Work implementasyonu.</param>
+    /// <param name="userManager">ASP.NET Identity kullanıcı yöneticisi.</param>
     public AddressBusinessRules(IUnitOfWork unitOfWork, UserManager<User> userManager)
     {
         _addressRepository = unitOfWork.GetRepository<Address, Guid>();
         _userManager = userManager;
     }
 
+    #endregion
+
+    #region User Validation Rules
+
+    /// <summary>
+    /// Kullanıcının sistemde var olduğunu kontrol eder.
+    /// </summary>
+    /// <param name="userId">Kontrol edilecek kullanıcı ID'si.</param>
+    /// <param name="cancellationToken">İptal token'ı.</param>
+    /// <exception cref="NotFoundException">Kullanıcı bulunamazsa fırlatılır.</exception>
+    public async Task CheckUserExistsAsync(string userId, CancellationToken cancellationToken)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            throw new NotFoundException(
+                message: $"User with ID {userId} was not found.",
+                userFriendlyMessage: "Kullanıcı bulunamadı. Lütfen tekrar giriş yapınız.",
+                errorCode: "USER_NOT_FOUND"
+            );
+        }
+    }
+
+    #endregion
+
+    #region Address Limit Rules
+
+    /// <summary>
+    /// Kullanıcının adres limitini kontrol eder.
+    /// </summary>
+    /// <param name="userId">Kontrol edilecek kullanıcı ID'si.</param>
+    /// <param name="cancellationToken">İptal token'ı.</param>
+    /// <exception cref="BusinessException">Limit aşılırsa fırlatılır.</exception>
     public async Task CheckUserAddressLimitAsync(string userId, CancellationToken cancellationToken)
     {
         var spec = new AddressSpecifications.ByUserId(userId);
@@ -33,6 +89,17 @@ public class AddressBusinessRules
         }
     }
 
+    #endregion
+
+    #region Duplicate Title Rules
+
+    /// <summary>
+    /// Aynı kullanıcıda adres başlığının tekrar etmediğini kontrol eder (Create için).
+    /// </summary>
+    /// <param name="userId">Kullanıcı ID'si.</param>
+    /// <param name="addressTitle">Kontrol edilecek adres başlığı.</param>
+    /// <param name="cancellationToken">İptal token'ı.</param>
+    /// <exception cref="BusinessException">Tekrar eden başlık varsa fırlatılır.</exception>
     public async Task CheckDuplicateAddressTitleAsync(string userId, string addressTitle, CancellationToken cancellationToken)
     {
         var spec = new AddressSpecifications.ByUserIdAndTitle(userId, addressTitle);
@@ -48,6 +115,39 @@ public class AddressBusinessRules
         }
     }
 
+    /// <summary>
+    /// Aynı kullanıcıda adres başlığının tekrar etmediğini kontrol eder (Update için).
+    /// </summary>
+    /// <param name="userId">Kullanıcı ID'si.</param>
+    /// <param name="addressTitle">Kontrol edilecek adres başlığı.</param>
+    /// <param name="excludeAddressId">Kontrol dışında tutulacak adres ID'si.</param>
+    /// <param name="cancellationToken">İptal token'ı.</param>
+    /// <exception cref="BusinessException">Tekrar eden başlık varsa fırlatılır.</exception>
+    public async Task CheckDuplicateAddressTitleForUpdateAsync(string userId, string addressTitle, Guid excludeAddressId, CancellationToken cancellationToken)
+    {
+        var spec = new AddressSpecifications.ByUserIdAndTitleExcludingId(userId, addressTitle, excludeAddressId);
+        bool isDuplicate = await _addressRepository.AnyAsync(spec, cancellationToken);
+
+        if (isDuplicate)
+        {
+            throw new BusinessException(
+                message: $"User {userId} already has another address with title '{addressTitle}'.",
+                userFriendlyMessage: $"'{addressTitle}' başlığında zaten başka bir adresiniz mevcut. Lütfen farklı bir başlık seçiniz.",
+                errorCode: "DUPLICATE_ADDRESS_TITLE_UPDATE"
+            );
+        }
+    }
+
+    #endregion
+
+    #region Default Address Type Rules
+
+    /// <summary>
+    /// En az bir varsayılan adres tipinin seçildiğini kontrol eder.
+    /// </summary>
+    /// <param name="isDefaultBilling">Varsayılan fatura adresi mi.</param>
+    /// <param name="isDefaultShipping">Varsayılan kargo adresi mi.</param>
+    /// <exception cref="BusinessException">Hiçbiri seçili değilse fırlatılır.</exception>
     public void CheckAtLeastOneDefaultAddressType(bool isDefaultBilling, bool isDefaultShipping)
     {
         if (!isDefaultBilling && !isDefaultShipping)
@@ -60,25 +160,17 @@ public class AddressBusinessRules
         }
     }
 
-    public async Task CheckUserExistsAsync(string userId, CancellationToken cancellationToken)
-    {
-        var user = await _userManager.FindByIdAsync(userId);
-        if (user == null)
-        {
-            throw new NotFoundException(
-                message: $"User with ID {userId} was not found.",
-                userFriendlyMessage: "Kullanıcı bulunamadı. Lütfen tekrar giriş yapınız.",
-                errorCode: "USER_NOT_FOUND"
-            );
-        }
-    }
+    #endregion
+
+    #region Minimum Address Rules
 
     /// <summary>
     /// Kullanıcının en az bir adresi olması gerektiğini kontrol eder.
     /// </summary>
-    /// <param name="userId">Kullanıcının kimliği.</param>
+    /// <param name="userId">Kullanıcı ID'si.</param>
     /// <param name="excludeAddressId">Kontrol dışında tutulacak adres ID'si.</param>
     /// <param name="cancellationToken">İptal token'ı.</param>
+    /// <exception cref="BusinessException">Son adres silinmeye çalışılırsa fırlatılır.</exception>
     public async Task CheckUserMustHaveAtLeastOneAddressAsync(string userId, Guid excludeAddressId, CancellationToken cancellationToken)
     {
         var spec = new AddressSpecifications.ByUserId(userId);
@@ -97,8 +189,13 @@ public class AddressBusinessRules
         }
     }
 
+    #endregion
+
+    #region Warning Rules
+
     /// <summary>
     /// Varsayılan adres silinirken kullanıcıya uyarı verir.
+    /// Bu metot iş kuralı ihlali yaratmaz, sadece bilgilendirme amaçlıdır.
     /// </summary>
     /// <param name="isDefaultBilling">Varsayılan fatura adresi mi.</param>
     /// <param name="isDefaultShipping">Varsayılan kargo adresi mi.</param>
@@ -109,10 +206,10 @@ public class AddressBusinessRules
             string addressType = (isDefaultBilling && isDefaultShipping) ? "fatura ve kargo" :
                                 isDefaultBilling ? "fatura" : "kargo";
 
-            // Bu durumda bir uyarı log'u yazmak veya bilgilendirme mesajı eklemek yeterli
-            // Çünkü varsayılan adres silindiğinde kullanıcı başka bir adresini varsayılan yapabilir
         }
     }
 
-
+    #endregion
 }
+
+#endregion

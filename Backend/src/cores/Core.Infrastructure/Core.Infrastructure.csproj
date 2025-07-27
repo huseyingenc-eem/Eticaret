@@ -18,4 +18,8 @@
     <ProjectReference Include="..\Core.Application\Core.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Services\Caching\" />
+  </ItemGroup>
+
 </Project>

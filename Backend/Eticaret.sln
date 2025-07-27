@@ -26,6 +26,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Shared", "src\cores\Core.Shared\Core.Shared.csproj", "{1D76B23B-4538-0493-C1AC-3BEFA5924DC7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B3E85BA8-6098-4B76-BE78-11105B2E4DD1}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{29943081-7727-4DAD-8B98-D3321C2475E8}"
 EndProject

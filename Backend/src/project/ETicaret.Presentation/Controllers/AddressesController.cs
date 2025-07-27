@@ -1,20 +1,22 @@
-﻿using ETicaret.Application.Features.Addresses.Commands.Create;
-using ETicaret.Application.Features.Addresses.Commands.Update;
+﻿using Core.Application.Abstractions.Paging;
+using ETicaret.Application.Features.Addresses.Commands.Create;
 using ETicaret.Application.Features.Addresses.Commands.Delete;
+using ETicaret.Application.Features.Addresses.Commands.Update;
 using ETicaret.Application.Features.Addresses.Queries.GetById;
+using ETicaret.Application.Features.Addresses.Queries.GetList;
 using ETicaret.Application.Features.Addresses.Queries.GetListByUserId;
+using ETicaret.Presentation.Abstraction;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using ETicaret.Application.Features.Addresses.Queries.GetList;
-using ETicaret.Presentation.Abstraction;
 
 namespace ETicaret.Presentation.Controllers;
 
 public class AddressesController : ApiController
 {
 
-    public AddressesController(IMediator mediator) : base(mediator) {}
+    public AddressesController(IMediator mediator) : base(mediator) { }
 
     /// <summary>
     /// Giriş yapmış kullanıcının tüm adreslerini listeler.
@@ -23,6 +25,7 @@ public class AddressesController : ApiController
     /// <response code="200">Kullanıcının adres listesi başarıyla döndürüldü.</response>
     /// <response code="401">Kullanıcı kimliği doğrulanamadı.</response>
     [HttpGet("my-addresses")]
+    [Authorize]
     [ProducesResponseType(typeof(List<GetListByUserIdAddressResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetListByCurrentUser()
@@ -47,6 +50,7 @@ public class AddressesController : ApiController
     /// <response code="401">Kullanıcı kimliği doğrulanamadı.</response>
     /// <response code="404">Belirtilen ID'ye sahip adres bulunamadı veya kullanıcıya ait değil.</response>
     [HttpGet("{id}")]
+    [Authorize]
     [ProducesResponseType(typeof(GetByIdAddressResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -71,6 +75,7 @@ public class AddressesController : ApiController
     /// <response code="400">Geçersiz istek verisi (Validation hatası).</response>
     /// <response code="401">Kullanıcı kimliği doğrulanamadı.</response>
     [HttpPost("add")]
+    [Authorize]
     [ProducesResponseType(typeof(CreateAddressResponseDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -96,6 +101,7 @@ public class AddressesController : ApiController
     /// <response code="403">Kullanıcının bu adresi güncelleme yetkisi yok.</response>
     /// <response code="404">Güncellenecek adres bulunamadı.</response>
     [HttpPut("update")]
+    [Authorize]
     [ProducesResponseType(typeof(UpdateAddressResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -122,6 +128,7 @@ public class AddressesController : ApiController
     /// <response code="403">Kullanıcının bu adresi silme yetkisi yok.</response>
     /// <response code="404">Silinecek adres bulunamadı.</response>
     [HttpDelete("{id}")]
+    [Authorize]
     [ProducesResponseType(typeof(DeleteAddressResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -138,8 +145,21 @@ public class AddressesController : ApiController
         return Ok(result);
     }
 
-    [HttpGet("getlist")] // İstek: GET /api/Addresses?PageIndex=0&PageSize=10
-    public async Task<IActionResult> GetList([FromQuery] GetListAddressQuery getListAddressQuery)
+    /// <summary>
+    /// Tüm kullanıcıların adreslerini sayfalanmış şekilde listeler (Sadece Admin).
+    /// Bu endpoint yalnızca Admin rolüne sahip kullanıcılar tarafından erişilebilir.
+    /// </summary>
+    /// <param name="getListAddressQuery">Sayfalama ve filtreleme parametreleri.</param>
+    /// <returns>Tüm kullanıcıların adreslerinin sayfalanmış listesi.</returns>
+    /// <response code="200">Adres listesi başarıyla döndürüldü.</response>
+    /// <response code="401">Kullanıcı kimliği doğrulanamadı.</response>
+    /// <response code="403">Bu işlem için Admin yetkisi gerekli.</response>
+    [HttpGet("admin/all")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(typeof(IPaginate<GetListAddressResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetAllAddresses([FromQuery] GetListAddressQuery getListAddressQuery)
     {
         var result = await _mediator.Send(getListAddressQuery);
         return Ok(result);
@@ -149,7 +169,7 @@ public class AddressesController : ApiController
     /// İstek yapan kullanıcının kimliğini (UserId) JWT token içerisindeki NameIdentifier claim'inden alır.
     /// </summary>
     /// <returns>Kullanıcı ID'si (string) veya null (eğer alınamazsa).</returns>
-    private string? GetUserIdFromClaims() // Dönüş tipi string? olarak değiştirildi
+    private string? GetUserIdFromClaims()
     {
         // HttpContext.User üzerinden Claim'lere erişilir
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);

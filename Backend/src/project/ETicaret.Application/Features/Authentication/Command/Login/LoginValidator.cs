@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-// using Microsoft.IdentityModel.Tokens; // Bu using kaldırılabilir
 
 namespace ETicaret.Application.Features.Authentication.Command.Login;
 

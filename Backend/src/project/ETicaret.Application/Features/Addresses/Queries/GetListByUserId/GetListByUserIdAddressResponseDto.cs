@@ -1,32 +1,56 @@
 ﻿namespace ETicaret.Application.Features.Addresses.Queries.GetListByUserId;
 
 /// <summary>
-/// Kullanıcının adres listesinde gösterilecek temel bilgileri içeren DTO.
+/// Kullanıcının adres listesi için yanıt DTO'su.
 /// </summary>
 public class GetListByUserIdAddressResponseDto
 {
+    #region Properties
+
     /// <summary>
-    /// Adres ID'si.
+    /// Adresin benzersiz kimliği.
     /// </summary>
     public Guid Id { get; set; }
 
     /// <summary>
-    /// Adres başlığı.
+    /// Adres başlığı (Ev, İş vb.).
     /// </summary>
     public string AddressTitle { get; set; } = string.Empty;
 
     /// <summary>
-    /// Adresin tam metni (Liste görünümü için kısaltılmış olabilir).
+    /// Ülke bilgisi.
     /// </summary>
-    public string AddressLine { get; set; } = string.Empty; // Veya City/District gibi alanlar
+    public string Country { get; set; } = string.Empty;
 
     /// <summary>
-    /// Fatura adresi mi?
+    /// Şehir bilgisi.
     /// </summary>
-    public bool isDefaultBilling { get; set; }
+    public string City { get; set; } = string.Empty;
 
     /// <summary>
-    /// Teslimat adresi mi?
+    /// İlçe/Semt bilgisi.
     /// </summary>
-    public bool isDefaultShipping { get; set; }
+    public string District { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Tam adres metni.
+    /// </summary>
+    public string AddressLine { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Bu adresin varsayılan fatura adresi olup olmadığını belirtir.
+    /// </summary>
+    public bool IsDefaultBilling { get; set; }
+
+    /// <summary>
+    /// Bu adresin varsayılan gönderi adresi olup olmadığını belirtir.
+    /// </summary>
+    public bool IsDefaultShipping { get; set; }
+
+    /// <summary>
+    /// Adresin oluşturulma zamanı.
+    /// </summary>
+    public DateTime CreatedTime { get; set; }
+
+    #endregion
 }

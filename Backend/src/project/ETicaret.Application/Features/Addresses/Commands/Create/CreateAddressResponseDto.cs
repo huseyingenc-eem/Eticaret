@@ -1,11 +1,16 @@
 ﻿namespace ETicaret.Application.Features.Addresses.Commands.Create;
 
+/// <summary>
+/// Adres oluşturma işlemi sonucu döndürülen DTO.
+/// </summary>
 public class CreateAddressResponseDto
 {
+    #region Properties
+
     /// <summary>
     /// Oluşturulan adresin benzersiz kimliği.
     /// </summary>
-    public Guid Id { get; set; } 
+    public Guid Id { get; set; }
 
     /// <summary>
     /// Adresin hangi kullanıcıya ait olduğu.
@@ -40,7 +45,7 @@ public class CreateAddressResponseDto
     /// <summary>
     /// Tam adres metni.
     /// </summary>
-    public string AddressLine { get; set; }
+    public string AddressLine { get; set; } = string.Empty;
 
     /// <summary>
     /// Posta kodu (opsiyonel).
@@ -67,8 +72,5 @@ public class CreateAddressResponseDto
     /// </summary>
     public string Message { get; set; } = string.Empty;
 
-    public CreateAddressResponseDto()
-    {
-
-    }
+    #endregion
 }

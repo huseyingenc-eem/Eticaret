@@ -11,7 +11,6 @@ public static class EfQueryableExtensions
         var count = await source.CountAsync(cancellationToken);
         var items = await source.Skip(index * size).Take(size).ToListAsync(cancellationToken);
 
-        // Paginate<T> yerine doğrudan PagedResult<T> kullanılıyor.
         return new PagedResult<T>(items, count, index, size);
     }
 }

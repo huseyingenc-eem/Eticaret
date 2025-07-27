@@ -3,6 +3,7 @@ using Core.Application.Behaviors.Caching;
 using Core.Application.Behaviors.Logging;
 using Core.Application.Behaviors.Performance;
 using Core.Application.Behaviors.RequestInfo;
+using Core.Application.Behaviors.Rules;
 using Core.Application.Behaviors.Transactional;
 using Core.Application.Behaviors.Validation;
 using FluentValidation;
@@ -18,9 +19,12 @@ public static class ApplicationServiceRegistration
 {
     public static IServiceCollection AddCoreApplicationServices(this IServiceCollection services)
     {
-        // AutoMapper'ı bu katmanın assembly'si için ekle
-        //services.AddAutoMapper(Assembly.GetExecutingAssembly());
+        #region Rule Engine Services
+        // Rule Engine servisleri
+        services.AddScoped<IRuleEngine, RuleEngine>();
+        services.AddSingleton<IRuleConfigurationService, RuleConfigurationService>();
 
+        #endregion
         // MediatR'ı ve temel pipeline davranışlarını ekle
         services.AddMediatR(configuration =>
         {
@@ -32,12 +36,13 @@ public static class ApplicationServiceRegistration
             configuration.AddOpenBehavior(typeof(RequestInfoBehavior<,>));
             configuration.AddOpenBehavior(typeof(AuthorizationBehavior<,>));
             configuration.AddOpenBehavior(typeof(ValidationBehavior<,>));
+            configuration.AddOpenBehavior(typeof(BusinessRulesValidationBehavior<,>));
             configuration.AddOpenBehavior(typeof(CachingBehavior<,>));
             configuration.AddOpenBehavior(typeof(CacheRemoveBehavior<,>));
             configuration.AddOpenBehavior(typeof(PerformanceBehavior<,>));
             configuration.AddOpenBehavior(typeof(TransactionBehavior<,>));
         });
-
+        
         // FluentValidation validatörlerini bu assembly için ekle
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 

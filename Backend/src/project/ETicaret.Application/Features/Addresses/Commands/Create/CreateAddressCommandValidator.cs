@@ -49,7 +49,8 @@ public class CreateAddressCommandValidator : AbstractValidator<CreateAddressComm
             .MaximumLength(30).WithMessage("Telefon numarası en fazla 30 karakter olabilir.")
             .Must((command, phoneNumber, context) => BeAValidPhoneNumber(phoneNumber, command.Country))
             .When(c => !string.IsNullOrEmpty(c.PhoneNumber))
-            .WithMessage("Lütfen geçerli bir telefon numarası giriniz.");
+            .WithMessage("Lütfen geçerli bir telefon numarası giriniz.")
+            .WithName(nameof(CreateAddressCommand.PhoneNumber));
     }
 
 

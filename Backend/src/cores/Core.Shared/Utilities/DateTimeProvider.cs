@@ -1,4 +1,4 @@
-﻿namespace Core.Shared.Abstractions;
+﻿namespace Core.Shared.Utilities;
 
 /// <summary>
 /// Uygulama genelinde mevcut zamanı almak için standart bir sözleşme tanımlar.

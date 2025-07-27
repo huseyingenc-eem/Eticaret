@@ -9,8 +9,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging; // ✅ Bu satırı ekleyin
 using Scrutor;
 using Microsoft.Extensions.Options;
+
 namespace ETicaret.Persistence;
 
 /// <summary>
@@ -28,13 +30,23 @@ public static class PersistenceServiceRegistration
         services.AddDbContext<BaseDBContexts>(opt =>
         {
             opt.UseSqlServer(configuration.GetConnectionString("SqlConnection"));
-            // Geliştirme ortamında hassas verilerin loglanmasını sağlar.
-            opt.EnableSensitiveDataLogging();
+
+            // ✅ SQL loglarını aktifleştir
+            opt.EnableSensitiveDataLogging(); // Parametre değerlerini göster
+            opt.EnableDetailedErrors(); // Detaylı hata mesajları
+
+            // ✅ Console'a SQL logları yazdır (Development için)
+            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            if (environment == "Development")
+            {
+                opt.LogTo(Console.WriteLine, new[] {
+                    DbLoggerCategory.Database.Command.Name
+                }, LogLevel.Information);
+
+                Console.WriteLine("SQL Logging enabled for Development environment\n");
+            }
         });
-
-        // EKLEME: Core IUnitOfWork
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-
 
         services.AddIdentity<User, IdentityRole>(opt =>
         {
@@ -46,18 +58,13 @@ public static class PersistenceServiceRegistration
         services.Configure<LoggingConfiguration>(configuration.GetSection("SerilogLogConfigurations"));
         services.AddSingleton(sp => sp.GetRequiredService<IOptions<LoggingConfiguration>>().Value);
         services.AddScoped<ILoggerService, FileLogger>();
-        services.AddScoped<IContextualLogger, ContextualLogger>(); // ContextualLogger kaydını da ekleyelim.
+        services.AddScoped<IContextualLogger, ContextualLogger>();
 
         // 3. Scrutor kullanarak TÜM Repository'leri OTOMATİK OLARAK TARA VE KAYDET
         services.Scan(scan => scan
-            // Bu projenin (ETicaret.Persistence) assembly'sini tara
             .FromAssemblyOf<PersistenceAssemblyReference>()
-            // Adı "Repository" ile biten tüm somut sınıfları bul
             .AddClasses(classes => classes.Where(type => type.Name.EndsWith("Repository")))
-            // Bulunan her sınıfı, kendi implemente ettiği arayüzüyle eşleştir
-            // Örnek: IProductRepository -> ProductRepository
             .AsMatchingInterface()
-            // ve tümünü Scoped olarak kaydet.
             .WithScopedLifetime()
         );
 

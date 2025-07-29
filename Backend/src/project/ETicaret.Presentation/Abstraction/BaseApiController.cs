@@ -6,11 +6,11 @@ namespace ETicaret.Presentation.Abstraction;
 
 [ApiController]
 [Route("api/[controller]")]
-public abstract class ApiController : ControllerBase
+public abstract class BaseApiController : ControllerBase
 {
     public readonly IMediator _mediator;
 
-    protected ApiController(IMediator mediator)
+    protected BaseApiController(IMediator mediator)
     {
         _mediator = mediator;
     }

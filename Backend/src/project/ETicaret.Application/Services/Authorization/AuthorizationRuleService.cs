@@ -1,5 +1,6 @@
 ﻿using Core.Application.Abstractions.Repositories;
 using Core.Application.Abstractions.Services;
+using ETicaret.Application.Features.OperationClaims.Specifications;
 using ETicaret.Domain.Entities;
 using Microsoft.Extensions.Caching.Distributed;
 
@@ -11,11 +12,10 @@ namespace ETicaret.Application.Services.Authorization;
 public class AuthorizationRuleService : IAuthorizationRuleService
 {
     private readonly IRepository<OperationClaim, int> _operationClaimRepository;
-    private readonly ICacheService? _cacheService;
+    private readonly ICacheService _cacheService;
 
-    public AuthorizationRuleService(IUnitOfWork unitOfWork, ICacheService? cacheService = null)
+    public AuthorizationRuleService(IUnitOfWork unitOfWork, ICacheService cacheService)
     {
-        // DÜZELTME: Artık IUnitOfWork üzerinden generic repository'yi alıyoruz.
         _operationClaimRepository = unitOfWork.GetRepository<OperationClaim, int>();
         _cacheService = cacheService;
     }
@@ -31,49 +31,46 @@ public class AuthorizationRuleService : IAuthorizationRuleService
         string cacheKey = $"AuthRule:{operationName}";
 
         // 1. Önbellekten rol bilgilerini okumayı dene
-        if (_cacheService != null)
+        try
         {
-            try
+            var cachedRoles = await _cacheService.GetDataAsync<string[]>(cacheKey);
+            if (cachedRoles != null)
             {
-                var cachedRoles = await _cacheService.GetDataAsync<string[]>(cacheKey);
-                if (cachedRoles != null)
-                {
-                    return cachedRoles;
-                }
-            }
-            catch (Exception ex)
-            {
-                // Hata durumunda loglama yapıp devam etmek daha güvenlidir, sistem durmamalı.
-                Console.WriteLine($"Redis cache okuma hatası (GetRequiredRolesAsync) - Operation: {operationName}, Hata: {ex.Message}");
+                // Cache'de bulundu, direkt döndür.
+                return cachedRoles;
             }
         }
+        catch (Exception ex)
+        {
+            // Cache servisi ayakta değilse hata logla ama işlemi durdurma, DB'den devam et.
+            Console.WriteLine($"Redis cache okuma hatası (GetRequiredRolesAsync) - Operation: {operationName}, Hata: {ex.Message}");
+        }
 
-        // 2. Önbellekte yoksa, veritabanından spesifikasyon ile çek
-        var spec = new OperationClaimByNameSpecification(operationName);
+        // 2. Cache'de yoksa, veritabanından al. Merkezi specification'ı kullan.
+        var spec = new OperationClaimSpecifications.ByOperationName(operationName);
         var operationClaim = await _operationClaimRepository.GetAsync(spec);
 
         string[] roles = Array.Empty<string>();
         if (operationClaim != null && !string.IsNullOrWhiteSpace(operationClaim.RequiredRoles))
         {
+            // "Admin,User" gibi bir string'i diziye çevir.
             roles = operationClaim.RequiredRoles
                 .Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries)
                 .Select(role => role.Trim())
                 .ToArray();
         }
 
-        // 3. Bulunan sonucu (boş bile olsa) tekrar önbelleğe yaz
-        if (_cacheService != null)
+        // 3. Bulunan sonucu (boş bile olsa) bir sonraki sefer için önbelleğe yaz.
+        try
         {
-            try
-            {
-                var cacheEntryOptions = new DistributedCacheEntryOptions()
-                    .SetSlidingExpiration(TimeSpan.FromHours(2)); // Rollerin sık değişmediğini varsayarak uzun süreli cache
-                await _cacheService.AddDataAsync(cacheKey, roles, cacheEntryOptions);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Redis cache yazma hatası (GetRequiredRolesAsync) - Operation: {operationName}, Hata: {ex.Message}");
-            }
+            var cacheEntryOptions = new DistributedCacheEntryOptions()
+                .SetSlidingExpiration(TimeSpan.FromHours(2)); // 2 saat erişilmezse silinsin.
+            await _cacheService.AddDataAsync(cacheKey, roles, cacheEntryOptions);
+        }
+        catch (Exception ex)
+        {
+            // Cache servisi ayakta değilse hata logla ama işlemi durdurma.
+            Console.WriteLine($"Redis cache yazma hatası (GetRequiredRolesAsync) - Operation: {operationName}, Hata: {ex.Message}");
         }
 
         return roles;

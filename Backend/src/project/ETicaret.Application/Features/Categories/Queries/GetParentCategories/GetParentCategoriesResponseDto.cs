@@ -1,6 +1,9 @@
-﻿namespace ETicaret.Application.Features.Categories.Queries.GetParentCategories;
+﻿using ETicaret.Application.Common.Mappings;
+using ETicaret.Domain.Entities;
 
-public class GetParentCategoriesResponseDto
+namespace ETicaret.Application.Features.Categories.Queries.GetParentCategories;
+
+public class GetParentCategoriesResponseDto : IMapFrom<Category>
 {
     public int Id { get; set; }
     public string? Name { get; set; }

@@ -1,9 +1,12 @@
-﻿namespace ETicaret.Application.Features.Addresses.Commands.Update;
+﻿using ETicaret.Application.Common.Mappings;
+using ETicaret.Domain.Entities;
+
+namespace ETicaret.Application.Features.Addresses.Commands.Update;
 
 /// <summary>
 /// Adres güncelleme işlemi sonucu döndürülen DTO.
 /// </summary>
-public class UpdateAddressResponseDto
+public class UpdateAddressResponseDto : IMapFrom<Address>
 {
     #region Properties
 

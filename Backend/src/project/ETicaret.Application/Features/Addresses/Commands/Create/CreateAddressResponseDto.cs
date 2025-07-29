@@ -1,9 +1,12 @@
-﻿namespace ETicaret.Application.Features.Addresses.Commands.Create;
+﻿using ETicaret.Application.Common.Mappings;
+using ETicaret.Domain.Entities;
+
+namespace ETicaret.Application.Features.Addresses.Commands.Create;
 
 /// <summary>
 /// Adres oluşturma işlemi sonucu döndürülen DTO.
 /// </summary>
-public class CreateAddressResponseDto
+public class CreateAddressResponseDto : IMapFrom<Address>
 {
     #region Properties
 

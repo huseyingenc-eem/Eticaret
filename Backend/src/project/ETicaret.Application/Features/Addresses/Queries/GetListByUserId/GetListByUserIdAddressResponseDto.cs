@@ -1,9 +1,12 @@
-﻿namespace ETicaret.Application.Features.Addresses.Queries.GetListByUserId;
+﻿using ETicaret.Application.Common.Mappings;
+using ETicaret.Domain.Entities;
+
+namespace ETicaret.Application.Features.Addresses.Queries.GetListByUserId;
 
 /// <summary>
 /// Kullanıcının adres listesi için yanıt DTO'su.
 /// </summary>
-public class GetListByUserIdAddressResponseDto
+public class GetListByUserIdAddressResponseDto : IMapFrom<Address>
 {
     #region Properties
 

@@ -1,10 +1,13 @@
-﻿namespace ETicaret.Application.Features.Addresses.Queries.GetList;
+﻿using ETicaret.Application.Common.Mappings;
+using ETicaret.Domain.Entities;
+
+namespace ETicaret.Application.Features.Addresses.Queries.GetList;
 
 /// <summary>
 /// Admin adres listesi için yanıt DTO'su.
 /// Kullanıcı bilgilerini de içerir (User join ile gelir).
 /// </summary>
-public class GetListAddressResponseDto
+public class GetListAddressResponseDto : IMapFrom<Address>
 {
     #region Address Properties
 

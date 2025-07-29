@@ -23,6 +23,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Folder Include="Features\Categories\Profiles\" />
 		<Folder Include="Features\Roles\Rules\" />
 		<ProjectCapability Include="ConfigurableFileNesting" />
 		<ProjectCapability Include="ConfigurableFileNestingFeatureEnabled" />

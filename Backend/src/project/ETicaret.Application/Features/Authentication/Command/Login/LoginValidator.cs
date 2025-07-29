@@ -8,8 +8,8 @@ public class LoginValidator : AbstractValidator<LoginCommand>
     {
         RuleFor(x => x.Email)
             .NotEmpty().WithMessage("Email alanı boş olamaz.")
-            .EmailAddress().WithMessage("Geçerli bir email adresi formatı giriniz.");
-            //.Must(EmailFormat).WithMessage("Email adresi @gmail.com veya @outlook.com ile bitmelidir.");
+            .EmailAddress().WithMessage("Geçerli bir email adresi formatı giriniz.")
+            .Must(EmailFormat).WithMessage("Email adresi @gmail.com veya @outlook.com ile bitmelidir.");
 
         RuleFor(x => x.Password)
             .NotEmpty().WithMessage("Şifre alanı boş olamaz.")
@@ -20,11 +20,11 @@ public class LoginValidator : AbstractValidator<LoginCommand>
             //.Matches("[^a-zA-Z0-9]").WithMessage("Şifre en az bir özel karakter (örn: !?*.) içermelidir.");
     }
 
-    //private bool EmailFormat(string email)
-    //{
-    //    bool endsWithGmail = email.EndsWith("@gmail.com", StringComparison.OrdinalIgnoreCase);
-    //    bool endsWithOutlook = email.EndsWith("@outlook.com", StringComparison.OrdinalIgnoreCase);
+    private bool EmailFormat(string email)
+    {
+        bool endsWithGmail = email.EndsWith("@gmail.com", StringComparison.OrdinalIgnoreCase);
+        bool endsWithOutlook = email.EndsWith("@outlook.com", StringComparison.OrdinalIgnoreCase);
 
-    //    return endsWithGmail || endsWithOutlook;
-    //}
+        return endsWithGmail || endsWithOutlook;
+    }
 }

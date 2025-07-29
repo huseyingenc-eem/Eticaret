@@ -13,7 +13,7 @@ using System.Security.Claims;
 
 namespace ETicaret.Presentation.Controllers;
 
-public class AddressesController : ApiController
+public class AddressesController : BaseApiController
 {
 
     public AddressesController(IMediator mediator) : base(mediator) { }

@@ -1,17 +1,18 @@
-﻿namespace Core.Application.Common.Exceptions;
+﻿using Core.Application.Common.Constants;
+
+namespace Core.Application.Common.Exceptions;
 
 /// <summary>
 /// İş kuralları ihlal edildiğinde fırlatılan hata.
 /// </summary>
 public class BusinessException : ApplicationException
 {
-    // Tek bir constructor yeterli. Gerekli tüm bilgileri base'e (ApplicationException) gönderir.
     public BusinessException(
         string message,
         string? userFriendlyMessage = null,
         string? errorCode = null,
         object? additionalData = null)
-        : base(message, userFriendlyMessage, errorCode, additionalData)
+        : base(message, errorCode ?? ApplicationErrorCodes.BusinessRuleViolation, userFriendlyMessage, additionalData)
     {
     }
 
@@ -21,7 +22,10 @@ public class BusinessException : ApplicationException
         string? userFriendlyMessage = null,
         string? errorCode = null,
         object? additionalData = null)
-        : base(string.Join(Environment.NewLine, errors ?? Enumerable.Empty<string>()), userFriendlyMessage, errorCode, additionalData)
+        : base(string.Join(Environment.NewLine, errors ?? Enumerable.Empty<string>()),
+               errorCode ?? ApplicationErrorCodes.BusinessRuleViolation,
+               userFriendlyMessage,
+               additionalData)
     {
     }
 }

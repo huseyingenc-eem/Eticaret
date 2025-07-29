@@ -15,7 +15,7 @@ namespace ETicaret.Presentation.Controllers;
 /// Kullanıcılara rol atama, kaldırma, güncelleme ve listeleme işlemlerini yönetir.
 /// </summary>
 [Authorize] // Tüm işlemler için kimlik doğrulama gerekli
-public class UserRolesController : ApiController
+public class UserRolesController : BaseApiController
 {
     #region Yapıcı Metot (Constructor)
 

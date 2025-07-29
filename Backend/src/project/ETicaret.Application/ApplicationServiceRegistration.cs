@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Scrutor;
 using System.Reflection;
 using FluentValidation;
+using ETicaret.Application.Services.Authorization;
 
 namespace ETicaret.Application;
 
@@ -28,15 +29,16 @@ public static class ApplicationServiceRegistration
 
         #region Application Katmanı Servisleri (Application Layer Services)
         services.AddAutoMapper(Assembly.GetExecutingAssembly());
+
         services.AddMediatR(cfg =>
             cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
-
         #endregion
 
         #region Önbellekleme Servisleri (Caching Services)
         services.AddScoped<ICacheService, RedisCacheService>();
         #endregion
+        services.AddScoped<IAuthorizationRuleService, AuthorizationRuleService>();
 
         #region Otomatik Servis Kaydı (Scrutor - Automatic Service Registration)
         services.Scan(scan => scan

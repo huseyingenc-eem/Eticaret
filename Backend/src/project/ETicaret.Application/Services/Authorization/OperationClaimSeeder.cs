@@ -1,5 +1,6 @@
 ﻿using Core.Application.Abstractions.Repositories;
 using ETicaret.Domain.Entities;
+using ETicaret.Application.Features.OperationClaims.Specifications;
 using MediatR;
 using System.Reflection;
 
@@ -13,7 +14,6 @@ public class OperationClaimSeeder : IOperationClaimSeeder
     public OperationClaimSeeder(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
-        // DÜZELTME: Artık IUnitOfWork üzerinden generic repository'yi alıyoruz.
         _operationClaimRepository = _unitOfWork.GetRepository<OperationClaim, int>();
     }
 
@@ -39,8 +39,7 @@ public class OperationClaimSeeder : IOperationClaimSeeder
         }
         Console.WriteLine($"OperationClaimSeeder: {commandQueryTypes.Count} adet IRequest implementasyonu bulundu.");
 
-        // DÜZELTME: Mevcut yetkileri GetAllAsync yerine, GetListAsync ve yeni spesifikasyon ile çekiyoruz.
-        var spec = new AllOperationClaimsSpecification();
+        var spec = new OperationClaimSpecifications.All();
         var existingClaims = await _operationClaimRepository.GetListAsync(spec);
         var existingOperationNames = new HashSet<string>(existingClaims.Select(c => c.OperationName));
         Console.WriteLine($"OperationClaimSeeder: Veritabanında {existingClaims.Count} adet mevcut yetki bulundu.");
@@ -59,16 +58,13 @@ public class OperationClaimSeeder : IOperationClaimSeeder
                 {
                     OperationName = operationName,
                     FeatureName = featureName,
-                    RequiredRoles = "Admin",
-                    // DÜZELTME: CreatedTime alanı kaldırıldı.
-                    // BaseDbContext bu alanı SaveChangesAsync sırasında otomatik olarak dolduracak.
+                    RequiredRoles = "Admin"
                 });
             }
         }
 
         if (newClaims.Any())
         {
-            // DÜZELTME: Artık generic repository üzerinden AddRangeAsync çağırıyoruz.
             await _operationClaimRepository.AddRangeAsync(newClaims);
             await _unitOfWork.CompleteAsync();
             Console.WriteLine($"OperationClaimSeeder: {newClaims.Count} yeni operasyon yetkisi başarıyla eklendi.");

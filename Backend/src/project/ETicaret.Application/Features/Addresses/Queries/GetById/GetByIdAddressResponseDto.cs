@@ -1,11 +1,12 @@
-﻿using System;
+﻿using ETicaret.Application.Common.Mappings;
+using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Features.Addresses.Queries.GetById;
 
 /// <summary>
 /// Tek bir adresin tüm detaylarını içeren DTO.
 /// </summary>
-public class GetByIdAddressResponseDto
+public class GetByIdAddressResponseDto : IMapFrom<Address>
 {
     public Guid Id { get; set; }
     public string AddressTitle { get; set; } = string.Empty;

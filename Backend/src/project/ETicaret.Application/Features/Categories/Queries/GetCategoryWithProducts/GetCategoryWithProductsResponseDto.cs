@@ -1,6 +1,9 @@
-﻿namespace ETicaret.Application.Features.Categories.Queries.GetCategoryWithProducts;
+﻿using ETicaret.Application.Common.Mappings;
+using ETicaret.Domain.Entities;
 
-public class GetCategoryWithProductsResponseDto
+namespace ETicaret.Application.Features.Categories.Queries.GetCategoryWithProducts;
+
+public class GetCategoryWithProductsResponseDto : IMapFrom<Category>
 {
     public int Id { get; set; }
     public string? Name { get; set; }

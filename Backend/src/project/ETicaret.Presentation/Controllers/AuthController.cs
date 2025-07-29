@@ -8,7 +8,7 @@ using System.Security.Claims;
 
 namespace ETicaret.Presentation.Controllers;
 
-public class AuthController: ApiController 
+public class AuthController: BaseApiController 
 {
 
     public AuthController(IMediator mediator) : base(mediator) { }

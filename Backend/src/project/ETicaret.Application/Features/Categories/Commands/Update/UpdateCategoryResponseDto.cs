@@ -1,7 +1,8 @@
-﻿namespace ETicaret.Application.Features.Categories.Commands.Update;
+﻿using ETicaret.Application.Common.Mappings;
+using ETicaret.Domain.Entities;
 
-// Yeni Response DTO
-public class UpdateCategoryResponseDto
+namespace ETicaret.Application.Features.Categories.Commands.Update;
+public class UpdateCategoryResponseDto : IMapFrom<Category>
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
@@ -9,6 +10,6 @@ public class UpdateCategoryResponseDto
     public string? Description { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedTime { get; set; }
-    public DateTime? UpdateTime { get; set; } // Güncellenme zamanı
+    public DateTime? UpdateTime { get; set; }
     public string Message { get; set; } = string.Empty;
 }

@@ -1,6 +1,9 @@
-﻿namespace ETicaret.Application.Features.Categories.Commands.Create;
+﻿using ETicaret.Application.Common.Mappings;
+using ETicaret.Domain.Entities;
 
-public class CreateCategoryResponseDto
+namespace ETicaret.Application.Features.Categories.Commands.Create;
+
+public class CreateCategoryResponseDto : IMapFrom<Category>
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;

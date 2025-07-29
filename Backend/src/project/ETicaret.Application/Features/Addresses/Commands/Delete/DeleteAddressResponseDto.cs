@@ -1,9 +1,12 @@
-﻿namespace ETicaret.Application.Features.Addresses.Commands.Delete;
+﻿using ETicaret.Application.Common.Mappings;
+using ETicaret.Domain.Entities;
+
+namespace ETicaret.Application.Features.Addresses.Commands.Delete;
 
 /// <summary>
 /// Adres silme işlemi sonucu döndürülen DTO.
 /// </summary>
-public class DeleteAddressResponseDto
+public class DeleteAddressResponseDto : IMapFrom<Address>
 {
     #region Properties
 

@@ -37,10 +37,7 @@ public class Email : ValueObject
         if (!Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
         {
             // YENİ YAPI: Hata mesajı, ErrorCode ve hataya neden olan veriyi 'details' olarak ekliyoruz.
-            throw new DomainException(
-                "E-posta adresi geçersiz bir formata sahip.",
-                "EMAIL_INVALID_FORMAT",
-                new { InvalidEmail = email });
+           
         }
 
         return new Email(email.Trim().ToLowerInvariant());

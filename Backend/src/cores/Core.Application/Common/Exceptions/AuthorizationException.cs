@@ -10,9 +10,9 @@ public class AuthorizationException : ApplicationException
     public AuthorizationException(
         string message,
         string? userFriendlyMessage = null,
-        string? errorCode = ApplicationErrorCodes.AuthGeneral, // Varsayılan bir hata kodu
+        string? errorCode = null,
         object? additionalData = null)
-        : base(message, userFriendlyMessage, errorCode, additionalData)
+        : base(message, errorCode ?? ApplicationErrorCodes.AuthGeneral, userFriendlyMessage, additionalData)
     {
     }
 }

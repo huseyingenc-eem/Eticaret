@@ -1,6 +1,9 @@
-﻿namespace ETicaret.Application.Features.Categories.Commands.Delete;
+﻿using ETicaret.Application.Common.Mappings;
+using ETicaret.Domain.Entities;
 
-public class DeleteCategoryResponseDto
+namespace ETicaret.Application.Features.Categories.Commands.Delete;
+
+public class DeleteCategoryResponseDto : IMapFrom<Category>
 {
 
     public int Id { get; set; }

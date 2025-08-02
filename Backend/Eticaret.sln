@@ -28,6 +28,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B3E85BA8-6098-4B76-BE78-11105B2E4DD1}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		prompts.md = prompts.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{29943081-7727-4DAD-8B98-D3321C2475E8}"

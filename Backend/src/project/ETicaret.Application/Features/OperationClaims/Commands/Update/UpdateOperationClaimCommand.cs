@@ -1,11 +1,9 @@
 ﻿using AutoMapper;
 using Core.Application.Abstractions.Repositories;
 using Core.Application.Behaviors.Caching;
-using Core.Application.Behaviors.Rules;
 using Core.Application.Behaviors.Transactional;
 using Core.Application.Common.Constants;
 using Core.Application.Common.Exceptions;
-using ETicaret.Application.Features.OperationClaims.Rules;
 using ETicaret.Application.Features.OperationClaims.Specifications;
 using ETicaret.Domain.Entities;
 using MediatR;
@@ -20,16 +18,6 @@ namespace ETicaret.Application.Features.OperationClaims.Commands.Update;
 /// ICacheRemoverRequest: Bu komut başarılı olduğunda ilgili önbelleği otomatik olarak temizler.
 /// RuleConfiguration: Sadece belirli kuralları çalıştırır.
 /// </summary>
-[RuleConfiguration(
-    IncludeRules = new[]
-    {
-        typeof(OperationNameMustNotBeEmptyRule<>),
-        typeof(FeatureNameMustNotBeEmptyRule<>),
-        typeof(RequiredRolesMustBeValidRule<>),
-        typeof(OperationNameMustBeUniqueRule<>),
-        typeof(OperationClaimMustExistRule<>)
-    }
-)]
 public class UpdateOperationClaimCommand : IRequest<UpdateOperationClaimResponseDto>,
     ITransactionalRequest,
     ICacheRemoverRequest

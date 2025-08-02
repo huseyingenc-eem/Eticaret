@@ -98,7 +98,7 @@ public class AddressesControllerTests
     public async Task GetListByCurrentUser_ShouldReturnOkResult_WithUserAddresses()
     {
         // Arrange
-        var expectedAddresses = new List<GetListByUserIdAddressResponseDto>
+        var expectedAddresses = new List<GetMyAddressesResponseDto>
         {
             new()
             {
@@ -121,7 +121,7 @@ public class AddressesControllerTests
         };
 
         _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetListByUserIdAddressQuery>(), It.IsAny<CancellationToken>()))
+            .Setup(m => m.Send(It.IsAny<GetMyAddressesQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedAddresses);
 
         // Act
@@ -134,7 +134,7 @@ public class AddressesControllerTests
 
         // Verify mediator call
         _mockMediator.Verify(m => m.Send(
-            It.Is<GetListByUserIdAddressQuery>(q => q.UserId == TestUserId),
+            It.Is<GetMyAddressesQuery>(q => q.UserId == TestUserId),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -157,7 +157,7 @@ public class AddressesControllerTests
 
         // Verify mediator was never called
         _mockMediator.Verify(m => m.Send(
-            It.IsAny<GetListByUserIdAddressQuery>(),
+            It.IsAny<GetMyAddressesQuery>(),
             It.IsAny<CancellationToken>()), Times.Never);
     }
 

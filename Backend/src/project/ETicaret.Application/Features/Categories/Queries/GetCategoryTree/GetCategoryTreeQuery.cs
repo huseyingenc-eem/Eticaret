@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Core.Application.Abstractions.Repositories;
+using Core.Application.Behaviors.Authorization;
 using Core.Application.Behaviors.Caching;
 using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.Categories.Specifications;
@@ -15,7 +16,9 @@ namespace ETicaret.Application.Features.Categories.Queries.GetCategoryTree;
 /// ICachableRequest: Bu sorgunun sonucunun önbelleğe alınmasını sağlar.
 /// Kategori ağacı sık değişmediği için önbellekleme performans açısından oldukça yararlıdır.
 /// </summary>
-public class GetCategoryTreeQuery : IRequest<List<GetCategoryTreeResponseDto>>, ICachableRequest
+public class GetCategoryTreeQuery : IRequest<List<GetCategoryTreeResponseDto>>,
+    ICachableRequest,
+    IPublicRequest
 {
     #region Önbellek Ayarları (Cache Settings)
     public bool BypassCache { get; set; }
@@ -49,26 +52,14 @@ public class GetCategoryTreeQueryHandler : IRequestHandler<GetCategoryTreeQuery,
     #endregion
 
     #region İşleme Metotları (Handler Methods)
-
-    /// <summary>
-    /// Kategori ağacı getirme sorgusunu işler.
-    /// Performans için O(n) karmaşıklığında tek geçişli algoritma kullanır.
-    /// </summary>
-    /// <param name="request">Kategori ağacı getirme sorgusu.</param>
-    /// <param name="cancellationToken">İptal token'ı.</param>
-    /// <returns>Hiyerarşik kategori ağacının listesi.</returns>
     public async Task<List<GetCategoryTreeResponseDto>> Handle(GetCategoryTreeQuery request, CancellationToken cancellationToken)
     {
-        // 1. Tüm kategorileri tek sorgu ile veritabanından getir
         List<Category> allCategories = await GetAllCategoriesAsync(cancellationToken);
 
-        // 2. Sonuç kontrolü yap
         ValidateResults(allCategories);
 
-        // 3. Entity'leri DTO'ya dönüştür
         List<GetCategoryTreeResponseDto> categoryDtos = MapToResponseDtos(allCategories);
 
-        // 4. Hiyerarşik ağaç yapısını oluştur ve döndür
         return BuildCategoryTree(categoryDtos);
     }
 
@@ -76,18 +67,12 @@ public class GetCategoryTreeQueryHandler : IRequestHandler<GetCategoryTreeQuery,
 
     #region Yardımcı Metotlar (Helper Methods)
 
-    /// <summary>
-    /// Tüm kategorileri veritabanından getirir.
-    /// </summary>
-    /// <param name="cancellationToken">İptal token'ı.</param>
-    /// <returns>Kategori entity'lerinin listesi.</returns>
     private async Task<List<Category>> GetAllCategoriesAsync(CancellationToken cancellationToken)
     {
         try
         {
-            // Yeni specification sistemini kullanarak tüm kategorileri getir
-            var allCategoriesSpec = new CategorySpecifications.Active();
-            return await _categoryRepository.GetListAsync(allCategoriesSpec, cancellationToken);
+            var treeDataSpec = new CategorySpecifications.TreeData();
+            return await _categoryRepository.GetListAsync(treeDataSpec, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -99,11 +84,6 @@ public class GetCategoryTreeQueryHandler : IRequestHandler<GetCategoryTreeQuery,
             );
         }
     }
-
-    /// <summary>
-    /// Sorgu sonuçlarını doğrular.
-    /// </summary>
-    /// <param name="categories">Doğrulanacak kategori listesi.</param>
     private static void ValidateResults(List<Category> categories)
     {
         if (!categories.Any())
@@ -116,11 +96,6 @@ public class GetCategoryTreeQueryHandler : IRequestHandler<GetCategoryTreeQuery,
         }
     }
 
-    /// <summary>
-    /// Kategori entity listesini yanıt DTO listesine dönüştürür.
-    /// </summary>
-    /// <param name="categories">Dönüştürülecek kategori entity'leri.</param>
-    /// <returns>Yanıt DTO'larının listesi.</returns>
     private List<GetCategoryTreeResponseDto> MapToResponseDtos(List<Category> categories)
     {
         try
@@ -148,33 +123,36 @@ public class GetCategoryTreeQueryHandler : IRequestHandler<GetCategoryTreeQuery,
     {
         try
         {
-            // 1. Performans için kategori ID'lerini hızlı erişim sözlüğü haline getir
-            var categoryMap = categoryDtos.ToDictionary(c => c.Id);
+            var uniqueCategories = categoryDtos
+                .GroupBy(c => c.Id)
+                .Select(g =>
+                {
+                    var category = g.First();
+                    category.Children = new List<GetCategoryTreeResponseDto>();
+                    return category;
+                })
+                .ToList();
 
-            // 2. Kök kategorileri tutacak sonuç listesi
+            var categoryMap = uniqueCategories.ToDictionary(c => c.Id);
             var rootCategories = new List<GetCategoryTreeResponseDto>();
 
-            // 3. TEK GEÇİŞTE hiyerarşi oluştur (O(n) karmaşıklık)
-            foreach (var category in categoryDtos)
+            foreach (var category in uniqueCategories)
             {
                 if (category.ParentId == null)
                 {
-                    // Ana kategori (kök düzey)
                     rootCategories.Add(category);
                 }
                 else
                 {
-                    // Alt kategori - ebeveynini bul ve ekle
                     if (categoryMap.TryGetValue(category.ParentId.Value, out var parentCategory))
                     {
-                        parentCategory.Children ??= new List<GetCategoryTreeResponseDto>();
-                        parentCategory.Children.Add(category);
+                        if (!parentCategory.Children.Any(c => c.Id == category.Id))
+                        {
+                            parentCategory.Children.Add(category);
+                        }
                     }
-                    // Not: Ebeveyn bulunamazsa (orphan kategori), o kategori ağaçta görünmeyecek
-                    // Bu, veri bütünlüğü sorunu olabilir ancak uygulama çökmez
                 }
             }
-
             return rootCategories;
         }
         catch (Exception ex)

@@ -1,13 +1,13 @@
 ﻿using Core.Application.Abstractions.Repositories;
+using Core.Application.Behaviors.Authorization;
 using Core.Application.Behaviors.Caching;
 using Core.Application.Behaviors.RequestInfo;
-using Core.Application.Behaviors.Rules;
 using Core.Application.Behaviors.Transactional;
 using Core.Application.Common.Exceptions;
-using ETicaret.Application.Features.Addresses.Rules;
 using ETicaret.Application.Features.Addresses.Specifications;
 using ETicaret.Domain.Entities;
 using MediatR;
+using System.Text.Json.Serialization;
 
 namespace ETicaret.Application.Features.Addresses.Commands.Delete;
 
@@ -20,30 +20,23 @@ namespace ETicaret.Application.Features.Addresses.Commands.Delete;
 /// BusinessRulesValidationBehavior: Business logic kontrolü yapar
 /// Handler: Sadece core business işlemlerini yapar
 /// </summary>
-[RuleConfiguration(
-    OnlyRules = new[]
-    {
-        typeof(UserExistsRule),
-        typeof(MinimumAddressRule)
-    }
-)]
+[DefaultRoles("Admin","User")]
 public class DeleteAddressCommand : IRequest<DeleteAddressResponseDto>,
     ITransactionalRequest,
     ICacheRemoverRequest,
     IRequestInfoRequest
 {
     #region Properties
-
     public Guid Id { get; set; }
-    public string UserId { get; set; } = string.Empty;
 
+    [JsonIgnore]
+    public string UserId { get; set; } = string.Empty;
     #endregion
 
     #region Cache Settings
-
-    public string CacheKey => $"address:{Id}";
-    public string? CacheGroupKey => "Addresses";
-    public bool BypassCache { get; set; }
+    public string CacheKey => $"user-addresses_{UserId}";
+    public bool BypassCache => false;
+    public string? CacheGroupKey => null;
 
     #endregion
 }
@@ -95,8 +88,12 @@ public class DeleteAddressCommandHandler : IRequestHandler<DeleteAddressCommand,
         // 2. Adresi sil
         await DeleteAddressAsync(addressToDelete, cancellationToken);
 
-        // 3. Yanıt DTO'sunu oluştur ve döndür
-        return CreateResponseDto(request.Id);
+        return new DeleteAddressResponseDto
+        {
+            Id = addressToDelete.Id,
+            Message = "Adres başarıyla silindi.",
+            IsSuccess = true
+        };
     }
 
     #endregion
@@ -112,7 +109,7 @@ public class DeleteAddressCommandHandler : IRequestHandler<DeleteAddressCommand,
     private async Task<Address> GetAndValidateAddressAsync(DeleteAddressCommand request, CancellationToken cancellationToken)
     {
         // Güvenlik odaklı specification ile hem ID hem de UserId kontrol et
-        var spec = new AddressSpecifications.ByIdAndUserId(request.Id, request.UserId);
+        var spec = new AddressSpecifications.ById(request.Id);
         Address? addressToDelete = await _addressRepository.GetAsync(spec, cancellationToken);
 
         if (addressToDelete == null)
@@ -134,24 +131,7 @@ public class DeleteAddressCommandHandler : IRequestHandler<DeleteAddressCommand,
     /// <param name="cancellationToken">İptal token'ı.</param>
     private async Task DeleteAddressAsync(Address addressToDelete, CancellationToken cancellationToken)
     {
-        // Kalıcı silme işlemi (permanent: true)
-        // Adres verileri genellikle GDPR uyum nedeniyle kalıcı olarak silinir
         await _addressRepository.DeleteAsync(addressToDelete, permanent: true, cancellationToken);
-    }
-
-    /// <summary>
-    /// Silme işlemi sonucunu içeren yanıt DTO'sunu oluşturur.
-    /// </summary>
-    /// <param name="deletedAddressId">Silinen adresin ID'si.</param>
-    /// <returns>Yanıt DTO'su.</returns>
-    private static DeleteAddressResponseDto CreateResponseDto(Guid deletedAddressId)
-    {
-        return new DeleteAddressResponseDto
-        {
-            Id = deletedAddressId,
-            Message = "Adres başarıyla silindi.",
-            IsSuccess = true
-        };
     }
 
     #endregion

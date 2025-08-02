@@ -5,9 +5,8 @@ namespace ETicaret.Application.Features.Categories.Commands.Delete;
 
 public class DeleteCategoryResponseDto : IMapFrom<Category>
 {
-
     public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
     public string Message { get; set; } = string.Empty;
-
     public bool IsSuccess { get; set; }
 }

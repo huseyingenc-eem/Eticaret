@@ -1,4 +1,4 @@
-﻿using ETicaret.Application.Services.Repositories;
+﻿
 using FluentValidation;
 
 namespace ETicaret.Application.Features.Categories.Commands.Create;
@@ -15,7 +15,7 @@ public class CreateCategoryValidator : AbstractValidator<CreateCategoryCommand>
 
         RuleFor(c => c.Description)
             .MaximumLength(500).WithMessage("Açıklama en fazla 500 karakter olabilir.")
-            .When(c => !string.IsNullOrEmpty(c.Description)); // Sadece doluysa kontrol et.
+            .When(c => !string.IsNullOrEmpty(c.Description));
 
     }
 

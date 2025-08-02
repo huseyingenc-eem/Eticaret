@@ -3,11 +3,14 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace ETicaret.Presentation.Configuration.ServiceConfiguration;
 
 /// <summary>
 /// JWT Authentication servislerini yapılandırır.
+/// Tüm 401 (Unauthorized) senaryolarını (token yok, token geçersiz, token süresi dolmuş)
+/// merkezi olarak yönetir.
 /// </summary>
 public class AuthenticationServiceConfiguration : IServiceConfiguration
 {
@@ -54,75 +57,76 @@ public class AuthenticationServiceConfiguration : IServiceConfiguration
             OnChallenge = async context =>
             {
                 context.HandleResponse();
-                await WriteChallengeErrorResponse(context, environment);
+
+                var failure = context.AuthenticateFailure;
+                object response;
+
+                if (failure is SecurityTokenExpiredException)
+                    response = CreateTokenExpiredResponse(context);
+
+                else if (failure != null)
+                    response = CreateInvalidTokenResponse(context, environment);
+                else
+                    response = CreateChallengeResponse(context);
+
+                await WriteJsonResponse(context.Response, response, environment);
             },
-            OnAuthenticationFailed = async context =>
-            {
-                context.NoResult();
-                await WriteAuthenticationFailedResponse(context, environment);
-            }
+            OnAuthenticationFailed = _ => Task.CompletedTask
         };
     }
 
-    /// <summary>
-    /// OnChallenge event'i için error response yazar (JwtBearerChallengeContext).
-    /// </summary>
-    private static async Task WriteChallengeErrorResponse(
-        JwtBearerChallengeContext context,
-        IWebHostEnvironment environment)
+
+    private static object CreateChallengeResponse(JwtBearerChallengeContext context) => new
     {
-        var response = new
+        type = "urn:ietf:rfc:7235#section-3.1",
+        title = "Oturum Gerekli",
+        status = 401,
+        detail = "Bu sayfayı görüntülemek veya bu işlemi yapmak için giriş yapmalısınız.",
+        instance = context.Request.Path.ToString(),
+        errorCode = "AUTHENTICATION_REQUIRED",
+        userFriendlyMessage = "Lütfen devam etmek için giriş yapın." 
+    };
+
+    private static object CreateInvalidTokenResponse(JwtBearerChallengeContext context, IWebHostEnvironment env) => new
+    {
+        type = "urn:ietf:rfc:7235#section-3.1",
+        title = "Geçersiz Oturum",
+        status = 401,
+        detail = "Oturumunuz doğrulanamadı. Lütfen tekrar giriş yapmayı deneyin.",
+        instance = context.Request.Path.ToString(),
+        errorCode = "INVALID_TOKEN",
+        userFriendlyMessage = "Güvenlik nedeniyle oturumunuz sonlandırıldı. Lütfen tekrar giriş yapın.",
+        developerDetail = env.IsDevelopment() ? context.AuthenticateFailure?.ToString() : null
+    };
+
+    private static object CreateTokenExpiredResponse(JwtBearerChallengeContext context)
+    {
+        context.Response.Headers.Append("Token-Expired", "true");
+        return new
         {
             type = "urn:ietf:rfc:7235#section-3.1",
-            title = "Kimlik Doğrulama Gerekli",
+            title = "Oturum Süresi Doldu",
             status = 401,
-            detail = "Bu kaynağa erişmek için geçerli bir JWT token gereklidir.",
+            detail = "Oturumunuzun süresi doldu. Güvenliğiniz için belirli bir süre sonra oturumlar otomatik olarak sonlandırılır.",
             instance = context.Request.Path.ToString(),
-            errorCode = "AUTHENTICATION_REQUIRED",
-            userFriendlyMessage = "Oturum açmanız gerekiyor. Lütfen giriş yapınız."
+            errorCode = "TOKEN_EXPIRED",
+            userFriendlyMessage = "Oturum süreniz doldu. Lütfen devam etmek için tekrar giriş yapın."
         };
-
-        await WriteJsonResponse(context.Response, response, environment);
     }
 
     /// <summary>
-    /// OnAuthenticationFailed event'i için error response yazar (AuthenticationFailedContext).
+    /// HTTP yanıtına JSON formatında nesne yazmak için ortak metot.
     /// </summary>
-    private static async Task WriteAuthenticationFailedResponse(
-        AuthenticationFailedContext context,
-        IWebHostEnvironment environment)
-    {
-        var response = new
-        {
-            type = "urn:ietf:rfc:7235#section-3.1",
-            title = "Kimlik Doğrulama Başarısız",
-            status = 401,
-            detail = "Sağlanan JWT token geçersiz veya süresi dolmuş.",
-            instance = context.Request.Path.ToString(),
-            errorCode = "INVALID_TOKEN",
-            userFriendlyMessage = "Oturumunuzun süresi dolmuş. Lütfen tekrar giriş yapınız.",
-            developerDetail = environment.IsDevelopment() ? context.Exception?.Message : null
-        };
-
-        await WriteJsonResponse(context.Response, response, environment);
-    }
-
-    /// <summary>
-    /// JSON response yazmak için ortak method.
-    /// </summary>
-    private static async Task WriteJsonResponse(
-        HttpResponse response,
-        object responseObject,
-        IWebHostEnvironment environment)
+    private static async Task WriteJsonResponse(HttpResponse response, object responseObject, IWebHostEnvironment environment)
     {
         response.StatusCode = 401;
-        response.ContentType = "application/json";
-        response.Headers.Append("WWW-Authenticate", "Bearer");
+        response.ContentType = "application/problem+json";
 
         var jsonOptions = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented = environment.IsDevelopment()
+            WriteIndented = environment.IsDevelopment(),
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
         var jsonResponse = JsonSerializer.Serialize(responseObject, jsonOptions);

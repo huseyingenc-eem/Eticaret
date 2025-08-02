@@ -1,39 +1,46 @@
 ﻿using Core.Application.Abstractions.Specifications;
 using ETicaret.Domain.Entities;
+using static Core.Application.Abstractions.Specifications.CommonSpecifications;
 
 namespace ETicaret.Application.Features.OperationClaims.Specifications;
 
 /// <summary>
-/// OperationClaim entity'si için veritabanı sorgu spesifikasyonları.
-/// Bu sınıf sadece veritabanı sorgu mantığını içerir, iş kuralları içermez.
-/// Specification pattern kullanarak karmaşık sorguları yeniden kullanılabilir hale getirir.
+/// Sadece Handler ve Query'ler tarafından kullanılan karmaşık specifications
+/// Rule'lar tarafından kullanılan basit specs buradan çıkarıldı ve rule'lara taşındı
 /// </summary>
 public static class OperationClaimSpecifications
 {
+    #region Basic Specifications - Handler'lar için gerekli
+
     /// <summary>
-    /// ID'ye göre operasyon yetkisini getiren spesifikasyon.
+    /// ID'ye göre operasyon yetkisini getirme - Handler'larda kullanılır
+    /// Rules zaten existence kontrolü yaptı, Handler sadece get yapar
     /// </summary>
-    public class ById : Specification<OperationClaim>
+    public class ById : ByIdSpecification<OperationClaim, int>
     {
-        public ById(int id)
-            : base(oc => oc.Id == id)
-        {
-        }
+        public ById(int id) : base(id) { }
     }
 
     /// <summary>
     /// Operasyon adına göre yetki kaydını getiren spesifikasyon.
+    /// GetList Query'sinde filtreleme için kullanılır.
     /// </summary>
     public class ByOperationName : Specification<OperationClaim>
     {
         public ByOperationName(string operationName)
-            : base(oc => oc.OperationName == operationName)
+            : base(oc => oc.OperationName.Contains(operationName))
         {
+            AddOrderBy(oc => oc.OperationName);
         }
     }
 
+    #endregion
+
+    #region Query Specifications
+
     /// <summary>
     /// Feature adına göre yetki kayıtlarını getiren spesifikasyon.
+    /// Sıralı liste halinde döner.
     /// </summary>
     public class ByFeatureName : Specification<OperationClaim>
     {
@@ -52,18 +59,24 @@ public static class OperationClaimSpecifications
         public ByRequiredRoles(string requiredRole)
             : base(oc => oc.RequiredRoles.Contains(requiredRole))
         {
+            AddOrderBy(oc => oc.FeatureName);
+            AddOrderBy(oc => oc.OperationName);
         }
     }
 
     /// <summary>
     /// Veritabanındaki tüm operasyon yetkilerini getiren spesifikasyon.
+    /// Seeder ve bulk operations için kullanılır.
     /// </summary>
     public class All : Specification<OperationClaim>
     {
         public All()
-            : base(claim => true) // Get all records
+            : base(claim => true)
         {
-            // No specific ordering is needed for this operation.
+            AddOrderBy(oc => oc.FeatureName);
+            AddOrderBy(oc => oc.OperationName);
         }
     }
+
+    #endregion
 }

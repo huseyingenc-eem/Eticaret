@@ -1,49 +1,52 @@
-﻿using Core.Application.Behaviors.Rules;
+﻿using Core.Application.Abstractions.Repositories;
+using Core.Application.Abstractions.Specifications;
+using Core.Application.Behaviors.Rules;
+using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.Addresses.Commands.Delete;
+using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Features.Addresses.Rules;
 
-#region Minimum Address Rule Implementation
-
 /// <summary>
-/// Kullanıcının en az bir adresinin kalmasını kontrol eden kural.
-/// Bu kural sadece DeleteAddressCommand için geçerlidir.
-/// Single Responsibility Principle gereği sadece minimum adres kontrolü yapar.
+/// Minimum adres kontrolü yapan tek sorumlu rule
 /// </summary>
-public class MinimumAddressRule : IRule<DeleteAddressCommand>
+public class MinimumAddressRule : IBusinessRule<DeleteAddressCommand>
 {
-    #region Properties
+    private readonly IRepository<Address,Guid> _repository;
 
-    public int Priority => 2;
-    public string RuleName => nameof(MinimumAddressRule);
-
-    #endregion
-
-    #region Fields
-    private readonly AddressBusinessRules _addressBusinessRules;
-    #endregion
-    #region Constructor
-    public MinimumAddressRule(AddressBusinessRules addressBusinessRules)
+    public MinimumAddressRule(IUnitOfWork unitOfWork)
     {
-        _addressBusinessRules = addressBusinessRules;
+        _repository = unitOfWork.GetRepository<Address,Guid>();
     }
-    #endregion
 
-    #region Rule Implementation
+    public bool ShouldExecute(DeleteAddressCommand command) => true;
 
-    /// <summary>
-    /// DeleteAddressCommand için minimum adres kontrolü.
-    /// Kullanıcının silme işleminden sonra en az bir adresinin kalacağından emin olur.
-    /// </summary>
-    /// <param name="command">Delete address komutu.</param>
-    /// <param name="cancellationToken">İptal token'ı.</param>
     public async Task ExecuteAsync(DeleteAddressCommand command, CancellationToken cancellationToken = default)
     {
-        await _addressBusinessRules.CheckUserMustHaveAtLeastOneAddressAsync(
-            command.UserId, command.Id, cancellationToken);
+        var spec = new ByUserIdSpec(command.UserId);
+        var userAddresses = await _repository.GetListAsync(spec, cancellationToken);
+
+        var remainingAddressCount = userAddresses.Count(a => a.Id != command.Id);
+
+        if (remainingAddressCount == 0)
+        {
+            throw new BusinessException(
+                message: $"User {command.UserId} must have at least one address.",
+                userFriendlyMessage: "En az bir adresiniz olmalıdır. Son adresinizi silemezsiniz.",
+                errorCode: "MINIMUM_ADDRESS_REQUIRED"
+            );
+        }
     }
 
+    public int Priority => 2;
+
+    #region Private Specification - Bu rule'a özel
+    private class ByUserIdSpec : Specification<Address>
+    {
+        public ByUserIdSpec(string userId)
+            : base(address => address.UserId == userId)
+        {
+        }
+    }
     #endregion
 }
-
-#endregion

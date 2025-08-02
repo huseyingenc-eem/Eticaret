@@ -1,106 +1,81 @@
 ﻿using Core.Application.Behaviors.Rules;
+using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.Addresses.Commands.Create;
-using ETicaret.Application.Features.Addresses.Commands.Update;
 using ETicaret.Application.Features.Addresses.Commands.Delete;
+using ETicaret.Application.Features.Addresses.Commands.Update;
 using ETicaret.Application.Features.Addresses.Queries.GetById;
-using ETicaret.Application.Features.Addresses.Queries.GetListByUserId;
+using ETicaret.Application.Features.Addresses.Queries.GetMyAddresses;
+using ETicaret.Application.Features.Addresses.Queries.GetByUserId;
+using ETicaret.Domain.Entities;
+using Microsoft.AspNetCore.Identity;
 
 namespace ETicaret.Application.Features.Addresses.Rules;
 
-#region User Exists Rule Implementation
-
 /// <summary>
-/// Kullanıcının sistemde var olduğunu kontrol eden kural.
-/// Bu kural tüm address komutlarında ve sorgularında kullanılabilir.
-/// Single Responsibility Principle gereği sadece kullanıcı varlığı kontrolü yapar.
+/// User varlığını kontrol eden tek sorumlu rule
 /// </summary>
 public class UserExistsRule :
-    IRule<CreateAddressCommand>,
-    IRule<UpdateAddressCommand>,
-    IRule<DeleteAddressCommand>,
-    IRule<GetByIdAddressQuery>,
-    IRule<GetListByUserIdAddressQuery>
+    IBusinessRule<CreateAddressCommand>,
+    IBusinessRule<UpdateAddressCommand>,
+    IBusinessRule<DeleteAddressCommand>,
+    IBusinessRule<GetByIdAddressQuery>,
+    IBusinessRule<GetMyAddressesQuery>,
+    IBusinessRule<GetByUserIdAddressQuery>
 {
-    #region Properties
+    private readonly UserManager<User> _userManager;
 
-    public int Priority => 1; // En yüksek öncelik - diğer tüm kontroller bu kurala bağlı
-    public string RuleName => nameof(UserExistsRule);
-
-    #endregion
-
-    #region Fields
-
-    private readonly AddressBusinessRules _addressBusinessRules;
-
-    #endregion
-
-    #region Constructor
-
-    /// <summary>
-    /// UserExistsRule sınıfının yeni bir örneğini oluşturur.
-    /// </summary>
-    /// <param name="addressBusinessRules">Adres iş kuralları servisi.</param>
-    public UserExistsRule(AddressBusinessRules addressBusinessRules)
+    public UserExistsRule(UserManager<User> userManager)
     {
-        _addressBusinessRules = addressBusinessRules;
+        _userManager = userManager;
     }
 
-    #endregion
+    public bool ShouldExecute(CreateAddressCommand command) => !string.IsNullOrWhiteSpace(command.UserId);
+    public bool ShouldExecute(UpdateAddressCommand command) => !string.IsNullOrWhiteSpace(command.UserId);
+    public bool ShouldExecute(DeleteAddressCommand command) => !string.IsNullOrWhiteSpace(command.UserId);
+    public bool ShouldExecute(GetByIdAddressQuery query) => !string.IsNullOrWhiteSpace(query.UserId);
+    public bool ShouldExecute(GetMyAddressesQuery query) => !string.IsNullOrWhiteSpace(query.UserId);
 
-    #region Rule Implementations
-
-    /// <summary>
-    /// CreateAddressCommand için kullanıcı varlığı kontrolü.
-    /// </summary>
-    /// <param name="command">Create address komutu.</param>
-    /// <param name="cancellationToken">İptal token'ı.</param>
+    public bool ShouldExecute(GetByUserIdAddressQuery query) => !string.IsNullOrWhiteSpace(query.UserId);
     public async Task ExecuteAsync(CreateAddressCommand command, CancellationToken cancellationToken = default)
-    {
-        await _addressBusinessRules.CheckUserExistsAsync(command.UserId, cancellationToken);
-    }
+        => await ValidateUserExists(command.UserId, cancellationToken);
 
-    /// <summary>
-    /// UpdateAddressCommand için kullanıcı varlığı kontrolü.
-    /// </summary>
-    /// <param name="command">Update address komutu.</param>
-    /// <param name="cancellationToken">İptal token'ı.</param>
     public async Task ExecuteAsync(UpdateAddressCommand command, CancellationToken cancellationToken = default)
-    {
-        await _addressBusinessRules.CheckUserExistsAsync(command.UserId, cancellationToken);
-    }
+        => await ValidateUserExists(command.UserId, cancellationToken);
 
-    /// <summary>
-    /// DeleteAddressCommand için kullanıcı varlığı kontrolü.
-    /// </summary>
-    /// <param name="command">Delete address komutu.</param>
-    /// <param name="cancellationToken">İptal token'ı.</param>
     public async Task ExecuteAsync(DeleteAddressCommand command, CancellationToken cancellationToken = default)
-    {
-        await _addressBusinessRules.CheckUserExistsAsync(command.UserId, cancellationToken);
-    }
+        => await ValidateUserExists(command.UserId, cancellationToken);
 
-    /// <summary>
-    /// GetByIdAddressQuery için kullanıcı varlığı kontrolü.
-    /// </summary>
-    /// <param name="query">Get by id address sorgusu.</param>
-    /// <param name="cancellationToken">İptal token'ı.</param>
     public async Task ExecuteAsync(GetByIdAddressQuery query, CancellationToken cancellationToken = default)
+        => await ValidateUserExists(query.UserId, cancellationToken);
+
+    public async Task ExecuteAsync(GetMyAddressesQuery query, CancellationToken cancellationToken = default)
+        => await ValidateUserExists(query.UserId, cancellationToken);
+
+    public async Task ExecuteAsync(GetByUserIdAddressQuery query, CancellationToken cancellationToken = default)
+        => await ValidateUserExists(query.UserId, cancellationToken);
+
+
+    private async Task ValidateUserExists(string userId, CancellationToken cancellationToken)
     {
-        await _addressBusinessRules.CheckUserExistsAsync(query.UserId, cancellationToken);
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            throw new BusinessException(
+                message: "User ID cannot be null or empty.",
+                userFriendlyMessage: "Kullanıcı ID'si boş olamaz.",
+                errorCode: "INVALID_USER_ID"
+            );
+        }
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            throw new NotFoundException(
+                message: $"User with ID {userId} was not found.",
+                userFriendlyMessage: "Kullanıcı bulunamadı.",
+                errorCode: "USER_NOT_FOUND"
+            );
+        }
     }
 
-    /// <summary>
-    /// GetListByUserIdAddressQuery için kullanıcı varlığı kontrolü.
-    /// ✅ EKSİK OLAN METOT EKLENDİ
-    /// </summary>
-    /// <param name="query">Get list by user id address sorgusu.</param>
-    /// <param name="cancellationToken">İptal token'ı.</param>
-    public async Task ExecuteAsync(GetListByUserIdAddressQuery query, CancellationToken cancellationToken = default)
-    {
-        await _addressBusinessRules.CheckUserExistsAsync(query.UserId, cancellationToken);
-    }
-
-    #endregion
+    public int Priority => 1;
 }
-
-#endregion

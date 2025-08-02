@@ -1,4 +1,5 @@
 ﻿using Core.Application.Abstractions.Repositories;
+using Core.Application.Behaviors.Authorization;
 using ETicaret.Domain.Entities;
 using ETicaret.Application.Features.OperationClaims.Specifications;
 using MediatR;
@@ -8,80 +9,161 @@ namespace ETicaret.Application.Services.Authorization;
 
 public class OperationClaimSeeder : IOperationClaimSeeder
 {
-    private readonly IRepository<OperationClaim, int> _operationClaimRepository;
+    #region Fields
+
+    private readonly IRepository<OperationClaim, int> _repository;
     private readonly IUnitOfWork _unitOfWork;
+
+    #endregion
+
+    #region Constructor
 
     public OperationClaimSeeder(IUnitOfWork unitOfWork)
     {
-        _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
-        _operationClaimRepository = _unitOfWork.GetRepository<OperationClaim, int>();
+        _unitOfWork = unitOfWork;
+        _repository = _unitOfWork.GetRepository<OperationClaim, int>();
     }
+
+    #endregion
+
+    #region Public Methods
 
     public async Task SeedOperationClaimsAsync()
     {
-        var applicationAssembly = Assembly.GetAssembly(typeof(ETicaret.Application.ApplicationServiceRegistration));
-        if (applicationAssembly == null)
-        {
-            Console.WriteLine("OperationClaimSeeder: Application Assembly bulunamadı.");
-            return;
-        }
+        var commandQueryTypes = GetCommandAndQueryTypes();
+        if (!commandQueryTypes.Any()) return;
 
-        var commandQueryTypes = applicationAssembly.GetTypes()
-            .Where(t => t.IsClass && !t.IsAbstract && t.IsPublic &&
-                         (t.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRequest<>)) ||
-                          t.GetInterfaces().Contains(typeof(IRequest))))
-            .ToList();
-
-        if (!commandQueryTypes.Any())
-        {
-            Console.WriteLine("OperationClaimSeeder: IRequest implementasyonu bulunamadı.");
-            return;
-        }
-        Console.WriteLine($"OperationClaimSeeder: {commandQueryTypes.Count} adet IRequest implementasyonu bulundu.");
-
-        var spec = new OperationClaimSpecifications.All();
-        var existingClaims = await _operationClaimRepository.GetListAsync(spec);
-        var existingOperationNames = new HashSet<string>(existingClaims.Select(c => c.OperationName));
+        var existingClaims = (await _repository.GetListAsync(new OperationClaimSpecifications.All())).ToDictionary(c => c.OperationName);
         Console.WriteLine($"OperationClaimSeeder: Veritabanında {existingClaims.Count} adet mevcut yetki bulundu.");
 
-        var newClaims = new List<OperationClaim>();
+        var claimsToAdd = new List<OperationClaim>();
+        var claimsToUpdate = new List<OperationClaim>();
 
         foreach (var type in commandQueryTypes)
         {
             string operationName = type.Name;
-            if (!existingOperationNames.Contains(operationName))
-            {
-                string featureName = ExtractFeatureName(type.Namespace);
-                Console.WriteLine($"OperationClaimSeeder: Yeni operasyon ekleniyor - OperationName: {operationName}, FeatureName: {featureName}");
+            string defaultRoles = DetermineRequiredRoles(type);
 
-                newClaims.Add(new OperationClaim
+            if (existingClaims.TryGetValue(operationName, out var existingClaim))
+            {
+                await ProcessExistingClaimSafely(existingClaim, defaultRoles, claimsToUpdate);
+            }
+            else
+            {
+                Console.WriteLine($"OperationClaimSeeder: Yeni yetki ekleniyor -> OperationName: {operationName}, Roller: '{defaultRoles}'");
+                claimsToAdd.Add(new OperationClaim
                 {
                     OperationName = operationName,
-                    FeatureName = featureName,
-                    RequiredRoles = "Admin"
+                    FeatureName = ExtractFeatureName(type.Namespace),
+                    RequiredRoles = defaultRoles
                 });
             }
         }
 
-        if (newClaims.Any())
+        await SaveChangesAsync(claimsToAdd, claimsToUpdate);
+    }
+
+    #endregion
+
+    #region Private Helper Methods
+
+    private List<Type> GetCommandAndQueryTypes()
+    {
+        var applicationAssembly = Assembly.GetAssembly(typeof(ApplicationServiceRegistration));
+        if (applicationAssembly == null) return new List<Type>();
+
+        return applicationAssembly.GetTypes()
+            .Where(t => t.IsClass && !t.IsAbstract && t.IsPublic &&
+                         (t.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRequest<>)) ||
+                          t.GetInterfaces().Contains(typeof(IRequest))))
+            .ToList();
+    }
+
+    private string DetermineRequiredRoles(Type type)
+    {
+        if (type.GetInterfaces().Contains(typeof(IPublicRequest)))
         {
-            await _operationClaimRepository.AddRangeAsync(newClaims);
-            await _unitOfWork.CompleteAsync();
-            Console.WriteLine($"OperationClaimSeeder: {newClaims.Count} yeni operasyon yetkisi başarıyla eklendi.");
+            return string.Empty;
+        }
+
+        var defaultRolesAttribute = type.GetCustomAttribute<DefaultRolesAttribute>();
+        if (defaultRolesAttribute != null)
+        {
+            return string.Join(",", defaultRolesAttribute.Roles);
+        }
+
+        return GetSmartDefaultRoles(type.Name);
+    }
+    private async Task ProcessExistingClaimSafely(OperationClaim existingClaim, string defaultRoles, List<OperationClaim> claimsToUpdate)
+    {
+        if (string.IsNullOrEmpty(defaultRoles))
+        {
+            Console.WriteLine($"OperationClaimSeeder: '{existingClaim.OperationName}' için varsayılan rol yok, mevcut hali korunuyor.");
+            return;
+        }
+        var existingRoles = ParseRoles(existingClaim.RequiredRoles);
+        var defaultRolesList = ParseRoles(defaultRoles);
+
+        var missingRoles = defaultRolesList.Except(existingRoles, StringComparer.OrdinalIgnoreCase).ToList();
+
+        if (missingRoles.Any())
+        {
+            var allRoles = existingRoles.Concat(missingRoles).Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(r => r);
+            var newRequiredRoles = string.Join(",", allRoles);
+
+            Console.WriteLine($"OperationClaimSeeder: '{existingClaim.OperationName}' için eksik roller ekleniyor:");
+            Console.WriteLine($"  Mevcut Roller: [{existingClaim.RequiredRoles}]");
+            Console.WriteLine($"  Eksik Roller: [{string.Join(",", missingRoles)}]");
+            Console.WriteLine($"  YENİ Roller: [{newRequiredRoles}]");
+
+            existingClaim.RequiredRoles = newRequiredRoles;
+            claimsToUpdate.Add(existingClaim);
         }
         else
         {
-            Console.WriteLine("OperationClaimSeeder: Eklenecek yeni operasyon yetkisi bulunamadı, tablo güncel.");
+            Console.WriteLine($"OperationClaimSeeder: '{existingClaim.OperationName}' için eksik rol yok, değişiklik yok.");
+        }
+    }
+    private static List<string> ParseRoles(string rolesString)
+    {
+        if (string.IsNullOrWhiteSpace(rolesString))
+            return new List<string>();
+
+        return rolesString
+            .Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(role => role.Trim())
+            .Where(role => !string.IsNullOrEmpty(role))
+            .ToList();
+    }
+
+    private async Task SaveChangesAsync(List<OperationClaim> claimsToAdd, List<OperationClaim> claimsToUpdate)
+    {
+        if (claimsToAdd.Any())
+        {
+            await _repository.AddRangeAsync(claimsToAdd);
+            Console.WriteLine($"OperationClaimSeeder: {claimsToAdd.Count} yeni operasyon yetkisi başarıyla eklendi.");
+        }
+
+        if (claimsToUpdate.Any())
+        {
+            await _repository.UpdateRangeAsync(claimsToUpdate);
+            Console.WriteLine($"OperationClaimSeeder: {claimsToUpdate.Count} mevcut operasyon yetkisi güvenli şekilde güncellendi.");
+        }
+
+        if (claimsToAdd.Any() || claimsToUpdate.Any())
+        {
+            await _unitOfWork.CompleteAsync();
+        }
+        else
+        {
+            Console.WriteLine("OperationClaimSeeder: Eklenecek veya güncellenecek yetki bulunamadı.");
         }
     }
 
     private string ExtractFeatureName(string? typeNamespace)
     {
         const string defaultFeature = "Default";
-        if (string.IsNullOrEmpty(typeNamespace))
-        {
-            return defaultFeature;
-        }
+        if (string.IsNullOrEmpty(typeNamespace)) return defaultFeature;
 
         var namespaceParts = typeNamespace.Split('.');
         int featuresIndex = Array.IndexOf(namespaceParts, "Features");
@@ -89,7 +171,21 @@ public class OperationClaimSeeder : IOperationClaimSeeder
         {
             return namespaceParts[featuresIndex + 1];
         }
-
         return defaultFeature;
     }
+
+    #endregion
+
+    #region Default Role Assignment Logic
+    private static string GetSmartDefaultRoles(string operationName)
+    {
+        return "Admin";
+
+        #region Commented Smart Logic - Manuel Aktivasyon Gerekiyor
+        // manuel olarak dosya isimlerine bağlı kurallar eklenebilir. Dikkatli kullanın
+
+        #endregion
+    }
+
+    #endregion
 }

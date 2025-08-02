@@ -28,6 +28,13 @@ public class AuthorizationBehavior<TRequest, TResponse> : IPipelineBehavior<TReq
     {
         var requestName = request.GetType().Name;
 
+        // 🎯 IPublicRequest ile işaretlenmiş request'leri direkt geçir
+        if (request is IPublicRequest)
+        {
+            _loggerService.Info($"'{requestName}' is marked as public request, skipping authorization.");
+            return await next();
+        }
+
         // 1. Dinamik olarak veritabanından/cache'den gerekli rolleri al
         var requiredRoles = await _authorizationRuleService.GetRequiredRolesAsync(requestName);
 

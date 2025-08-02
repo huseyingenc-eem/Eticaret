@@ -4,10 +4,11 @@ using ETicaret.Application.Services.JwtServices;
 using ETicaret.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Core.Application.Behaviors.Authorization;
 
 namespace ETicaret.Application.Features.Authentication.Command.Register;
 
-public class RegisterCommand : IRequest<AccessTokenDto>
+public class RegisterCommand : IRequest<AccessTokenDto>, IPublicRequest
 {
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;

@@ -1,62 +1,80 @@
-﻿using Core.Application.Behaviors.Rules;
+﻿using Core.Application.Abstractions.Repositories;
+using Core.Application.Abstractions.Specifications;
+using Core.Application.Behaviors.Rules;
+using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.Addresses.Commands.Create;
 using ETicaret.Application.Features.Addresses.Commands.Update;
+using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Features.Addresses.Rules;
 
-#region Duplicate Address Title Rule Implementation
-
 /// <summary>
-/// Aynı kullanıcıda tekrar eden adres başlığını kontrol eden kural.
-/// Bu kural Create ve Update komutlarında çalışır.
-/// Single Responsibility Principle gereği sadece adres başlığı tekrarı kontrolü yapar.
+/// Duplicate başlık kontrolü yapan tek sorumlu rule
 /// </summary>
 public class DuplicateAddressTitleRule :
-    IRule<CreateAddressCommand>,
-    IRule<UpdateAddressCommand>
+    IBusinessRule<CreateAddressCommand>,
+    IBusinessRule<UpdateAddressCommand>
 {
-    #region Properties
-    public int Priority => 3;
-    public string RuleName => nameof(DuplicateAddressTitleRule);
+    private readonly IRepository<Address, Guid> _repository;
 
-    #endregion
-
-    #region Fields
-    private readonly AddressBusinessRules _addressBusinessRules;
-    #endregion
-    #region Constructor
-    public DuplicateAddressTitleRule(AddressBusinessRules addressBusinessRules)
+    public DuplicateAddressTitleRule(IUnitOfWork unitOfWork)
     {
-        _addressBusinessRules = addressBusinessRules;
+        _repository = unitOfWork.GetRepository<Address, Guid>();
     }
-    #endregion
 
-    #region Rule Implementations
+    public bool ShouldExecute(CreateAddressCommand command) => !string.IsNullOrWhiteSpace(command.AddressTitle);
+    public bool ShouldExecute(UpdateAddressCommand command) => !string.IsNullOrWhiteSpace(command.AddressTitle);
 
-    /// <summary>
-    /// CreateAddressCommand için adres başlığı tekrarı kontrolü.
-    /// </summary>
-    /// <param name="command">Create address komutu.</param>
-    /// <param name="cancellationToken">İptal token'ı.</param>
     public async Task ExecuteAsync(CreateAddressCommand command, CancellationToken cancellationToken = default)
     {
-        await _addressBusinessRules.CheckDuplicateAddressTitleAsync(
-            command.UserId, command.AddressTitle, cancellationToken);
+        var spec = new ByUserIdAndTitleSpec(command.UserId, command.AddressTitle);
+        bool isDuplicate = await _repository.AnyAsync(spec, cancellationToken);
+
+        if (isDuplicate)
+        {
+            throw new BusinessException(
+                message: $"User {command.UserId} already has an address with title '{command.AddressTitle}'.",
+                userFriendlyMessage: $"'{command.AddressTitle}' başlığında zaten bir adresiniz mevcut.",
+                errorCode: "DUPLICATE_ADDRESS_TITLE"
+            );
+        }
     }
 
-    /// <summary>
-    /// UpdateAddressCommand için adres başlığı tekrarı kontrolü.
-    /// Güncelleme sırasında aynı kullanıcının başka adreslerinde tekrar olup olmadığını kontrol eder.
-    /// </summary>
-    /// <param name="command">Update address komutu.</param>
-    /// <param name="cancellationToken">İptal token'ı.</param>
     public async Task ExecuteAsync(UpdateAddressCommand command, CancellationToken cancellationToken = default)
     {
-        await _addressBusinessRules.CheckDuplicateAddressTitleForUpdateAsync(
-            command.UserId, command.AddressTitle, command.Id, cancellationToken);
+        var spec = new ByUserIdAndTitleExcludingIdSpec(command.UserId, command.AddressTitle, command.Id);
+        bool isDuplicate = await _repository.AnyAsync(spec, cancellationToken);
+
+        if (isDuplicate)
+        {
+            throw new BusinessException(
+                message: $"User {command.UserId} already has another address with title '{command.AddressTitle}'.",
+                userFriendlyMessage: $"'{command.AddressTitle}' başlığında zaten başka bir adresiniz mevcut.",
+                errorCode: "DUPLICATE_ADDRESS_TITLE"
+            );
+        }
     }
 
+    public int Priority => 3;
+
+    #region Private Specifications - Bu rule'a özel
+    private class ByUserIdAndTitleSpec : Specification<Address>
+    {
+        public ByUserIdAndTitleSpec(string userId, string title)
+            : base(address => address.UserId == userId &&
+                            address.AddressTitle.ToLower() == title.ToLower())
+        {
+        }
+    }
+
+    private class ByUserIdAndTitleExcludingIdSpec : Specification<Address>
+    {
+        public ByUserIdAndTitleExcludingIdSpec(string userId, string title, Guid excludeId)
+            : base(address => address.UserId == userId &&
+                            address.AddressTitle.ToLower() == title.ToLower() &&
+                            address.Id != excludeId)
+        {
+        }
+    }
     #endregion
 }
-
-#endregion

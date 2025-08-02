@@ -36,11 +36,11 @@ public class UpdateAddressCommandValidator : AbstractValidator<UpdateAddressComm
             .NotEmpty().WithMessage("Tam adres boş olamaz.")
             .MaximumLength(300).WithMessage("Tam adres en fazla 300 karakter olabilir.");
 
-        RuleFor(c => c.PostalCode)
+        RuleFor(c => c.ZipCode)
             .MaximumLength(10).WithMessage("Posta kodu en fazla 10 karakter olabilir.")
-            .When(c => !string.IsNullOrEmpty(c.PostalCode))
+            .When(c => !string.IsNullOrEmpty(c.ZipCode))
             .Matches("^[0-9]{5}$").WithMessage("Posta kodu 5 haneli rakam olmalıdır.")
-            .When(c => !string.IsNullOrEmpty(c.PostalCode) && c.Country == "Türkiye");
+            .When(c => !string.IsNullOrEmpty(c.ZipCode) && c.Country == "Türkiye");
 
         RuleFor(c => c)
             .Must(c => c.IsDefaultBilling || c.IsDefaultShipping)

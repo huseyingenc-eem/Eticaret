@@ -21,9 +21,7 @@ public static class ApplicationServiceRegistration
     {
         #region Rule Engine Services
         // Rule Engine servisleri
-        services.AddScoped<IRuleEngine, RuleEngine>();
-        services.AddSingleton<IRuleConfigurationService, RuleConfigurationService>();
-
+        services.AddScoped<IRuleExecutor, RuleExecutor>();
         #endregion
         // MediatR'ı ve temel pipeline davranışlarını ekle
         services.AddMediatR(configuration =>
@@ -36,7 +34,7 @@ public static class ApplicationServiceRegistration
             configuration.AddOpenBehavior(typeof(RequestInfoBehavior<,>));
             configuration.AddOpenBehavior(typeof(AuthorizationBehavior<,>));
             configuration.AddOpenBehavior(typeof(ValidationBehavior<,>));
-            configuration.AddOpenBehavior(typeof(BusinessRulesValidationBehavior<,>));
+            configuration.AddOpenBehavior(typeof(BusinessRulesBehavior<,>));
             configuration.AddOpenBehavior(typeof(CachingBehavior<,>));
             configuration.AddOpenBehavior(typeof(CacheRemoveBehavior<,>));
             configuration.AddOpenBehavior(typeof(PerformanceBehavior<,>));

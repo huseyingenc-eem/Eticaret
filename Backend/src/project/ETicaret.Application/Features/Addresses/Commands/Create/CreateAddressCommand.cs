@@ -1,35 +1,19 @@
 ﻿using Core.Application.Abstractions.Repositories;
 using Core.Application.Behaviors.Caching;
 using Core.Application.Behaviors.RequestInfo;
-using Core.Application.Behaviors.Rules;
 using Core.Application.Behaviors.Transactional;
-using ETicaret.Application.Features.Addresses.Rules;
 using ETicaret.Application.Features.Addresses.Specifications;
 using ETicaret.Domain.Entities;
 using MediatR;
 using System.Text.Json.Serialization;
 using AutoMapper;
+using Core.Application.Behaviors.Authorization;
 
 namespace ETicaret.Application.Features.Addresses.Commands.Create;
 
 #region Create Address Command
 
-/// <summary>
-/// Yeni bir adres oluşturma işlemini temsil eden komut.
-/// Sadece belirli kuralları çalıştırır - RuleConfiguration attribute ile kontrol edilir.
-/// FluentValidation: Input validation yapar
-/// BusinessRulesValidationBehavior: Business logic kontrolü yapar  
-/// Handler: Sadece core business işlemlerini yapar
-/// </summary>
-[RuleConfiguration(
-    OnlyRules = new[]
-    {
-        typeof(UserExistsRule),
-        typeof(AddressLimitRule),
-        typeof(DuplicateAddressTitleRule),
-        typeof(DefaultAddressTypeRule)
-    }
-)]
+[DefaultRoles("Admin", "User")]
 public class CreateAddressCommand : IRequest<CreateAddressResponseDto>,
     ITransactionalRequest,
     ICacheRemoverRequest,
@@ -54,11 +38,9 @@ public class CreateAddressCommand : IRequest<CreateAddressResponseDto>,
     #endregion
 
     #region Cache Settings
-
-    public string? CacheKey => null;
+    public string? CacheKey => $"user-addresses_{UserId}";
     public bool BypassCache => false;
-    public string? CacheGroupKey => "Addresses";
-
+    public string? CacheGroupKey => null;
     #endregion
 }
 
@@ -66,11 +48,6 @@ public class CreateAddressCommand : IRequest<CreateAddressResponseDto>,
 
 #region Create Address Command Handler
 
-/// <summary>
-/// CreateAddressCommand komutunu işleyen handler sınıfı.
-/// Business rules artık RuleEngine tarafından otomatik çalıştırılır.
-/// Handler sadece core business logic'e odaklanır.
-/// </summary>
 public class CreateAddressCommandHandler : IRequestHandler<CreateAddressCommand, CreateAddressResponseDto>
 {
     #region Fields
@@ -81,12 +58,6 @@ public class CreateAddressCommandHandler : IRequestHandler<CreateAddressCommand,
     #endregion
 
     #region Constructor
-
-    /// <summary>
-    /// CreateAddressCommandHandler sınıfının yeni bir örneğini oluşturur.
-    /// </summary>
-    /// <param name="unitOfWork">Veritabanı işlemleri için Unit of Work implementasyonu.</param>
-    /// <param name="mapper">AutoMapper servisi.</param>
     public CreateAddressCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
     {
         _mapper = mapper;
@@ -96,36 +67,20 @@ public class CreateAddressCommandHandler : IRequestHandler<CreateAddressCommand,
     #endregion
 
     #region Handler Implementation
-
-    /// <summary>
-    /// Adres oluşturma komutunu işler.
-    /// Business rules RuleEngine tarafından otomatik çalıştırıldı.
-    /// </summary>
-    /// <param name="request">Adres oluşturma komutu.</param>
-    /// <param name="cancellationToken">İptal token'ı.</param>
-    /// <returns>Oluşturma işlemi sonucu bilgilerini içeren yanıt DTO'su.</returns>
     public async Task<CreateAddressResponseDto> Handle(CreateAddressCommand request, CancellationToken cancellationToken)
     {
-        // 1. Varsayılan adres işlemlerini gerçekleştir
         await HandleDefaultAddressOperationsAsync(request, cancellationToken);
 
-        // 2. Yeni adresi oluştur ve kaydet
         Address newAddress = await CreateAndSaveAddressAsync(request, cancellationToken);
 
-        // 3. Yanıt DTO'sunu oluştur ve döndür
-        return CreateResponseDto(newAddress);
+        var response = _mapper.Map<CreateAddressResponseDto>(newAddress);
+        response.Message = "Adres başarıyla oluşturuldu.";
+        return response;
     }
 
     #endregion
 
     #region Helper Methods
-
-    /// <summary>
-    /// Varsayılan adres işlemlerini gerçekleştirir.
-    /// Eğer yeni adres varsayılan olarak işaretlenirse, mevcut varsayılan adresleri günceller.
-    /// </summary>
-    /// <param name="request">Create address komutu.</param>
-    /// <param name="cancellationToken">İptal token'ı.</param>
     private async Task HandleDefaultAddressOperationsAsync(CreateAddressCommand request, CancellationToken cancellationToken)
     {
         if (request.IsDefaultShipping)
@@ -175,18 +130,6 @@ public class CreateAddressCommandHandler : IRequestHandler<CreateAddressCommand,
         Address addressEntity = _mapper.Map<Address>(request);
         await _addressRepository.AddAsync(addressEntity, cancellationToken);
         return addressEntity;
-    }
-
-    /// <summary>
-    /// Yanıt DTO'sunu oluşturur.
-    /// </summary>
-    /// <param name="addressEntity">Oluşturulan adres entity'si.</param>
-    /// <returns>Yanıt DTO'su.</returns>
-    private CreateAddressResponseDto CreateResponseDto(Address addressEntity)
-    {
-        var response = _mapper.Map<CreateAddressResponseDto>(addressEntity);
-        response.Message = "Adres başarıyla oluşturuldu.";
-        return response;
     }
 
     #endregion

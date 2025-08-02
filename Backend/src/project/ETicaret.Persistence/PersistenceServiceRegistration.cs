@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging; // ✅ Bu satırı ekleyin
+using Microsoft.Extensions.Logging;
 using Scrutor;
 using Microsoft.Extensions.Options;
 
@@ -20,22 +20,14 @@ namespace ETicaret.Persistence;
 /// </summary>
 public static class PersistenceServiceRegistration
 {
-    /// <summary>
-    /// Persistence katmanı için gerekli servisleri (DbContext, UnitOfWork, Repository'ler)
-    /// Dependency Injection container'ına ekler.
-    /// </summary>
     public static IServiceCollection AddPersistenceServices(this IServiceCollection services, IConfiguration configuration)
     {
-        // 1. Veritabanı context'ini (DbContext) kaydet.
         services.AddDbContext<BaseDBContexts>(opt =>
         {
             opt.UseSqlServer(configuration.GetConnectionString("SqlConnection"));
+            opt.EnableSensitiveDataLogging();
+            opt.EnableDetailedErrors();
 
-            // ✅ SQL loglarını aktifleştir
-            opt.EnableSensitiveDataLogging(); // Parametre değerlerini göster
-            opt.EnableDetailedErrors(); // Detaylı hata mesajları
-
-            // ✅ Console'a SQL logları yazdır (Development için)
             var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             if (environment == "Development")
             {
@@ -60,7 +52,6 @@ public static class PersistenceServiceRegistration
         services.AddScoped<ILoggerService, FileLogger>();
         services.AddScoped<IContextualLogger, ContextualLogger>();
 
-        // 3. Scrutor kullanarak TÜM Repository'leri OTOMATİK OLARAK TARA VE KAYDET
         services.Scan(scan => scan
             .FromAssemblyOf<PersistenceAssemblyReference>()
             .AddClasses(classes => classes.Where(type => type.Name.EndsWith("Repository")))

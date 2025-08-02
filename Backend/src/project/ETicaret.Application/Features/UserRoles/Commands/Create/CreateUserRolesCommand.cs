@@ -4,6 +4,7 @@ using Core.Application.Behaviors.Caching;
 using ETicaret.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Core.Application.Behaviors.Authorization;
 
 namespace ETicaret.Application.Features.UserRoles.Commands.Create;
 
@@ -12,9 +13,14 @@ namespace ETicaret.Application.Features.UserRoles.Commands.Create;
 /// ITransactionalRequest: Bu işlemin bir transaction içinde çalışmasını sağlar.
 /// ICacheRemoverRequest: İşlem başarılı olduğunda ilgili önbelleği temizler.
 /// </summary>
-public class CreateUserRolesCommand : IRequest<CreateUserRolesResponseDto>, ITransactionalRequest, ICacheRemoverRequest
+[DefaultRoles("Admin")]
+public class CreateUserRolesCommand : IRequest<CreateUserRolesResponseDto>, 
+    ITransactionalRequest, 
+    ICacheRemoverRequest
+
 {
     #region Komut Parametreleri
+
     public string UserId { get; set; } = string.Empty;
     public string RoleId { get; set; } = string.Empty;
     #endregion

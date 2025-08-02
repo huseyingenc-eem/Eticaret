@@ -1,47 +1,49 @@
-﻿using Core.Application.Behaviors.Rules;
+﻿using Core.Application.Abstractions.Repositories;
+using Core.Application.Abstractions.Specifications;
+using Core.Application.Behaviors.Rules;
+using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.Addresses.Commands.Create;
+using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Features.Addresses.Rules;
 
-#region Address Limit Rule Implementation
-
 /// <summary>
-/// Kullanıcının adres limitini kontrol eden kural.
-/// Bu kural sadece CreateAddressCommand için geçerlidir.
-/// Single Responsibility Principle gereği sadece adres limit kontrolü yapar.
+/// Adres limitini kontrol eden tek sorumlu rule
 /// </summary>
-public class AddressLimitRule : IRule<CreateAddressCommand>
+public class AddressLimitRule : IBusinessRule<CreateAddressCommand>
 {
-    #region Properties
-    public int Priority => 2; // UserExistsRule'dan sonra çalışır
-    public string RuleName => nameof(AddressLimitRule);
-    #endregion
-    #region Fields
-    private readonly AddressBusinessRules _addressBusinessRules;
-    #endregion
+    private const int MAX_ADDRESSES_PER_USER = 10;
+    private readonly IRepository<Address, Guid> _repository;
 
-    #region Constructor
-    public AddressLimitRule(AddressBusinessRules addressBusinessRules)
+    public AddressLimitRule(IUnitOfWork unitOfWork)
     {
-        _addressBusinessRules = addressBusinessRules;
+        _repository = unitOfWork.GetRepository<Address, Guid>();
     }
 
-    #endregion
+    public bool ShouldExecute(CreateAddressCommand command) => true;
 
-    #region Rule Implementation
-
-    /// <summary>
-    /// CreateAddressCommand için adres limit kontrolü.
-    /// Kullanıcının maksimum adres sayısını aşıp aşmadığını kontrol eder.
-    /// </summary>
-    /// <param name="command">Create address komutu.</param>
-    /// <param name="cancellationToken">İptal token'ı.</param>
     public async Task ExecuteAsync(CreateAddressCommand command, CancellationToken cancellationToken = default)
     {
-        await _addressBusinessRules.CheckUserAddressLimitAsync(command.UserId, cancellationToken);
+        var spec = new CountByUserIdSpec(command.UserId);
+        var userAddressCount = await _repository.CountAsync(spec, cancellationToken);
+
+        if (userAddressCount >= MAX_ADDRESSES_PER_USER)
+        {
+            throw new BusinessException(
+                message: $"User {command.UserId} has reached the maximum address limit of {MAX_ADDRESSES_PER_USER}.",
+                userFriendlyMessage: $"En fazla {MAX_ADDRESSES_PER_USER} adres ekleyebilirsiniz.",
+                errorCode: "ADDRESS_LIMIT_EXCEEDED"
+            );
+        }
     }
 
+    public int Priority => 2;
+
+    #region Private Specification - Bu rule'a özel
+    private class CountByUserIdSpec : Specification<Address>
+    {
+        public CountByUserIdSpec(string userId)
+            : base(address => address.UserId == userId){}
+    }
     #endregion
 }
-
-#endregion

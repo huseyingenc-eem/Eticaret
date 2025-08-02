@@ -1,13 +1,15 @@
-﻿using Core.Application;
+﻿using AutoMapper;
+using Core.Application;
 using Core.Application.Abstractions.Services;
-using ETicaret.Application.Services.RedisServices;
 using Core.Application.Behaviors.Rules;
+using ETicaret.Application.Common.Mappings;
+using ETicaret.Application.Services.Authorization;
+using ETicaret.Application.Services.RedisServices;
+using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Scrutor;
 using System.Reflection;
-using FluentValidation;
-using ETicaret.Application.Services.Authorization;
 
 namespace ETicaret.Application;
 
@@ -28,11 +30,32 @@ public static class ApplicationServiceRegistration
         #endregion
 
         #region Application Katmanı Servisleri (Application Layer Services)
-        services.AddAutoMapper(Assembly.GetExecutingAssembly());
+
+        // ✅ AutoMapper'ı feature-based mapper'larla birlikte kaydet
+        services.AddAutoMapper(cfg =>
+        {
+            // 1. Ana MappingProfile'ı ekle (IMapFrom interface'leri için)
+            cfg.AddProfile<MappingProfile>();
+
+            // 2. Feature-specific Profile'ları otomatik bul ve ekle
+            var assembly = Assembly.GetExecutingAssembly();
+            var profileTypes = assembly.GetTypes()
+                .Where(t => t.IsSubclassOf(typeof(Profile)) &&
+                           !t.IsAbstract &&
+                           t != typeof(MappingProfile)) // Ana profile'ı hariç tut
+                .ToList();
+
+            foreach (var profileType in profileTypes)
+            {
+                cfg.AddProfile(profileType);
+                Console.WriteLine($"✅ AutoMapper Profile registered: {profileType.Name}");
+            }
+        }, Assembly.GetExecutingAssembly());
 
         services.AddMediatR(cfg =>
             cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
         #endregion
 
         #region Önbellekleme Servisleri (Caching Services)
@@ -58,13 +81,11 @@ public static class ApplicationServiceRegistration
             .AddClasses(classes => classes.Where(type => type.Name.EndsWith("Seeder")))
                 .AsMatchingInterface()
                 .WithScopedLifetime()
+
+            .AddClasses(classes => classes.AssignableTo(typeof(IBusinessRule<>)))
+                .AsImplementedInterfaces()
+                .WithScopedLifetime()
         );
-        #region Feature Rule Registration
-
-        // Feature-specific rule registration'ları otomatik bul ve çalıştır
-        RegisterFeatureRules(services);
-
-        #endregion
 
         #endregion
 
@@ -72,24 +93,6 @@ public static class ApplicationServiceRegistration
     }
 
     #region Helper Methods
-
-    /// <summary>
-    /// Tüm feature'ların rule registration'larını otomatik bulur ve kaydeder.
-    /// </summary>
-    private static void RegisterFeatureRules(IServiceCollection services)
-    {
-        var ruleRegistrations = Assembly.GetExecutingAssembly()
-            .GetTypes()
-            .Where(t => t.IsClass && !t.IsAbstract && typeof(IRuleServiceRegistration).IsAssignableFrom(t))
-            .Select(t => Activator.CreateInstance(t) as IRuleServiceRegistration)
-            .Where(r => r != null)
-            .ToList();
-
-        foreach (var registration in ruleRegistrations)
-        {
-            registration!.RegisterRules(services);
-        }
-    }
 
     #endregion
 }

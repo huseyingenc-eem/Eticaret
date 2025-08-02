@@ -1,13 +1,15 @@
-﻿using Core.Application.Common.Exceptions;
+﻿using Core.Application.Behaviors.RequestInfo;
+using Core.Application.Common.Exceptions;
 using ETicaret.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using System.Data;
+using System.Text.Json.Serialization;
 
 namespace ETicaret.Application.Features.UserRoles.Queries.UserWithRoles;
 
-public class UserWithRolesQuery : IRequest<UserWithRolesResponseDto>
+public class UserWithRolesQuery : IRequest<UserWithRolesResponseDto>, IRequestInfoRequest
 {
+    [JsonIgnore]
     public string UserId { get; set; }
     public class UserWithRolesQueryHandler : IRequestHandler<UserWithRolesQuery, UserWithRolesResponseDto>
     {

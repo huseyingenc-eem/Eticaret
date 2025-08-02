@@ -41,7 +41,14 @@ public class EfRepositoryBase<TEntity, TId, TContext> : IRepository<TEntity, TId
         Context.Entry(entity).State = EntityState.Modified;
         return Task.CompletedTask;
     }
-
+    public Task UpdateRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
+    {
+        foreach (var entity in entities)
+        {
+            Context.Entry(entity).State = EntityState.Modified;
+        }
+        return Task.CompletedTask;
+    }
     public Task DeleteAsync(TEntity entity, bool permanent = false, CancellationToken cancellationToken = default)
     {
         if (permanent || entity is not ISoftDeletable)
@@ -158,5 +165,7 @@ public class EfRepositoryBase<TEntity, TId, TContext> : IRepository<TEntity, TId
 
         return query;
     }
+
+    
     #endregion
 }

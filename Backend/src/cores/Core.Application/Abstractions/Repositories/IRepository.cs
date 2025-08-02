@@ -41,6 +41,15 @@ public interface IRepository<TEntity, TId>
     /// <param name="cancellationToken">Operasyonun iptal edilmesini sağlayan token.</param>
     Task UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
 
+
+    /// <summary>
+    /// Birden fazla mevcut varlığın durumunu güncellenmiş olarak asenkron bir şekilde işaretler.
+    /// Bu, tek tek güncellemekten daha performanslıdır.
+    /// </summary>
+    /// <param name="entities">Güncellenecek varlıkların listesi.</param>
+    /// <param name="cancellationToken">Operasyonun iptal edilmesini sağlayan token.</param>
+    Task UpdateRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Mevcut bir varlığı silinmiş olarak asenkron bir şekilde işaretler.
     /// </summary>

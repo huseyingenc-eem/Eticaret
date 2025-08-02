@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Core.Application.Abstractions.Repositories;
+using Core.Application.Behaviors.Authorization;
 using Core.Application.Behaviors.Caching;
 using ETicaret.Application.Features.Categories.Specifications;
 using ETicaret.Domain.Entities;
@@ -14,7 +15,9 @@ namespace ETicaret.Application.Features.Categories.Queries.GetParentCategories;
 /// ICachableRequest: Bu sorgunun sonucunun önbelleğe alınmasını sağlar.
 /// Ana kategoriler sık değişmediği için önbellekleme uygun bir performans optimizasyonudur.
 /// </summary>
-public class GetParentCategoriesQuery : IRequest<List<GetParentCategoriesResponseDto>>, ICachableRequest
+public class GetParentCategoriesQuery : IRequest<List<GetParentCategoriesResponseDto>>,
+    ICachableRequest,
+    IPublicRequest
 {
     #region Önbellek Ayarları (Cache Settings)
 

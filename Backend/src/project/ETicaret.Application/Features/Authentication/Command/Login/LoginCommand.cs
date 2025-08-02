@@ -1,5 +1,6 @@
-﻿using Core.Application.Common.Exceptions;
+﻿using Core.Application.Behaviors.Authorization;
 using Core.Application.Common.Constants;
+using Core.Application.Common.Exceptions;
 using ETicaret.Application.Services.JwtServices;
 using ETicaret.Domain.Entities;
 using MediatR;
@@ -7,7 +8,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace ETicaret.Application.Features.Authentication.Command.Login;
 
-public class LoginCommand : IRequest<AccessTokenDto>
+public class LoginCommand : IRequest<AccessTokenDto>, IPublicRequest
 {
     public string? Email { get; set; }
     public string? Password { get; set; }

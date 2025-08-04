@@ -2,28 +2,35 @@
 
 namespace ETicaret.Application.Features.Addresses.Queries.GetByUserId;
 
-public class GetByUserIdAddressResponseDto
+/// <summary>
+/// Kullanıcının tüm adreslerini getiren sorgu için immutable response DTO.
+/// Record pattern kullanılarak performans ve memory management optimize edilmiştir.
+/// </summary>
+public sealed record GetByUserIdAddressResponseDto
 {
-    public Guid Id { get; set; }
-    public string AddressTitle { get; set; } = string.Empty;
-    public string Country { get; set; } = string.Empty;
-    public string City { get; set; } = string.Empty;
-    public string District { get; set; } = string.Empty;
-    public string? ZipCode { get; set; }
-    public string AddressLine { get; set; } = string.Empty;
-    public string? PhoneNumber { get; set; }
+    public required Guid Id { get; init; }
+    public required string AddressTitle { get; init; }
+    public required string Country { get; init; }
+    public required string City { get; init; }
+    public required string District { get; init; }
+    public string? ZipCode { get; init; }
+    public required string AddressLine { get; init; }
+    public string? PhoneNumber { get; init; }
 
-    public bool IsDefaultShipping { get; set; }
-    public bool IsDefaultBilling { get; set; }
+    public required bool IsDefaultShipping { get; init; }
+    public required bool IsDefaultBilling { get; init; }
 
+    /// <summary>
+    /// Kullanıcının tam adı. Computed property olarak FirstName + LastName birleşimi.
+    /// </summary>
     public string UserFullName => $"{UserFirstName} {UserLastName}".Trim();
 
-    public string UserEmail { get; set; } = string.Empty;
-    public DateTime CreatedTime { get; set; }
+    public required string UserEmail { get; init; }
+    public required DateTime CreatedTime { get; init; }
 
     [JsonIgnore]
-    public string UserFirstName { get; set; } = string.Empty;
+    public required string UserFirstName { get; init; }
 
     [JsonIgnore]
-    public string UserLastName { get; set; } = string.Empty;
+    public required string UserLastName { get; init; }
 }

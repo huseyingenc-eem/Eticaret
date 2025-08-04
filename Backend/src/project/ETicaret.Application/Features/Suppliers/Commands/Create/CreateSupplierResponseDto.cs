@@ -1,11 +1,17 @@
-﻿namespace ETicaret.Application.Features.Suppliers.Commands.Create;
+﻿using ETicaret.Application.Common.Mappings;
+using ETicaret.Domain.Entities;
 
-// Response DTO (Aynı dosyada veya ayrı bir yerde olabilir)
-public class CreateSupplierResponseDto
+namespace ETicaret.Application.Features.Suppliers.Commands.Create;
+
+public sealed record CreateSupplierResponseDto : IMapFrom<Supplier>
 {
-    public int Id { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public bool IsActive { get; set; }
-    public DateTime CreatedTime { get; set; }
-    public string Message { get; set; } = string.Empty;
+    public required Guid Id { get; init; }
+    public required string CompanyName { get; init; }
+    public string? ContactPerson { get; init; }
+    public string? ContactEmail { get; init; }
+    public string? PhoneNumber { get; init; }
+    public string? Address { get; init; }
+    public required bool IsActive { get; init; }
+    public required DateTime CreatedTime { get; init; }
+    public required string Message { get; set; }
 }

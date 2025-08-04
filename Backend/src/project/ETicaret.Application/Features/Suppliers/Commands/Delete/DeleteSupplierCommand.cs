@@ -8,23 +8,17 @@ using ETicaret.Application.Features.Suppliers.Specifications;
 using ETicaret.Domain.Entities;
 using MediatR;
 
-namespace ETicaret.Application.Features.Suppliers.Commands.Update;
+namespace ETicaret.Application.Features.Suppliers.Commands.Delete;
 
-#region Update Supplier Command
+#region Delete Supplier Command
 
 [DefaultRoles("Admin")]
-public class UpdateSupplierCommand : IRequest<UpdateSupplierResponseDto>,
+public class DeleteSupplierCommand : IRequest<DeleteSupplierResponseDto>,
     ICacheRemoverRequest,
     ITransactionalRequest
 {
     #region Properties
     public Guid Id { get; set; }
-    public string CompanyName { get; set; } = string.Empty;
-    public string? ContactPerson { get; set; }
-    public string? ContactEmail { get; set; }
-    public string? PhoneNumber { get; set; }
-    public string? Address { get; set; }
-    public bool IsActive { get; set; } = true;
     #endregion
 
     #region Cache Settings
@@ -36,9 +30,8 @@ public class UpdateSupplierCommand : IRequest<UpdateSupplierResponseDto>,
 
 #endregion
 
-#region Update Supplier Command Handler
-
-public class UpdateSupplierCommandHandler : IRequestHandler<UpdateSupplierCommand, UpdateSupplierResponseDto>
+#region Delete Supplier Command Handler
+public class DeleteSupplierCommandHandler : IRequestHandler<DeleteSupplierCommand, DeleteSupplierResponseDto>
 {
     #region Fields
 
@@ -49,7 +42,7 @@ public class UpdateSupplierCommandHandler : IRequestHandler<UpdateSupplierComman
     #endregion
 
     #region Constructor
-    public UpdateSupplierCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    public DeleteSupplierCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
     {
         _unitOfWork = unitOfWork;
         _supplierRepository = unitOfWork.GetRepository<Supplier, Guid>();
@@ -59,19 +52,16 @@ public class UpdateSupplierCommandHandler : IRequestHandler<UpdateSupplierComman
     #endregion
 
     #region Handler Implementation
-
-    public async Task<UpdateSupplierResponseDto> Handle(UpdateSupplierCommand request, CancellationToken cancellationToken)
+    public async Task<DeleteSupplierResponseDto> Handle(DeleteSupplierCommand request, CancellationToken cancellationToken)
     {
         var spec = new SupplierSpecifications.ById(request.Id);
         Supplier supplier = (await _supplierRepository.GetAsync(spec, cancellationToken))!;
 
-        _mapper.Map(request, supplier);
-
-        await _supplierRepository.UpdateAsync(supplier, cancellationToken);
+        await _supplierRepository.DeleteAsync(supplier, permanent: false, cancellationToken);
         await _unitOfWork.CompleteAsync(cancellationToken);
 
-        UpdateSupplierResponseDto response = _mapper.Map<UpdateSupplierResponseDto>(supplier);
-        response.Message = "Tedarikçi başarıyla güncellendi.";
+        DeleteSupplierResponseDto response = _mapper.Map<DeleteSupplierResponseDto>(supplier);
+        response.Message = "Tedarikçi başarıyla silindi.";
 
         return response;
     }

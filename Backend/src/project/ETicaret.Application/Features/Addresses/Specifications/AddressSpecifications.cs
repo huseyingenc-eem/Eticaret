@@ -105,15 +105,13 @@ public static class AddressSpecifications
     /// </summary>
     public class AllAddressesByUser : Specification<Address>
     {
-        public AllAddressesByUser(string userId, int pageIndex, int pageSize)
+        public AllAddressesByUser(string userId)
             : base(address => address.UserId == userId)
         {
             AddInclude(a => a.User);
-            // Default adresler önce gelecek şekilde sıralama
             AddOrderByDescending(a => a.IsDefaultShipping);
             AddOrderByDescending(a => a.IsDefaultBilling);
             AddOrderBy(a => a.AddressTitle);
-            ApplyPaging(pageIndex * pageSize, pageSize);
         }
     }
 

@@ -13,10 +13,5 @@ public class GetByUserIdAddressQueryValidator : AbstractValidator<GetByUserIdAdd
             .NotEmpty().WithMessage("Kullanıcı ID'si boş olamaz.")
             .NotNull().WithMessage("Kullanıcı ID'si null olamaz.");
 
-        RuleFor(x => x.PageIndex)
-            .GreaterThanOrEqualTo(0).WithMessage("Sayfa indeksi 0 veya daha büyük olmalıdır.");
-
-        RuleFor(x => x.PageSize)
-            .InclusiveBetween(1, 100).WithMessage("Sayfa boyutu 1 ile 100 arasında olmalıdır.");
     }
 }

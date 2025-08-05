@@ -27,6 +27,6 @@ public class Discount : Entity<Guid>
 
 public enum DiscountType
 {
-    Percentage,  
-    FixedAmount
+    Percentage=1,  
+    FixedAmount=2
 }

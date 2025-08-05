@@ -17,6 +17,9 @@ public class SecurityMiddlewareConfiguration : IMiddlewareConfiguration
         app.UseAuthentication();
         app.UseAuthorization();
 
+        Console.WriteLine($"✅ Security middleware configured with CORS policy: {CorsServiceConfiguration.ReactCorsPolicy}");
+
+
         return app;
     }
 }

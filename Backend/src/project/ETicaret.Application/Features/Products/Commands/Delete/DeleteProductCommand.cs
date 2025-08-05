@@ -1,57 +1,50 @@
-﻿using Core.Application.Abstractions.Repositories;
+﻿using AutoMapper;
+using Core.Application.Abstractions.Repositories;
+using Core.Application.Behaviors.Authorization;
 using Core.Application.Behaviors.Caching;
 using Core.Application.Behaviors.Transactional;
-using Core.Application.Common.Exceptions;
-using ETicaret.Application.Features.Products.Specifications; // <-- Our new specification
+using ETicaret.Application.Features.Products.Constants;
+using ETicaret.Domain.Entities;
 using MediatR;
 
 namespace ETicaret.Application.Features.Products.Commands.Delete;
 
-public class DeleteProductCommand : IRequest<DeleteProductResponseDto>, ITransactionalRequest, ICacheRemoverRequest
+[DefaultRoles("Admin")]
+public class DeleteProductCommand : IRequest<DeleteProductResponseDto>,
+    ICacheRemoverRequest,
+    ITransactionalRequest
 {
     public Guid Id { get; set; }
 
-    public string CacheKey => $"product:{Id}";
-    public string? CacheGroupKey => "ProductsGroup";
-    public bool BypassCache { get; set; }
+    #region Cache Settings
+    public string? CacheKey => $"product:{Id}";
+    public bool BypassCache => false;
+    public string? CacheGroupKey => ProductConstants.ProductsCacheGroup;
+    #endregion
+}
 
-    public class DeleteProductCommandHandler : IRequestHandler<DeleteProductCommand, DeleteProductResponseDto>
+public class DeleteProductCommandHandler : IRequestHandler<DeleteProductCommand, DeleteProductResponseDto>
+{
+    private readonly IRepository<Product, Guid> _productRepository;
+    private readonly IMapper _mapper;
+    private readonly IUnitOfWork _unitOfWork;
+
+    public DeleteProductCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
     {
-        private readonly IRepository<Domain.Entities.Product, Guid> _productRepository;
-        // private readonly ProductBusinessRules _productBusinessRules;
+        _unitOfWork = unitOfWork;
+        _productRepository = unitOfWork.GetRepository<Product, Guid>();
+        _mapper = mapper;
+    }
 
-        public DeleteProductCommandHandler(IUnitOfWork unitOfWork)
+    public async Task<DeleteProductResponseDto> Handle(DeleteProductCommand request, CancellationToken cancellationToken)
+    {
+        await _productRepository.DeleteByIdAsync(request.Id, permanent: false, cancellationToken);
+        await _unitOfWork.CompleteAsync(cancellationToken);
+
+        return new DeleteProductResponseDto
         {
-            // Get the generic repository from the Unit of Work.
-            _productRepository = unitOfWork.GetRepository<Domain.Entities.Product, Guid>();
-            // _productBusinessRules = productBusinessRules;
-        }
-
-        public async Task<DeleteProductResponseDto> Handle(DeleteProductCommand request, CancellationToken cancellationToken)
-        {
-            // 1. Use our new, reusable specification to find the product.
-            var spec = new ProductByIdSpecification(request.Id);
-            Domain.Entities.Product? productToDelete = await _productRepository.GetAsync(spec, cancellationToken);
-
-            if (productToDelete == null)
-            {
-                throw new NotFoundException($"Product to be deleted was not found (ID: {request.Id}).");
-            }
-
-            // --- Business Rule Checks (Example) ---
-            // await _productBusinessRules.CheckIfProductIsInActiveOrderAsync(request.Id, cancellationToken);
-            // --- End Business Rule Checks ---
-
-            // 2. Perform the soft delete.
-            await _productRepository.DeleteAsync(productToDelete, permanent: false, cancellationToken);
-
-            // 3. No need to call CompleteAsync; TransactionBehavior handles it.
-            return new DeleteProductResponseDto
-            {
-                Id = request.Id,
-                Message = "Product successfully deleted (deactivated).",
-                IsSuccess = true
-            };
-        }
+            Id = request.Id,
+            Message = "Ürün başarıyla silindi."
+        };
     }
 }

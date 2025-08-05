@@ -1,11 +1,13 @@
 ﻿using ETicaret.Presentation.Configuration.ServiceConfiguration;
 using ETicaret.Presentation.Configuration.MiddlewareConfiguration;
 using ETicaret.Presentation.Configuration.StartupTasks;
+using ETicaret.Presentation.Configuration;
 using Core.Infrastructure.Extensions;
 using ETicaret.Application;
 using ETicaret.Persistence;
 using Serilog;
 using System.Reflection;
+using Microsoft.AspNetCore.SpaServices.Extensions; // SPA için eklendi
 
 namespace ETicaret.Presentation.Extensions;
 
@@ -42,6 +44,7 @@ public static class ServiceCollectionExtensions
             config!.ConfigureServices(services, configuration, environment);
         }
 
+        Console.WriteLine($"✅ Total {serviceConfigurations.Count} service configurations applied");
         return services;
     }
 
@@ -72,6 +75,7 @@ public static class ServiceCollectionExtensions
             config!.ConfigureMiddleware(app, app.Environment);
         }
 
+        Console.WriteLine($"✅ Total {middlewareConfigurations.Count} middleware configurations applied");
         return app;
     }
 
@@ -91,6 +95,9 @@ public static class ServiceCollectionExtensions
         foreach (var task in startupTasks)
         {
             await task!.ExecuteAsync(app);
+            Console.WriteLine($"✅ Startup task completed: {task.GetType().Name}");
         }
+
+        Console.WriteLine($"✅ Total {startupTasks.Count} startup tasks completed");
     }
 }

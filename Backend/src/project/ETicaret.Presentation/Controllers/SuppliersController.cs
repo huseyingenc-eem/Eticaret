@@ -1,75 +1,54 @@
-﻿using ETicaret.Application.Features.Suppliers.Commands.Create; // Add Command ve DTO
-using ETicaret.Application.Features.Suppliers.Commands.Update; // Update Command ve DTO
-using ETicaret.Application.Features.Suppliers.Commands.Delete; // Delete Command ve DTO
-using ETicaret.Application.Features.Suppliers.Queries.GetById; // GetById Query ve DTO
-using ETicaret.Application.Features.Suppliers.Queries.GetList; // GetList Query ve DTO
-// using Core.Application.Requests; // Sayfalama için PageRequest
-// using Core.Application.Responses; // Sayfalama için GetListResponse
+﻿using ETicaret.Application.Features.Suppliers.Commands.Create;
+using ETicaret.Application.Features.Suppliers.Commands.Update;
+using ETicaret.Application.Features.Suppliers.Commands.Delete;
+using ETicaret.Application.Features.Suppliers.Queries.GetById;
+using ETicaret.Application.Features.Suppliers.Queries.GetList;
+using ETicaret.Presentation.Abstraction;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ETicaret.Presentation.Controllers;
 
-[Route("api/[controller]")]
-[ApiController]
-public class SuppliersController : ControllerBase
+public class SuppliersController : BaseApiController
 {
-    private readonly IMediator _mediator;
-
-    public SuppliersController(IMediator mediator)
+    public SuppliersController(IMediator mediator) : base(mediator)
     {
-        _mediator = mediator;
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetList(/*[FromQuery] PageRequest pageRequest*/) // Sayfalama eklenirse
+    [HttpGet("list")]
+    public async Task<IActionResult> GetList([FromQuery] GetListSupplierQuery query)
     {
-        // Şimdilik sayfalama olmadan basit liste:
-        GetListSupplierQuery getListSupplierQuery = new();
-        var result = await _mediator.Send(getListSupplierQuery);
+        var result = await _mediator.Send(query);
         return Ok(result);
-
-        /* // Sayfalama ile:
-        GetListSupplierQuery getListSupplierQuery = new() { PageRequest = pageRequest };
-        GetListResponse<GetListSupplierResponseDto> result = await _mediator.Send(getListSupplierQuery);
-        return Ok(result);
-        */
     }
 
     [HttpGet("{id}")]
-    // [Authorize]
     public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
-        GetByIdSupplierQuery getByIdSupplierQuery = new() { Id = id };
-        GetByIdSupplierResponseDto result = await _mediator.Send(getByIdSupplierQuery);
+        GetByIdSupplierQuery query = new() { Id = id };
+        GetByIdSupplierResponseDto result = await _mediator.Send(query);
         return Ok(result);
     }
 
-    [HttpPost]
-    public async Task<IActionResult> Add([FromBody] CreateSupplierCommand supplierAddCommand)
+    [HttpPost("create")]
+    public async Task<IActionResult> Create([FromBody] CreateSupplierCommand command)
     {
-        CreateSupplierResponseDto result = await _mediator.Send(supplierAddCommand);
-        // Oluşturulan kaynağın URI'si ile 201 Created döndürmek daha RESTful olabilir:
-        // return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
-        return Ok(result);
+        CreateSupplierResponseDto result = await _mediator.Send(command);
+        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
-    [HttpPut]
-    public async Task<IActionResult> Update([FromBody] UpdateSupplierCommand supplierUpdateCommand)
+    [HttpPut("update")]
+    public async Task<IActionResult> Update([FromBody] UpdateSupplierCommand command)
     {
-        UpdateSupplierResponseDto result = await _mediator.Send(supplierUpdateCommand);
+        UpdateSupplierResponseDto result = await _mediator.Send(command);
         return Ok(result);
-        // Alternatif olarak sadece başarı durumu için NoContent(204) döndürülebilir.
-        // return NoContent();
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("delete/{id}")]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
-        SupplierDeleteCommand supplierDeleteCommand = new() { Id = id };
-        SupplierDeleteResponseDto result = await _mediator.Send(supplierDeleteCommand);
+        DeleteSupplierCommand command = new() { Id = id };
+        DeleteSupplierResponseDto result = await _mediator.Send(command);
         return Ok(result);
-        // Alternatif olarak sadece başarı durumu için NoContent(204) döndürülebilir.
-        // return NoContent();
     }
 }

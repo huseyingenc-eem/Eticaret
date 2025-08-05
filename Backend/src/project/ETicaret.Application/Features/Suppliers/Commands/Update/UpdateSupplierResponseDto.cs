@@ -3,10 +3,6 @@ using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Features.Suppliers.Commands.Update;
 
-/// <summary>
-/// Tedarikçi güncelleme işlemi sonrası dönen immutable response DTO.
-/// Record pattern kullanılarak performans optimize edilmiştir.
-/// </summary>
 public sealed record UpdateSupplierResponseDto : IMapFrom<Supplier>
 {
     public required Guid Id { get; init; }

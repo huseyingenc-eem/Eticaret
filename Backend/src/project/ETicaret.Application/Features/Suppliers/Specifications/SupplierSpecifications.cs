@@ -100,20 +100,6 @@ public static class SupplierSpecifications
     #region Query Specifications - Query handler'lar için karmaşık sorgular
 
     /// <summary>
-    /// Sayfalanmış aktif tedarikçiler
-    /// Query handler'larda kullanılır
-    /// </summary>
-    public class PagedActive : Specification<Supplier>
-    {
-        public PagedActive(int pageIndex, int pageSize)
-            : base(supplier => supplier.IsActive)
-        {
-            AddOrderBy(s => s.CompanyName);
-            ApplyPaging(pageIndex * pageSize, pageSize);
-        }
-    }
-
-    /// <summary>
     /// Sayfalanmış ve filtrelenmiş tedarikçi listesi
     /// GetListSupplierQueryHandler tarafından kullanılır
     /// </summary>

@@ -1,55 +1,55 @@
 ﻿using AutoMapper;
+using Core.Application.Abstractions.Repositories;
+using Core.Application.Behaviors.Authorization;
 using Core.Application.Behaviors.Caching;
 using Core.Application.Behaviors.Transactional;
 using ETicaret.Application.Features.Products.Constants;
-using Core.Application.Abstractions.Repositories;
 using ETicaret.Domain.Entities;
 using MediatR;
 
 namespace ETicaret.Application.Features.Products.Commands.Create;
 
-public class CreateProductCommand : IRequest<CreateProductResponseDto> , ICacheRemoverRequest , ITransactionalRequest
+[DefaultRoles("Admin")]
+public class CreateProductCommand : IRequest<CreateProductResponseDto>,
+    ICacheRemoverRequest,
+    ITransactionalRequest
 {
-    
     public string Name { get; set; } = string.Empty;
-    public decimal Price { get; set; }
-    public int Stock { get; set; }
-    public int CategoryID { get; set; }
-    public int SupplierID { get; set; }
-
     public string? Description { get; set; }
-    public string? SKU { get; set; }
-    public string? ImageUrl { get; set; }
+    public int CategoryId { get; set; }
+    public Guid? SupplierId { get; set; }
     public bool IsActive { get; set; } = true;
 
-    public string? CacheKey => null;
-
+    #region Cache Settings
+    public string? CacheKey { get; }
     public bool BypassCache => false;
-
     public string? CacheGroupKey => ProductConstants.ProductsCacheGroup;
+    #endregion
+}
 
-    public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, CreateProductResponseDto>
+public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, CreateProductResponseDto>
+{
+    private readonly IRepository<Product, Guid> _productRepository;
+    private readonly IMapper _mapper;
+    private readonly IUnitOfWork _unitOfWork;
+
+    public CreateProductCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
+        _unitOfWork = unitOfWork;
+        _productRepository = unitOfWork.GetRepository<Product, Guid>();
+        _mapper = mapper;
+    }
 
-        public CreateProductCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
-        {
-            _unitOfWork = unitOfWork;
-            _mapper = mapper;
-        }
+    public async Task<CreateProductResponseDto> Handle(CreateProductCommand request, CancellationToken cancellationToken)
+    {
+        Product product = _mapper.Map<Product>(request);
 
-        public async Task<CreateProductResponseDto> Handle(CreateProductCommand request, CancellationToken cancellationToken)
-        {
-            Product product = _mapper.Map<Product>(request);
+        await _productRepository.AddAsync(product, cancellationToken);
+        await _unitOfWork.CompleteAsync(cancellationToken);
 
-            var productRepository = _unitOfWork.GetRepository<Product,Guid>();
-            var addedProduct = await productRepository.AddAsync(product, cancellationToken: cancellationToken);
-            await _unitOfWork.CompleteAsync(cancellationToken);
+        CreateProductResponseDto response = _mapper.Map<CreateProductResponseDto>(product);
+        response.Message = "Ürün başarıyla oluşturuldu.";
 
-            CreateProductResponseDto response = _mapper.Map<CreateProductResponseDto>(addedProduct);
-            response.Message = "Ürün başarıyla eklendi.";
-            return response;
-        }
+        return response;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using ETicaret.Application.Features.Products.Constants;
 
 namespace ETicaret.Application.Features.Products.Commands.Create;
 
@@ -6,33 +7,23 @@ public class CreateProductCommandValidator : AbstractValidator<CreateProductComm
 {
     public CreateProductCommandValidator()
     {
-        RuleFor(p => p.Name)
-            .NotEmpty().WithMessage("Ürün adı boş olamaz.")
-            .MaximumLength(200).WithMessage("Ürün adı en fazla 200 karakter olabilir.");
+        RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("Ürün adı zorunludur.")
+            .MinimumLength(ProductConstants.Validation.MinNameLength)
+            .WithMessage($"Ürün adı en az {ProductConstants.Validation.MinNameLength} karakter olmalıdır.")
+            .MaximumLength(ProductConstants.Validation.MaxNameLength)
+            .WithMessage($"Ürün adı {ProductConstants.Validation.MaxNameLength} karakterden uzun olamaz.");
 
-        RuleFor(p => p.Price)
-            .NotEmpty().WithMessage("Fiyat boş olamaz.")
-            .GreaterThan(0).WithMessage("Fiyat 0'dan büyük olmalıdır.");
+        RuleFor(x => x.Description)
+            .MaximumLength(ProductConstants.Validation.MaxDescriptionLength)
+            .WithMessage($"Açıklama {ProductConstants.Validation.MaxDescriptionLength} karakterden uzun olamaz.")
+            .When(x => !string.IsNullOrEmpty(x.Description));
 
-        RuleFor(p => p.Stock)
-            .NotEmpty().WithMessage("Stok miktarı boş olamaz.")
-            .GreaterThanOrEqualTo(0).WithMessage("Stok miktarı 0 veya daha büyük olmalıdır."); 
+        RuleFor(x => x.CategoryId)
+            .GreaterThan(0).WithMessage("Geçerli bir kategori seçiniz.");
 
-        RuleFor(p => p.CategoryID)
-            .NotEmpty().WithMessage("Kategori ID boş olamaz.")
-            .GreaterThan(0).WithMessage("Geçerli bir Kategori ID girilmelidir.");
-
-        RuleFor(p => p.SupplierID)
-            .NotEmpty().WithMessage("Tedarikçi ID boş olamaz.")
-            .GreaterThan(0).WithMessage("Geçerli bir Tedarikçi ID girilmelidir.");
-
-        RuleFor(p => p.Description)
-            .MaximumLength(1000).WithMessage("Açıklama en fazla 1000 karakter olabilir."); 
-
-        RuleFor(p => p.SKU)
-            .MaximumLength(100).WithMessage("SKU en fazla 100 karakter olabilir."); 
-
-        RuleFor(p => p.ImageUrl)
-            .MaximumLength(500).WithMessage("Resim URL'si en fazla 500 karakter olabilir.");
+        RuleFor(x => x.SupplierId)
+            .NotEqual(Guid.Empty).WithMessage("Geçerli bir tedarikçi seçiniz.")
+            .When(x => x.SupplierId.HasValue);
     }
 }

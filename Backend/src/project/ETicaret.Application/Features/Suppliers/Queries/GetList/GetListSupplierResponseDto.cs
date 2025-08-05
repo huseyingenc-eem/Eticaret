@@ -1,11 +1,14 @@
-﻿namespace ETicaret.Application.Features.Suppliers.Queries.GetList;
+﻿using ETicaret.Application.Common.Mappings;
+using ETicaret.Domain.Entities;
 
-public class GetListSupplierResponseDto
+namespace ETicaret.Application.Features.Suppliers.Queries.GetList;
+
+public class GetListSupplierResponseDto : IMapFrom<Supplier>
 {
-    public int Id { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public string? ContactPerson { get; set; } // Listede gösterilebilir
-    public string? PhoneNumber { get; set; } // Listede gösterilebilir
+    public Guid Id { get; set; }
+    public string CompanyName { get; set; } = string.Empty;
+    public string? ContactPerson { get; set; }
+    public string? PhoneNumber { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedTime { get; set; }
 }

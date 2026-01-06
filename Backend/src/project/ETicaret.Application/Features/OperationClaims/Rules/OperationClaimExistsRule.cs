@@ -1,24 +1,20 @@
-﻿using Core.Application.Abstractions.Repositories;
-using Core.Application.Abstractions.Specifications;
+﻿using Core.Application.Abstractions.Specifications;
 using Core.Application.Behaviors.Rules;
 using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.OperationClaims.Commands.Update;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Features.OperationClaims.Rules;
 
-/// <summary>
-/// OperationClaim'in var olduğunu kontrol eden tek sorumlu rule
-/// Sadece Update ve Delete işlemleri için kullanılır
-/// </summary>
 public class OperationClaimExistsRule :
     IBusinessRule<UpdateOperationClaimCommand>
 {
-    private readonly IRepository<OperationClaim, int> _operationClaimRepository;
+    private readonly IOperationClaimRepository _operationClaimRepository;
 
-    public OperationClaimExistsRule(IUnitOfWork unitOfWork)
+    public OperationClaimExistsRule(IOperationClaimRepository operationClaimRepository)
     {
-        _operationClaimRepository = unitOfWork.GetRepository<OperationClaim, int>();
+        _operationClaimRepository = operationClaimRepository;
     }
 
     public bool ShouldExecute(UpdateOperationClaimCommand command) => true;

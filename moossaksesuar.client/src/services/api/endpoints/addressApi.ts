@@ -1,4 +1,4 @@
-import { apiClient } from '../baseApi.ts';
+import { baseApi } from '../baseApi.ts';
 import type {
     Address,
     CreateAddressRequest,
@@ -9,26 +9,26 @@ import type {
 export const addressApi = {
     // User endpoints
     getMyAddresses: () =>
-        apiClient.get<Address[]>('/Address/my-addresses'),
+        baseApi.get<Address[]>('/Address/my-addresses'),
 
     getById: (id: string) =>
-        apiClient.get<Address>(`/Address/getbyid/${id}`),
+        baseApi.get<Address>(`/Address/getbyid/${id}`),
 
     create: (data: CreateAddressRequest) =>
-        apiClient.post<Address>('/Address/create', data),
+        baseApi.post<Address>('/Address/create', data),
 
     update: (data: UpdateAddressRequest) =>
-        apiClient.put<Address>('/Address/update', data),
+        baseApi.put<Address>('/Address/update', data),
 
     delete: (id: string) =>
-        apiClient.delete(`/Address/delete/${id}`),
+        baseApi.delete(`/Address/delete/${id}`),
 
     // Admin endpoints
     getDefaultShipping: (page?: number, size?: number) =>
-        apiClient.get<PaginatedResponse<Address>>('/Address/admin/default-shipping', {
+        baseApi.get<PaginatedResponse<Address>>('/Address/admin/default-shipping', {
             params: { page, size }
         }),
 
     getUserAllAddresses: (userId: string) =>
-        apiClient.get<PaginatedResponse<Address>>(`/Address/admin/user/${userId}/all`),
+        baseApi.get<PaginatedResponse<Address>>(`/Address/admin/user/${userId}/all`),
 };

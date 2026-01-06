@@ -36,7 +36,21 @@ public static class CategorySpecifications
             AddOrderBy(c => c.Name);
         }
     }
+    public class ByIdWithDetails : Specification<Category>
+    {
+        public ByIdWithDetails(int id)
+            : base(category => category.Id == id)
+        {
+            // Parent bilgisini dahil et
+            AddInclude(c => c.Parent);
 
+            // Children sayısı için gerekli
+            AddInclude(c => c.Children);
+
+            // Product sayısı için gerekli
+            AddInclude(c => c.Products);
+        }
+    }
     /// <summary>
     /// Tree yapısı için tüm aktif kategorileri flat liste olarak getiren spesifikasyon
     /// INCLUDE KULLANMAZ - Duplicated problem'i önler
@@ -58,8 +72,8 @@ public static class CategorySpecifications
     /// </summary>
     public class Parents : Specification<Category>
     {
-        public Parents()
-            : base(category => category.ParentId == null)
+        public Parents(bool? onlyActive = null)
+            : base(category => category.ParentId == null && (onlyActive ==null || category.IsActive))
         {
             AddOrderBy(c => c.Name);
         }
@@ -70,8 +84,9 @@ public static class CategorySpecifications
     /// </summary>
     public class ByParentId : Specification<Category>
     {
-        public ByParentId(int parentId)
-            : base(category => category.ParentId == parentId)
+        public ByParentId(int parentId, bool? onlyActive = null)
+            : base(category => category.ParentId == parentId &&
+                              (onlyActive == null || category.IsActive == onlyActive.Value))
         {
             AddOrderBy(c => c.Name);
         }

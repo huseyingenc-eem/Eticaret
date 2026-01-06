@@ -4,21 +4,18 @@ using Core.Application.Behaviors.Rules;
 using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.Products.Commands.Delete;
 using ETicaret.Application.Features.Products.Constants;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Features.Products.Rules;
 
-/// <summary>
-/// Ürünün varyantları varsa silinemeyeceğini kontrol eden rule.
-/// Önce tüm varyantların silinmesi gerekir.
-/// </summary>
 public class ProductCannotBeDeletedIfHasVariantsRule : IBusinessRule<DeleteProductCommand>
 {
-    private readonly IRepository<Product, Guid> _repository;
+    private readonly IProductRepository _repository;
 
-    public ProductCannotBeDeletedIfHasVariantsRule(IUnitOfWork unitOfWork)
+    public ProductCannotBeDeletedIfHasVariantsRule(IProductRepository productRepository)
     {
-        _repository = unitOfWork.GetRepository<Product, Guid>();
+        _repository = productRepository;
     }
 
     public bool ShouldExecute(DeleteProductCommand command) => command.Id != Guid.Empty;

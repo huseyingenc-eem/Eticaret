@@ -5,7 +5,7 @@ using Core.Application.Behaviors.Caching;
 using Core.Application.Behaviors.Transactional;
 using ETicaret.Application.Features.Products.Constants;
 using ETicaret.Application.Features.Products.Specifications;
-using ETicaret.Domain.Entities;
+using ETicaret.Application.Services.Repositories;
 using MediatR;
 
 namespace ETicaret.Application.Features.Products.Commands.Update;
@@ -33,21 +33,21 @@ public class UpdateProductCommand : IRequest<UpdateProductResponseDto>,
 
 public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand, UpdateProductResponseDto>
 {
-    private readonly IRepository<Product, Guid> _productRepository;
+    private readonly IProductRepository _productRepository;
     private readonly IMapper _mapper;
     private readonly IUnitOfWork _unitOfWork;
 
-    public UpdateProductCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    public UpdateProductCommandHandler(IProductRepository productRepository, IUnitOfWork unitOfWork, IMapper mapper)
     {
         _unitOfWork = unitOfWork;
-        _productRepository = unitOfWork.GetRepository<Product, Guid>();
+        _productRepository = productRepository;
         _mapper = mapper;
     }
 
     public async Task<UpdateProductResponseDto> Handle(UpdateProductCommand request, CancellationToken cancellationToken)
     {
         var spec = new ProductSpecifications.ById(request.Id);
-        Product product = (await _productRepository.GetAsync(spec, cancellationToken))!;
+        var product = (await _productRepository.GetAsync(spec, cancellationToken))!;
 
         _mapper.Map(request, product);
 

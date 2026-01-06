@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
-using Core.Application.Abstractions.Repositories;
 using Core.Application.Behaviors.Authorization;
 using Core.Application.Behaviors.Caching;
 using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.Categories.Specifications;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 using MediatR;
 
@@ -37,15 +37,15 @@ public class GetCategoryTreeQueryHandler : IRequestHandler<GetCategoryTreeQuery,
 {
     #region Alan Tanımlamaları (Field Declarations)
 
-    private readonly IRepository<Category, int> _categoryRepository;
+    private readonly ICategoryRepository _categoryRepository;
     private readonly IMapper _mapper;
 
     #endregion
 
     #region Yapıcı Metot (Constructor)
-    public GetCategoryTreeQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    public GetCategoryTreeQueryHandler(ICategoryRepository categoryRepository, IMapper mapper)
     {
-        _categoryRepository = unitOfWork.GetRepository<Category, int>();
+        _categoryRepository = categoryRepository;
         _mapper = mapper;
     }
 

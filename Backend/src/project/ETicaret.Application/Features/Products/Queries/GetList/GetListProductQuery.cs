@@ -1,20 +1,17 @@
 ﻿using AutoMapper;
 using Core.Application.Abstractions.Paging;
-using Core.Application.Abstractions.Repositories;
 using Core.Application.Behaviors.Authorization;
 using Core.Application.Behaviors.Caching;
 using Core.Application.Common.Exceptions;
 using Core.Application.Common.Results;
 using ETicaret.Application.Features.Products.Constants;
 using ETicaret.Application.Features.Products.Specifications;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 using MediatR;
 
 namespace ETicaret.Application.Features.Products.Queries.GetList;
 
-/// <summary>
-/// Ürünleri sayfalanmış bir liste olarak getiren sorgu. Filtreleme ve önbellekleme desteği ile yüksek performans sunar.
-/// </summary>
 public class GetListProductQuery : IRequest<PagedResult<GetListProductResponseDto>>,
     ICachableRequest,
     IPublicRequest
@@ -37,12 +34,12 @@ public class GetListProductQuery : IRequest<PagedResult<GetListProductResponseDt
 
 public class GetListProductQueryHandler : IRequestHandler<GetListProductQuery, PagedResult<GetListProductResponseDto>>
 {
-    private readonly IRepository<Product, Guid> _productRepository;
+    private readonly IProductRepository _productRepository;
     private readonly IMapper _mapper;
 
-    public GetListProductQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    public GetListProductQueryHandler(IProductRepository productRepository, IMapper mapper)
     {
-        _productRepository = unitOfWork.GetRepository<Product, Guid>();
+        _productRepository = productRepository;
         _mapper = mapper;
     }
 

@@ -3,6 +3,7 @@ using Core.Application.Abstractions.Specifications;
 using Core.Application.Behaviors.Rules;
 using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.Suppliers.Commands.Create;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Features.Suppliers.Rules;
@@ -15,9 +16,9 @@ public class SupplierLimitRule : IBusinessRule<CreateSupplierCommand>
     private const int MAX_SUPPLIERS_IN_SYSTEM = 1000;
     private readonly IRepository<Supplier, Guid> _repository;
 
-    public SupplierLimitRule(IUnitOfWork unitOfWork)
+    public SupplierLimitRule(ISupplierRepository supplierRepository)
     {
-        _repository = unitOfWork.GetRepository<Supplier, Guid>();
+        _repository = supplierRepository;
     }
 
     public bool ShouldExecute(CreateSupplierCommand command) => true;

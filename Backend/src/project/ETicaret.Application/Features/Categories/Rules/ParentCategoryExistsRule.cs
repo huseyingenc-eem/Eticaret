@@ -1,9 +1,10 @@
-﻿using Core.Application.Abstractions.Repositories;
-using Core.Application.Abstractions.Specifications;
+﻿using Core.Application.Abstractions.Specifications;
 using Core.Application.Behaviors.Rules;
 using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.Categories.Commands.Create;
 using ETicaret.Application.Features.Categories.Commands.Update;
+using ETicaret.Application.Features.Categories.Commands.UpdateRange;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Features.Categories.Rules;
@@ -13,23 +14,28 @@ namespace ETicaret.Application.Features.Categories.Rules;
 /// </summary>
 public class ParentCategoryExistsRule :
     IBusinessRule<CreateCategoryCommand>,
-    IBusinessRule<UpdateCategoryCommand>
+    IBusinessRule<UpdateCategoryCommand>,
+    IBusinessRule<UpdateRangeCategoryCommand>
 {
-    private readonly IRepository<Category, int> _repository;
+    private readonly ICategoryRepository _repository;
 
-    public ParentCategoryExistsRule(IUnitOfWork unitOfWork)
+    public ParentCategoryExistsRule(ICategoryRepository categoryRepository)
     {
-        _repository = unitOfWork.GetRepository<Category, int>();
+        _repository = categoryRepository;
     }
 
     public bool ShouldExecute(CreateCategoryCommand command) => command.ParentId.HasValue;
     public bool ShouldExecute(UpdateCategoryCommand command) => command.ParentId.HasValue;
+    public bool ShouldExecute(UpdateRangeCategoryCommand command) => command.ParentId.HasValue;
 
     public async Task ExecuteAsync(CreateCategoryCommand command, CancellationToken cancellationToken = default)
         => await ValidateParentExists(command.ParentId!.Value, true, cancellationToken);
 
     public async Task ExecuteAsync(UpdateCategoryCommand command, CancellationToken cancellationToken = default)
         => await ValidateParentExists(command.ParentId!.Value, false, cancellationToken);
+
+    public async Task ExecuteAsync(UpdateRangeCategoryCommand command, CancellationToken cancellationToken = default)
+        => await ValidateParentExists(command.ParentId!.Value,false, cancellationToken);
 
     private async Task ValidateParentExists(int parentId, bool checkIfActive, CancellationToken cancellationToken)
     {
@@ -58,7 +64,9 @@ public class ParentCategoryExistsRule :
         }
     }
 
-    public int Priority => 2;
+    
+
+    public int Priority => 1;
 
     #region Private Specifications
     private class ByIdSpec : Specification<Category>

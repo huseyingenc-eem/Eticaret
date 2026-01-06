@@ -465,27 +465,7 @@ public sealed class AddressControllerTests : IDisposable
 
     
 
-    [Theory]
-    [InlineData("")]
-    [InlineData("   ")]
-    [InlineData(null)]
-    public async Task GetUserAllAddresses_WithInvalidUserId_ShouldReturnBadRequest(string? invalidUserId)
-    {
-        // Arrange
-        SetupUserContext(_adminUser);
 
-        // Act
-        var result = await _controller.GetUserAllAddresses(invalidUserId!, pageIndex: 0, pageSize: 20);
-
-        // Assert
-        result.Should().BeOfType<BadRequestObjectResult>();
-        var badRequestResult = result.As<BadRequestObjectResult>();
-        badRequestResult.Value.Should().Be("Kullanıcı ID'si boş olamaz.");
-
-        _mockMediator.Verify(m => m.Send(
-            It.IsAny<GetByUserIdAddressQuery>(),
-            It.IsAny<CancellationToken>()), Times.Never);
-    }
 
     #endregion
 

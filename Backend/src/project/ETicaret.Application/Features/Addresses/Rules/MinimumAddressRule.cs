@@ -1,8 +1,8 @@
-﻿using Core.Application.Abstractions.Repositories;
-using Core.Application.Abstractions.Specifications;
+﻿using Core.Application.Abstractions.Specifications;
 using Core.Application.Behaviors.Rules;
 using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.Addresses.Commands.Delete;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Features.Addresses.Rules;
@@ -12,11 +12,11 @@ namespace ETicaret.Application.Features.Addresses.Rules;
 /// </summary>
 public class MinimumAddressRule : IBusinessRule<DeleteAddressCommand>
 {
-    private readonly IRepository<Address,Guid> _repository;
+    private readonly IAddressRepository _repository;
 
-    public MinimumAddressRule(IUnitOfWork unitOfWork)
+    public MinimumAddressRule(IAddressRepository addressRepository)
     {
-        _repository = unitOfWork.GetRepository<Address,Guid>();
+        _repository = addressRepository;
     }
 
     public bool ShouldExecute(DeleteAddressCommand command) => true;

@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using Core.Application.Abstractions.Repositories;
 using Core.Application.Behaviors.Authorization;
 using Core.Application.Behaviors.Caching;
 using Core.Application.Behaviors.Transactional;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Application.Features.Categories.Specifications;
 using ETicaret.Domain.Entities;
 using MediatR;
@@ -19,19 +19,18 @@ public class UpdateCategoryCommand : IRequest<UpdateCategoryResponseDto>, ITrans
     public bool IsActive { get; set; }
 
     #region Cache Settings
-    public string CacheKey => $"category:{Id}";
+    public string? CacheKey => $"category-detail_{Id}";
     public string? CacheGroupKey => "Categories";
-    public bool BypassCache { get; set; }
     #endregion
 
     public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryCommand, UpdateCategoryResponseDto>
     {
-        private readonly IRepository<Category, int> _categoryRepository;
+        private readonly ICategoryRepository _categoryRepository;
         private readonly IMapper _mapper;
 
-        public UpdateCategoryCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public UpdateCategoryCommandHandler(ICategoryRepository categoryRepository, IMapper mapper)
         {
-            _categoryRepository = unitOfWork.GetRepository<Category, int>();
+            _categoryRepository = categoryRepository;
             _mapper = mapper;
         }
 

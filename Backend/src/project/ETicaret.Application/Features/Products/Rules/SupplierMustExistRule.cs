@@ -1,10 +1,10 @@
-﻿using Core.Application.Abstractions.Repositories;
-using Core.Application.Abstractions.Specifications;
+﻿using Core.Application.Abstractions.Specifications;
 using Core.Application.Behaviors.Rules;
 using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.Products.Commands.Create;
 using ETicaret.Application.Features.Products.Commands.Update;
 using ETicaret.Application.Features.Products.Constants;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Features.Products.Rules;
@@ -17,11 +17,11 @@ public class SupplierMustExistRule :
     IBusinessRule<CreateProductCommand>,
     IBusinessRule<UpdateProductCommand>
 {
-    private readonly IRepository<Supplier, Guid> _repository;
+    private readonly ISupplierRepository _repository;
 
-    public SupplierMustExistRule(IUnitOfWork unitOfWork)
+    public SupplierMustExistRule(ISupplierRepository supplierRepository)
     {
-        _repository = unitOfWork.GetRepository<Supplier, Guid>();
+        _repository = supplierRepository;
     }
 
     public bool ShouldExecute(CreateProductCommand command) => command.SupplierId.HasValue && command.SupplierId != Guid.Empty;

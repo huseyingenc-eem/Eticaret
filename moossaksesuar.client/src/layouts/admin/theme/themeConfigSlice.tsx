@@ -1,45 +1,41 @@
-// src/store/themeConfigSlice.tsx
-
-// ... (importlar)
+import { createSlice } from '@reduxjs/toolkit';
+import themeConfig from '@/theme.config';
 
 const initialState = {
-    // Tarayıcının localStorage'ından 'theme' değerini okur, yoksa varsayılanı kullanır.
     theme: localStorage.getItem('theme') || themeConfig.theme,
-    // ... diğer ayarlar
+    isDarkMode: false,
 };
 
 const themeConfigSlice = createSlice({
-    name: 'auth',
+    name: 'themeConfig',
     initialState: initialState,
     reducers: {
         toggleTheme(state, { payload }) {
-            payload = payload || state.theme; // 'light', 'dark', veya 'system'
-            localStorage.setItem('theme', payload); // Seçimi tarayıcıya kaydeder.
+            payload = payload || state.theme;
+            localStorage.setItem('theme', payload);
             state.theme = payload;
 
             if (payload === 'light') {
+
                 state.isDarkMode = false;
             } else if (payload === 'dark') {
+
                 state.isDarkMode = true;
             } else if (payload === 'system') {
-                // Sistem tercihini kontrol eder.
                 if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
                     state.isDarkMode = true;
                 } else {
                     state.isDarkMode = false;
                 }
             }
-
-            // En önemli kısım: body etiketine 'dark' class'ını ekler veya kaldırır.
             if (state.isDarkMode) {
-                document.querySelector('body')?.classList.add('dark');
+                document.body.classList.add('dark', 'black');
             } else {
-                document.querySelector('body')?.classList.remove('dark');
+                document.body.classList.remove('dark', 'black');
             }
         },
-        // ... diğer reducer'lar
     },
 });
 
-export const { toggleTheme, ... } = themeConfigSlice.actions;
+export const { toggleTheme } = themeConfigSlice.actions;
 export default themeConfigSlice.reducer;

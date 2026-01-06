@@ -3,14 +3,8 @@ using System.Text.RegularExpressions;
 
 namespace Core.Domain.ValueObjects;
 
-/// <summary>
-/// Bir e-posta adresini değer nesnesi olarak temsil eder.
-/// </summary>
 public class Email : ValueObject
 {
-    /// <summary>
-    /// E-posta adresinin metin değerini alır.
-    /// </summary>
     public string Value { get; private set; }
 
     private Email(string value)
@@ -28,7 +22,6 @@ public class Email : ValueObject
     {
         if (string.IsNullOrWhiteSpace(email))
         {
-            // YENİ YAPI: Hata mesajına ek olarak bir ErrorCode sağlıyoruz.
             throw new DomainException(
                 "E-posta adresi boş olamaz.",
                 "EMAIL_EMPTY");

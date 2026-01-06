@@ -1,10 +1,9 @@
-﻿using AutoMapper;
-using Core.Application.Abstractions.Repositories;
+﻿using Core.Application.Abstractions.Repositories;
 using Core.Application.Behaviors.Authorization;
 using Core.Application.Behaviors.Caching;
 using Core.Application.Behaviors.Transactional;
 using ETicaret.Application.Features.Products.Constants;
-using ETicaret.Domain.Entities;
+using ETicaret.Application.Services.Repositories;
 using MediatR;
 
 namespace ETicaret.Application.Features.Products.Commands.Delete;
@@ -25,15 +24,13 @@ public class DeleteProductCommand : IRequest<DeleteProductResponseDto>,
 
 public class DeleteProductCommandHandler : IRequestHandler<DeleteProductCommand, DeleteProductResponseDto>
 {
-    private readonly IRepository<Product, Guid> _productRepository;
-    private readonly IMapper _mapper;
+    private readonly IProductRepository _productRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public DeleteProductCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    public DeleteProductCommandHandler(IProductRepository productRepository,IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
-        _productRepository = unitOfWork.GetRepository<Product, Guid>();
-        _mapper = mapper;
+        _productRepository = productRepository;
     }
 
     public async Task<DeleteProductResponseDto> Handle(DeleteProductCommand request, CancellationToken cancellationToken)

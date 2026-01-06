@@ -1,3 +1,3 @@
-export * from './useAuth';
+export * from './useAuth.tsx';
 export * from './useAddress';
 export * from './useForm';

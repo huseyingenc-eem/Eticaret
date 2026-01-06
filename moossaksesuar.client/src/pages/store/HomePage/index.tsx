@@ -1,5 +1,5 @@
 // src/pages/HomePage/index.tsx
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks';
 import { Button } from '@/components/ui';
 
 const HomePage = () => {
@@ -18,9 +18,7 @@ const HomePage = () => {
                         </div>
 
                         <div className="flex items-center space-x-4">
-                            <span className="text-sm text-gray-700">
-                                Hoş geldin, {user?.id}
-                            </span>
+
                             <Button
                                 variant="secondary"
                                 size="sm"

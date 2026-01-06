@@ -1,20 +1,15 @@
 ﻿using AutoMapper;
 using Core.Application.Abstractions.Paging;
-using Core.Application.Abstractions.Repositories;
 using Core.Application.Behaviors.Authorization;
 using Core.Application.Behaviors.Caching;
 using Core.Application.Common.Results;
 using ETicaret.Application.Features.Addresses.Specifications;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 using MediatR;
 
 namespace ETicaret.Application.Features.Addresses.Queries.GetList;
 
-/// <summary>
-/// Her kullanıcı için sadece default shipping adresini getiren sorgu.
-/// Bu şekilde her kullanıcı tabloda yalnızca bir kez görünür.
-/// ICachableRequest: Bu sorgunun sonucunun önbelleğe alınmasını sağlar.
-/// </summary>
 [DefaultRoles("Admin")]
 public class GetListAddressQuery : IRequest<IPaginate<GetListAddressResponseDto>>, ICachableRequest
 {
@@ -40,15 +35,15 @@ public class GetListAddressQueryHandler : IRequestHandler<GetListAddressQuery, I
 {
     #region Fields
 
-    private readonly IRepository<Address, Guid> _addressRepository;
+    private readonly IAddressRepository _addressRepository;
     private readonly IMapper _mapper;
 
     #endregion
 
     #region Constructor
-    public GetListAddressQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    public GetListAddressQueryHandler(IAddressRepository addressRepository, IMapper mapper)
     {
-        _addressRepository = unitOfWork.GetRepository<Address, Guid>();
+        _addressRepository = addressRepository;
         _mapper = mapper;
     }
 

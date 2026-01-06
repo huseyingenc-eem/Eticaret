@@ -1,9 +1,9 @@
-﻿using Core.Application.Abstractions.Repositories;
-using Core.Application.Abstractions.Specifications;
+﻿using Core.Application.Abstractions.Specifications;
 using Core.Application.Behaviors.Rules;
 using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.OperationClaims.Commands.Create;
 using ETicaret.Application.Features.OperationClaims.Commands.Update;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Features.OperationClaims.Rules;
@@ -15,11 +15,11 @@ public class OperationNameUniqueRule :
     IBusinessRule<CreateOperationClaimCommand>,
     IBusinessRule<UpdateOperationClaimCommand>
 {
-    private readonly IRepository<OperationClaim, int> _operationClaimRepository;
+    private readonly IOperationClaimRepository _operationClaimRepository;
 
-    public OperationNameUniqueRule(IUnitOfWork unitOfWork)
+    public OperationNameUniqueRule(IOperationClaimRepository operationClaimRepository)
     {
-        _operationClaimRepository = unitOfWork.GetRepository<OperationClaim, int>();
+        _operationClaimRepository = operationClaimRepository;
     }
 
     public bool ShouldExecute(CreateOperationClaimCommand command) => !string.IsNullOrWhiteSpace(command.OperationName);

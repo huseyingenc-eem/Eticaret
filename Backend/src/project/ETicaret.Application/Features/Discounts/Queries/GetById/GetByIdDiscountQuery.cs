@@ -5,17 +5,15 @@ using Core.Application.Behaviors.Caching;
 using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.Discounts.Constants;
 using ETicaret.Application.Features.Discounts.Specifications;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 using MediatR;
 
 namespace ETicaret.Application.Features.Discounts.Queries.GetById;
 
-/// <summary>
-/// Belirtilen ID'ye sahip indirimi getiren sorgu. Önbellekleme ve yetkilendirme desteği ile.
-/// </summary>
 public class GetByIdDiscountQuery : IRequest<GetByIdDiscountResponseDto>,
     ICachableRequest,
-    IPublicRequest  // Herkes indirim detaylarını görebilir
+    IPublicRequest
 {
     public Guid Id { get; set; }
 
@@ -30,12 +28,12 @@ public class GetByIdDiscountQuery : IRequest<GetByIdDiscountResponseDto>,
 
 public class GetByIdDiscountQueryHandler : IRequestHandler<GetByIdDiscountQuery, GetByIdDiscountResponseDto>
 {
-    private readonly IRepository<Discount, Guid> _discountRepository;
+    private readonly IDiscountRepository _discountRepository;
     private readonly IMapper _mapper;
 
-    public GetByIdDiscountQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    public GetByIdDiscountQueryHandler(IDiscountRepository discountRepository, IMapper mapper)
     {
-        _discountRepository = unitOfWork.GetRepository<Discount, Guid>();
+        _discountRepository = discountRepository;
         _mapper = mapper;
     }
 

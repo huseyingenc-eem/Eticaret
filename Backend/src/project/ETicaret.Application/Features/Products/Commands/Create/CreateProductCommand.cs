@@ -4,6 +4,7 @@ using Core.Application.Behaviors.Authorization;
 using Core.Application.Behaviors.Caching;
 using Core.Application.Behaviors.Transactional;
 using ETicaret.Application.Features.Products.Constants;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 using MediatR;
 
@@ -29,14 +30,14 @@ public class CreateProductCommand : IRequest<CreateProductResponseDto>,
 
 public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, CreateProductResponseDto>
 {
-    private readonly IRepository<Product, Guid> _productRepository;
+    private readonly IProductRepository _productRepository;
     private readonly IMapper _mapper;
     private readonly IUnitOfWork _unitOfWork;
 
-    public CreateProductCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    public CreateProductCommandHandler(IProductRepository productRepository,IUnitOfWork unitOfWork, IMapper mapper)
     {
         _unitOfWork = unitOfWork;
-        _productRepository = unitOfWork.GetRepository<Product, Guid>();
+        _productRepository = productRepository;
         _mapper = mapper;
     }
 

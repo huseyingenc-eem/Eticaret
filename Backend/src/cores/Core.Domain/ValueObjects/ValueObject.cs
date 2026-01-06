@@ -1,8 +1,5 @@
 ﻿namespace Core.Domain.ValueObjects;
 
-/// <summary>
-/// Değer nesneleri (value object) için yapısal eşitlik sağlayan temel bir sınıfı temsil eder.
-/// </summary>
 public abstract class ValueObject
 {
     /// <summary>

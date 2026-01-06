@@ -5,6 +5,7 @@ using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.Products.Commands.Create;
 using ETicaret.Application.Features.Products.Commands.Update;
 using ETicaret.Application.Features.Products.Constants;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Features.Products.Rules;
@@ -16,11 +17,11 @@ public class CategoryMustExistRule :
     IBusinessRule<CreateProductCommand>,
     IBusinessRule<UpdateProductCommand>
 {
-    private readonly IRepository<Category, int> _repository;
+    private readonly ICategoryRepository _repository;
 
-    public CategoryMustExistRule(IUnitOfWork unitOfWork)
+    public CategoryMustExistRule(ICategoryRepository categoryRepository)
     {
-        _repository = unitOfWork.GetRepository<Category, int>();
+        _repository = categoryRepository;
     }
 
     public bool ShouldExecute(CreateProductCommand command) => command.CategoryId > 0;

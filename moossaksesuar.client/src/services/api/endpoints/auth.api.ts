@@ -1,6 +1,5 @@
-import { apiClient } from '../baseApi';
+import { baseApi } from '../baseApi';
 
-// Request/Response Types
 export interface RegisterRequest {
     firstName: string;
     lastName: string;
@@ -31,27 +30,16 @@ export interface CurrentUserResponse {
     roles: string[];
 }
 
-// Auth API
 export const authApi = {
-    // Kayıt ol
-    register: async (data: RegisterRequest): Promise<AuthResponse> => {
-        const response = await apiClient.post<AuthResponse>('/Auth/register', data);
-        return response.data;
-    },
+    register: (data: RegisterRequest) =>
+        baseApi.post<AuthResponse, RegisterRequest>('/Auth/register', data),
 
-    // Giriş yap
-    login: async (data: LoginRequest): Promise<AuthResponse> => {
-        const response = await apiClient.post<AuthResponse>('/Auth/login', data);
-        return response.data;
-    },
+    login: (data: LoginRequest) =>
+        baseApi.post<AuthResponse, LoginRequest>('/Auth/login', data),
 
-    // Mevcut kullanıcı bilgisi
-    getCurrentUser: async (): Promise<CurrentUserResponse> => {
-        const response = await apiClient.get<CurrentUserResponse>('/Auth/current');
-        return response.data;
-    },
+    getCurrentUser: () =>
+        baseApi.get<CurrentUserResponse>('/Auth/current'),
 
-    // Çıkış yap (localStorage temizleme)
     logout: () => {
         localStorage.removeItem('token');
         localStorage.removeItem('refreshToken');

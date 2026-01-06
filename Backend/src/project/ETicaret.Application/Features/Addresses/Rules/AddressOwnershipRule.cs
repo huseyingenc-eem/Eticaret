@@ -1,27 +1,24 @@
-﻿using Core.Application.Abstractions.Repositories;
-using Core.Application.Abstractions.Specifications;
+﻿using Core.Application.Abstractions.Specifications;
 using Core.Application.Behaviors.Rules;
 using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.Addresses.Commands.Delete;
 using ETicaret.Application.Features.Addresses.Commands.Update;
 using ETicaret.Application.Features.Addresses.Queries.GetById;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Features.Addresses.Rules;
 
-/// <summary>
-/// Address ownership kontrolü yapan tek sorumlu rule
-/// </summary>
 public class AddressOwnershipRule :
     IBusinessRule<UpdateAddressCommand>,
     IBusinessRule<DeleteAddressCommand>,
     IBusinessRule<GetByIdAddressQuery>
 {
-    private readonly IRepository<Address, Guid> _repository;
+    private readonly IAddressRepository _repository;
 
-    public AddressOwnershipRule(IUnitOfWork unitOfWork)
+    public AddressOwnershipRule(IAddressRepository addressRepository)
     {
-        _repository = unitOfWork.GetRepository<Address, Guid>();
+        _repository = addressRepository;
     }
 
     public bool ShouldExecute(UpdateAddressCommand command) => true;

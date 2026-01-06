@@ -1,10 +1,10 @@
-﻿using Core.Application.Abstractions.Repositories;
-using Core.Application.Abstractions.Specifications;
+﻿using Core.Application.Abstractions.Specifications;
 using Core.Application.Behaviors.Rules;
 using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.Products.Commands.Create;
 using ETicaret.Application.Features.Products.Commands.Update;
 using ETicaret.Application.Features.Products.Constants;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Features.Products.Rules;
@@ -16,11 +16,11 @@ public class ProductNameMustBeUniqueRule :
     IBusinessRule<CreateProductCommand>,
     IBusinessRule<UpdateProductCommand>
 {
-    private readonly IRepository<Product, Guid> _repository;
+    private readonly IProductRepository _repository;
 
-    public ProductNameMustBeUniqueRule(IUnitOfWork unitOfWork)
+    public ProductNameMustBeUniqueRule(IProductRepository productRepository)
     {
-        _repository = unitOfWork.GetRepository<Product, Guid>();
+        _repository = productRepository;
     }
 
     public bool ShouldExecute(CreateProductCommand command) => !string.IsNullOrWhiteSpace(command.Name);

@@ -1,46 +1,26 @@
-import axios from 'axios';
-import type {  AxiosResponse, AxiosError ,InternalAxiosRequestConfig} from 'axios';
-import { handleApiError } from './errorHandler';
+import type { AxiosRequestConfig } from "axios";
+import { http } from "./http";
 
-export interface ApiError {
-    type?: string;
-    title: string;
-    status: number;
-    detail: string;
-    instance?: string;
-    errors?: Record<string, string[]>;
-    errorCode?: string;
-    userFriendlyMessage?: string;
-    developerDetail?: string;
-    additionalData?: Record<string, any>;
+async function get<T>(url: string, config?: AxiosRequestConfig) {
+    const { data } = await http.get<T>(url, config);
+    return data;
+}
+async function post<TRes, TBody = unknown>(url: string, body?: TBody, config?: AxiosRequestConfig) {
+    const { data } = await http.post<TRes>(url, body, config);
+    return data;
+}
+async function put<TRes, TBody = unknown>(url: string, body?: TBody, config?: AxiosRequestConfig) {
+    const { data } = await http.put<TRes>(url, body, config);
+    return data;
+}
+async function patch<TRes, TBody = unknown>(url: string, body?: TBody, config?: AxiosRequestConfig) {
+    const { data } = await http.patch<TRes>(url, body, config);
+    return data;
+}
+async function del<T>(url: string, config?: AxiosRequestConfig) {
+    const { data } = await http.delete<T>(url, config);
+    return data;
 }
 
-const API_BASE_URL = `${import.meta.env.VITE_BACKEND_URL}:${import.meta.env.VITE_BACKEND_PORT}`;
-
-export const apiClient = axios.create({
-    baseURL: `${API_BASE_URL}/api`,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-});
-
-// Request interceptor
-apiClient.interceptors.request.use(
-    (config: InternalAxiosRequestConfig) => {
-        const token = localStorage.getItem('token');
-        if (token && config.headers) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => Promise.reject(error)
-);
-
-// Response interceptor
-apiClient.interceptors.response.use(
-    (response: AxiosResponse) => response,
-    (error: AxiosError<ApiError>) => {
-        handleApiError(error);
-        return Promise.reject(error);
-    }
-);
+export const baseApi = { get, post, put, patch, delete: del };
+export type { AppError } from "./http";

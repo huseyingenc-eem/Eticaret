@@ -1,9 +1,9 @@
-﻿using Core.Application.Abstractions.Repositories;
-using Core.Application.Abstractions.Specifications;
+﻿using Core.Application.Abstractions.Specifications;
 using Core.Application.Behaviors.Rules;
 using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.Addresses.Commands.Create;
 using ETicaret.Application.Features.Addresses.Commands.Update;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Features.Addresses.Rules;
@@ -15,11 +15,11 @@ public class DuplicateAddressTitleRule :
     IBusinessRule<CreateAddressCommand>,
     IBusinessRule<UpdateAddressCommand>
 {
-    private readonly IRepository<Address, Guid> _repository;
+    private readonly IAddressRepository _repository;
 
-    public DuplicateAddressTitleRule(IUnitOfWork unitOfWork)
+    public DuplicateAddressTitleRule(IAddressRepository addressRepository)
     {
-        _repository = unitOfWork.GetRepository<Address, Guid>();
+        _repository = addressRepository;
     }
 
     public bool ShouldExecute(CreateAddressCommand command) => !string.IsNullOrWhiteSpace(command.AddressTitle);

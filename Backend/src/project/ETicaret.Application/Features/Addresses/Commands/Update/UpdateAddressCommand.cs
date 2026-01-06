@@ -1,5 +1,4 @@
-﻿using Core.Application.Abstractions.Repositories;
-using Core.Application.Behaviors.Caching;
+﻿using Core.Application.Behaviors.Caching;
 using Core.Application.Behaviors.RequestInfo;
 using Core.Application.Behaviors.Transactional;
 using ETicaret.Application.Features.Addresses.Specifications;
@@ -9,6 +8,7 @@ using System.Text.Json.Serialization;
 using AutoMapper;
 using Core.Application.Common.Exceptions;
 using Core.Application.Behaviors.Authorization;
+using ETicaret.Application.Services.Repositories;
 
 namespace ETicaret.Application.Features.Addresses.Commands.Update;
 
@@ -57,16 +57,16 @@ public class UpdateAddressCommandHandler : IRequestHandler<UpdateAddressCommand,
 {
     #region Fields
 
-    private readonly IRepository<Address, Guid> _addressRepository;
+    private readonly IAddressRepository _addressRepository;
     private readonly IMapper _mapper;
 
     #endregion
 
     #region Constructor
-    public UpdateAddressCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    public UpdateAddressCommandHandler(IAddressRepository addressRepository, IMapper mapper)
     {
         _mapper = mapper;
-        _addressRepository = unitOfWork.GetRepository<Address, Guid>();
+        _addressRepository = addressRepository;
     }
 
     #endregion

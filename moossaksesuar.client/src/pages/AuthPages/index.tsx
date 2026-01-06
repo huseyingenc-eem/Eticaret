@@ -1,56 +1,73 @@
-import { useState } from 'react';
-import LoginForm from '@/components/forms/auth/LoginForm';
-import RegisterForm from '@/components/forms/auth/RegisterForm';
-import { motion, AnimatePresence } from 'framer-motion';
+// src/pages/AuthPages.tsx
+import { useState } from "react";
+import { useLocation } from "react-router-dom";
+import { LoginForm, RegisterForm } from "@/components/forms/auth";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui";
 
-const AuthPage = () => {
+
+export default function AuthPages() {
     const [isLogin, setIsLogin] = useState(true);
+    const location = useLocation();
+    const fromPath = (location.state as any)?.from?.pathname as string | undefined;
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-            <div className="max-w-md w-full">
-                <div className="bg-white rounded-2xl  overflow-hidden">
+        <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+            <div className="w-full max-w-md">
+                <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
+                    {/* Header */}
                     <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-center">
-                        <h1 className="text-2xl font-bold text-white mb-2">
-                            E-Ticaret Platformu
-                        </h1>
+                        <h1 className="mb-1 text-2xl font-bold text-white">E-Ticaret Platformu</h1>
                         <p className="text-blue-100">
-                            {isLogin ? 'Hesabınıza giriş yapın' : 'Yeni hesap oluşturun'}
+                            {isLogin ? "Hesabınıza giriş yapın" : "Yeni hesap oluşturun"}
                         </p>
+
+                        {fromPath && (
+                            <div className="mt-2 text-xs text-blue-100/90">
+                                Giriş sonrası otomatik yönlendirme:{" "}
+                                <span className="underline underline-offset-2">{fromPath}</span>
+                            </div>
+                        )}
                     </div>
 
-                    <div className="flex bg-gray-50">
-                        <button
+                    {/* Tabs (Button bileşeni ile) */}
+                    <div role="tablist" aria-label="Kimlik doğrulama sekmeleri" className="flex bg-gray-50">
+                        <Button
+                            type="button"
+                            size="sm"
+                            color={isLogin ? "primary" : "neutral"}
+                            variant={isLogin ? "filled" : "ghost"}
+                            className="flex-1 rounded-none py-3"
+                            aria-selected={isLogin}
                             onClick={() => setIsLogin(true)}
-                            className={`flex-1 py-3 px-4 text-sm font-medium transition-all duration-300 ${
-                                isLogin
-                                    ? 'bg-white text-blue-600 border-b-2 border-blue-600'
-                                    : 'text-gray-600 hover:bg-gray-100'
-                            }`}
                         >
                             Giriş Yap
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                            type="button"
+                            size="sm"
+                            color={!isLogin ? "primary" : "neutral"}
+                            variant={!isLogin ? "filled" : "ghost"}
+                            className="flex-1 rounded-none py-3"
+                            aria-selected={!isLogin}
                             onClick={() => setIsLogin(false)}
-                            className={`flex-1 py-3 px-4 text-sm font-medium transition-all duration-300 ${
-                                !isLogin
-                                    ? 'bg-white text-blue-600 border-b-2 border-blue-600'
-                                    : 'text-gray-600 hover:bg-gray-100'
-                            }`}
                         >
                             Kayıt Ol
-                        </button>
+                        </Button>
                     </div>
 
-                    <div className="p-6 relative min-h-[520px] sm:min-h-[500px]">
+                    {/* Body */}
+                    <div className="space-y-4 p-6">
+                        {/* Social giriş */}
+
+                        {/* Forms (animated) */}
                         <AnimatePresence mode="wait">
                             <motion.div
-                                key={isLogin ? 'login' : 'register'}
+                                key={isLogin ? "login" : "register"}
                                 initial={{ opacity: 0, x: isLogin ? -20 : 20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: isLogin ? 20 : -20 }}
                                 transition={{ duration: 0.25 }}
-                                className="absolute top-6 left-6 right-6"
                             >
                                 {isLogin ? (
                                     <LoginForm onSwitchToRegister={() => setIsLogin(false)} />
@@ -62,12 +79,7 @@ const AuthPage = () => {
                     </div>
                 </div>
 
-                <div className="text-center mt-6 text-sm text-gray-600">
-                    <p>© 2025 E-Ticaret. Tüm hakları saklıdır.</p>
-                </div>
             </div>
         </div>
     );
-};
-
-export default AuthPage;
+}

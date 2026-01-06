@@ -1,9 +1,9 @@
-﻿using Core.Application.Abstractions.Repositories;
-using Core.Application.Abstractions.Specifications;
+﻿using Core.Application.Abstractions.Specifications;
 using Core.Application.Behaviors.Rules;
 using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.Suppliers.Commands.Delete;
 using ETicaret.Application.Features.Suppliers.Commands.Update;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Features.Suppliers.Rules;
@@ -15,11 +15,11 @@ public class SupplierMustExistRule :
     IBusinessRule<UpdateSupplierCommand>,
     IBusinessRule<DeleteSupplierCommand>
 {
-    private readonly IRepository<Supplier, Guid> _repository;
+    private readonly ISupplierRepository _repository;
 
-    public SupplierMustExistRule(IUnitOfWork unitOfWork)
+    public SupplierMustExistRule(ISupplierRepository supplierRepository)
     {
-        _repository = unitOfWork.GetRepository<Supplier, Guid>();
+        _repository = supplierRepository;
     }
 
     public bool ShouldExecute(UpdateSupplierCommand command) => command.Id != Guid.Empty;

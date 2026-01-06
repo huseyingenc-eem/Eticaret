@@ -5,7 +5,7 @@ using Core.Application.Behaviors.Caching;
 using Core.Application.Behaviors.Transactional;
 using ETicaret.Application.Features.Suppliers.Constants;
 using ETicaret.Application.Features.Suppliers.Specifications;
-using ETicaret.Domain.Entities;
+using ETicaret.Application.Services.Repositories;
 using MediatR;
 
 namespace ETicaret.Application.Features.Suppliers.Commands.Update;
@@ -42,17 +42,17 @@ public class UpdateSupplierCommandHandler : IRequestHandler<UpdateSupplierComman
 {
     #region Fields
 
-    private readonly IRepository<Supplier, Guid> _supplierRepository;
+    private readonly ISupplierRepository _supplierRepository;
     private readonly IMapper _mapper;
     private readonly IUnitOfWork _unitOfWork;
 
     #endregion
 
     #region Constructor
-    public UpdateSupplierCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    public UpdateSupplierCommandHandler(ISupplierRepository supplierRepository, IUnitOfWork unitOfWork, IMapper mapper)
     {
         _unitOfWork = unitOfWork;
-        _supplierRepository = unitOfWork.GetRepository<Supplier, Guid>();
+        _supplierRepository = supplierRepository;
         _mapper = mapper;
     }
 
@@ -63,7 +63,7 @@ public class UpdateSupplierCommandHandler : IRequestHandler<UpdateSupplierComman
     public async Task<UpdateSupplierResponseDto> Handle(UpdateSupplierCommand request, CancellationToken cancellationToken)
     {
         var spec = new SupplierSpecifications.ById(request.Id);
-        Supplier supplier = (await _supplierRepository.GetAsync(spec, cancellationToken))!;
+        var supplier = (await _supplierRepository.GetAsync(spec, cancellationToken))!;
 
         _mapper.Map(request, supplier);
 

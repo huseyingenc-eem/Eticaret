@@ -4,6 +4,7 @@ using Core.Application.Behaviors.Authorization;
 using Core.Application.Behaviors.Caching;
 using Core.Application.Behaviors.Transactional;
 using ETicaret.Application.Features.Discounts.Constants;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 using MediatR;
 
@@ -39,10 +40,10 @@ public class CreateDiscountCommandHandler : IRequestHandler<CreateDiscountComman
     private readonly IMapper _mapper;
     private readonly IUnitOfWork _unitOfWork;
 
-    public CreateDiscountCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    public CreateDiscountCommandHandler(IDiscountRepository discountRepository, IMapper mapper, IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
-        _discountRepository = unitOfWork.GetRepository<Discount, Guid>();
+        _discountRepository =discountRepository;
         _mapper = mapper;
     }
 

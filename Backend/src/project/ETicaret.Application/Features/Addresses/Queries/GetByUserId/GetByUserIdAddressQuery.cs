@@ -1,19 +1,13 @@
 ﻿using AutoMapper;
-using Core.Application.Abstractions.Paging;
-using Core.Application.Abstractions.Repositories;
 using Core.Application.Behaviors.Authorization;
 using Core.Application.Behaviors.Caching;
-using Core.Application.Common.Results;
 using ETicaret.Application.Features.Addresses.Specifications;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 using MediatR;
 
 namespace ETicaret.Application.Features.Addresses.Queries.GetByUserId;
 
-/// <summary>
-/// Belirli bir kullanıcının tüm adreslerini sayfalanmış olarak getiren sorgu.
-/// Frontend'de kullanıcı detay sayfası veya pop-up için kullanılır.
-/// </summary>
 [DefaultRoles("Admin")]
 public class GetByUserIdAddressQuery : IRequest<List<GetByUserIdAddressResponseDto>>, ICachableRequest
 {
@@ -34,12 +28,12 @@ public class GetByUserIdAddressQuery : IRequest<List<GetByUserIdAddressResponseD
 
 public class GetByUserIdAddressQueryHandler : IRequestHandler<GetByUserIdAddressQuery, List<GetByUserIdAddressResponseDto>>
 {
-    private readonly IRepository<Address, Guid> _addressRepository;
+    private readonly IAddressRepository _addressRepository;
     private readonly IMapper _mapper;
 
-    public GetByUserIdAddressQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    public GetByUserIdAddressQueryHandler(IAddressRepository addressRepository, IMapper mapper)
     {
-        _addressRepository = unitOfWork.GetRepository<Address, Guid>();
+        _addressRepository = addressRepository;
         _mapper = mapper;
     }
 

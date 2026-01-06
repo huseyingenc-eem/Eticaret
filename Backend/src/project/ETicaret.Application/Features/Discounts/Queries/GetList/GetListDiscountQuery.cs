@@ -1,20 +1,15 @@
 ﻿using AutoMapper;
-using Core.Application.Abstractions.Paging;
-using Core.Application.Abstractions.Repositories;
 using Core.Application.Behaviors.Authorization;
 using Core.Application.Behaviors.Caching;
 using Core.Application.Common.Exceptions;
 using Core.Application.Common.Results;
 using ETicaret.Application.Features.Discounts.Constants;
 using ETicaret.Application.Features.Discounts.Specifications;
-using ETicaret.Domain.Entities;
+using ETicaret.Application.Services.Repositories;
 using MediatR;
 
 namespace ETicaret.Application.Features.Discounts.Queries.GetList;
 
-/// <summary>
-/// İndirimleri sayfalanmış bir liste olarak getiren sorgu. Filtreleme ve önbellekleme desteği ile yüksek performans sunar.
-/// </summary>
 public class GetListDiscountQuery : IRequest<PagedResult<GetListDiscountResponseDto>>,
     ICachableRequest,
     IPublicRequest
@@ -35,12 +30,12 @@ public class GetListDiscountQuery : IRequest<PagedResult<GetListDiscountResponse
 
 public class GetListDiscountQueryHandler : IRequestHandler<GetListDiscountQuery, PagedResult<GetListDiscountResponseDto>>
 {
-    private readonly IRepository<Discount, Guid> _discountRepository;
+    private readonly IDiscountRepository _discountRepository;
     private readonly IMapper _mapper;
 
-    public GetListDiscountQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    public GetListDiscountQueryHandler(IDiscountRepository discountRepository, IMapper mapper)
     {
-        _discountRepository = unitOfWork.GetRepository<Discount, Guid>();
+        _discountRepository = discountRepository;
         _mapper = mapper;
     }
 
@@ -53,7 +48,7 @@ public class GetListDiscountQueryHandler : IRequestHandler<GetListDiscountQuery,
             onlyActive: request.OnlyActive
         );
 
-        IPaginate<Discount> discountsPage = await _discountRepository.GetPaginatedListAsync(spec, cancellationToken);
+        var discountsPage = await _discountRepository.GetPaginatedListAsync(spec, cancellationToken);
 
         if (discountsPage.Count == 0 && request.PageIndex == 0)
         {

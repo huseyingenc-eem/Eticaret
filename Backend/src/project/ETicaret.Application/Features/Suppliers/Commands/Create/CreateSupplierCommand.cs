@@ -4,10 +4,12 @@ using Core.Application.Behaviors.Authorization;
 using Core.Application.Behaviors.Caching;
 using Core.Application.Behaviors.Transactional;
 using ETicaret.Application.Features.Suppliers.Constants;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 using MediatR;
 
 namespace ETicaret.Application.Features.Suppliers.Commands.Create;
+
 #region Create Supplier Command
 [DefaultRoles("Admin")]
 public class CreateSupplierCommand : IRequest<CreateSupplierResponseDto>, ITransactionalRequest ,ICacheRemoverRequest
@@ -34,7 +36,7 @@ public class CreateSupplierCommandHandler : IRequestHandler<CreateSupplierComman
 {
     #region Fields
 
-    private readonly IRepository<Supplier, Guid> _supplierRepository;
+    private readonly ISupplierRepository _supplierRepository;
     private readonly IMapper _mapper;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -42,10 +44,10 @@ public class CreateSupplierCommandHandler : IRequestHandler<CreateSupplierComman
 
     #region Constructor
 
-    public CreateSupplierCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    public CreateSupplierCommandHandler(ISupplierRepository supplierRepository,IUnitOfWork unitOfWork, IMapper mapper)
     {
         _unitOfWork = unitOfWork;
-        _supplierRepository = unitOfWork.GetRepository<Supplier, Guid>();
+        _supplierRepository = supplierRepository;
         _mapper = mapper;
     }
 

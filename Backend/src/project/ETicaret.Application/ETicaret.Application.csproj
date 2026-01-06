@@ -29,7 +29,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Features\CartItems\Commands\" />
+		<Folder Include="Features\CartItems\Commands\Delete\" />
+		<Folder Include="Features\CartItems\Commands\Update\" />
+		<Folder Include="Features\CartItems\Constants\" />
+		<Folder Include="Features\CartItems\Specifications\" />
+		<Folder Include="Features\CartItems\Rules\" />
 		<Folder Include="Features\CartItems\Queries\" />
 		<Folder Include="Features\Roles\Rules\" />
 		<ProjectCapability Include="ConfigurableFileNesting" />

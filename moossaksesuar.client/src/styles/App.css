@@ -1,2 +1,64 @@
 /* src/styles/App.css */
 @import "tailwindcss";
+@import "./responsive.css";
+
+
+@layer base {
+    :root {
+        --background: #ffffff;
+        --foreground: #0b1221;
+
+        --card: #ffffff;
+        --card-foreground: #0b1221;
+
+        --popover: #ffffff;
+        --popover-foreground: #0b1221;
+
+        --border: #E5E7EB;
+        --input:  #E5E7EB;
+        --ring:   #9CA3AF;
+
+        --muted:  #F1F5F9;
+        --muted-foreground: #6B7280;
+
+        --accent: #F1F5F9;
+        --accent-foreground: #111827;
+
+        --primary: #2563EB;
+        --primary-foreground: #F8FAFC;
+    }
+
+    /* koyu şema */
+    .dark, .black {
+        --background: #35364d;
+        --foreground: #E6EAF0;
+
+        --card: #13171C;
+        --card-foreground: #E6EAF0;
+
+        --popover: #13171C;
+        --popover-foreground: #E6EAF0;
+
+        --border: #2A2F37;
+        --input:  #2A2F37;
+        --ring:   #3A404A;
+
+        --muted:  #1C2128;
+        --muted-foreground: #A8B0BD;
+
+        --accent: #20262E;
+        --accent-foreground: #E6EAF0;
+
+        --primary: #3B82F6;
+        --primary-foreground: #0B1221;
+    }
+
+    body {
+        background-color: var(--background);
+        color: var(--foreground);
+    }
+
+    /* UX küçük eklemeler */
+    button:hover, [role="button"]:hover { cursor: pointer; }
+    button:disabled, [aria-disabled="true"] { cursor: not-allowed; }
+}

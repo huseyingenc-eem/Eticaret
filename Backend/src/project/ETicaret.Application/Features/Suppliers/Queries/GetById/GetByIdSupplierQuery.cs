@@ -5,7 +5,7 @@ using Core.Application.Behaviors.Caching;
 using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.Suppliers.Constants;
 using ETicaret.Application.Features.Suppliers.Specifications;
-using ETicaret.Domain.Entities;
+using ETicaret.Application.Services.Repositories;
 using MediatR;
 
 namespace ETicaret.Application.Features.Suppliers.Queries.GetById;
@@ -28,19 +28,19 @@ public class GetByIdSupplierQuery : IRequest<GetByIdSupplierResponseDto>,
 
 public class GetByIdSupplierQueryHandler : IRequestHandler<GetByIdSupplierQuery, GetByIdSupplierResponseDto>
 {
-    private readonly IRepository<Supplier, Guid> _supplierRepository;
+    private readonly ISupplierRepository _supplierRepository;
     private readonly IMapper _mapper;
 
-    public GetByIdSupplierQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    public GetByIdSupplierQueryHandler(ISupplierRepository supplierRepository, IUnitOfWork unitOfWork, IMapper mapper)
     {
-        _supplierRepository = unitOfWork.GetRepository<Supplier, Guid>();
+        _supplierRepository = supplierRepository;
         _mapper = mapper;
     }
 
     public async Task<GetByIdSupplierResponseDto> Handle(GetByIdSupplierQuery request, CancellationToken cancellationToken)
     {
         var spec = new SupplierSpecifications.ById(request.Id);
-        Supplier? supplier = await _supplierRepository.GetAsync(spec, cancellationToken) ?? 
+        var supplier = await _supplierRepository.GetAsync(spec, cancellationToken) ?? 
             throw new NotFoundException(
                 message: $"Supplier with ID {request.Id} was not found.",
                 userFriendlyMessage: "Aranan tedarikçi bulunamadı.",

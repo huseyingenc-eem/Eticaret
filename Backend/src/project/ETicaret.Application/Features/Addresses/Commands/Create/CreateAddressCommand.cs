@@ -8,6 +8,7 @@ using MediatR;
 using System.Text.Json.Serialization;
 using AutoMapper;
 using Core.Application.Behaviors.Authorization;
+using ETicaret.Application.Services.Repositories;
 
 namespace ETicaret.Application.Features.Addresses.Commands.Create;
 
@@ -39,7 +40,6 @@ public class CreateAddressCommand : IRequest<CreateAddressResponseDto>,
 
     #region Cache Settings
     public string? CacheKey => $"user-addresses_{UserId}";
-    public bool BypassCache => false;
     public string? CacheGroupKey => null;
     #endregion
 }
@@ -52,16 +52,16 @@ public class CreateAddressCommandHandler : IRequestHandler<CreateAddressCommand,
 {
     #region Fields
 
-    private readonly IRepository<Address, Guid> _addressRepository;
+    private readonly IAddressRepository _addressRepository;
     private readonly IMapper _mapper;
 
     #endregion
 
     #region Constructor
-    public CreateAddressCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    public CreateAddressCommandHandler(IAddressRepository addressRepository, IMapper mapper)
     {
         _mapper = mapper;
-        _addressRepository = unitOfWork.GetRepository<Address, Guid>();
+        _addressRepository = addressRepository;
     }
 
     #endregion

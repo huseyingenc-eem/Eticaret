@@ -1,10 +1,10 @@
-﻿using Core.Application.Abstractions.Repositories;
-using Core.Application.Abstractions.Specifications;
+﻿using Core.Application.Abstractions.Specifications;
 using Core.Application.Behaviors.Rules;
 using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.Products.Commands.Delete;
 using ETicaret.Application.Features.Products.Commands.Update;
 using ETicaret.Application.Features.Products.Constants;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Features.Products.Rules;
@@ -16,11 +16,11 @@ public class ProductMustExistRule :
     IBusinessRule<UpdateProductCommand>,
     IBusinessRule<DeleteProductCommand>
 {
-    private readonly IRepository<Product, Guid> _repository;
+    private readonly IProductRepository _repository;
 
-    public ProductMustExistRule(IUnitOfWork unitOfWork)
+    public ProductMustExistRule(IProductRepository productRepository)
     {
-        _repository = unitOfWork.GetRepository<Product, Guid>();
+        _repository = productRepository;
     }
 
     public bool ShouldExecute(UpdateProductCommand command) => command.Id != Guid.Empty;

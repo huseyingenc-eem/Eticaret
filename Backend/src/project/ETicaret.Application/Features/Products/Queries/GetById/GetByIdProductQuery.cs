@@ -1,18 +1,14 @@
 ﻿using AutoMapper;
-using Core.Application.Abstractions.Repositories;
 using Core.Application.Behaviors.Authorization;
 using Core.Application.Behaviors.Caching;
 using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.Products.Constants;
 using ETicaret.Application.Features.Products.Specifications;
-using ETicaret.Domain.Entities;
+using ETicaret.Application.Services.Repositories;
 using MediatR;
 
 namespace ETicaret.Application.Features.Products.Queries.GetById;
 
-/// <summary>
-/// Belirtilen ID'ye sahip ürünü getiren sorgu. Önbellekleme ve yetkilendirme desteği ile.
-/// </summary>
 public class GetByIdProductQuery : IRequest<GetByIdProductResponseDto>,
     ICachableRequest,
     IPublicRequest
@@ -30,12 +26,12 @@ public class GetByIdProductQuery : IRequest<GetByIdProductResponseDto>,
 
 public class GetByIdProductQueryHandler : IRequestHandler<GetByIdProductQuery, GetByIdProductResponseDto>
 {
-    private readonly IRepository<Product, Guid> _productRepository;
+    private readonly IProductRepository _productRepository;
     private readonly IMapper _mapper;
 
-    public GetByIdProductQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    public GetByIdProductQueryHandler(IProductRepository productRepository, IMapper mapper)
     {
-        _productRepository = unitOfWork.GetRepository<Product, Guid>();
+        _productRepository = productRepository;
         _mapper = mapper;
     }
 
@@ -51,7 +47,7 @@ public class GetByIdProductQueryHandler : IRequestHandler<GetByIdProductQuery, G
         }
 
         var spec = new ProductSpecifications.ByIdWithDetails(request.Id);
-        Product? product = await _productRepository.GetAsync(spec, cancellationToken);
+        var product = await _productRepository.GetAsync(spec, cancellationToken);
 
         if (product == null)
         {

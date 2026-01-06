@@ -1,10 +1,10 @@
-﻿using Core.Application.Abstractions.Repositories;
-using Core.Application.Abstractions.Specifications;
+﻿using Core.Application.Abstractions.Specifications;
 using Core.Application.Behaviors.Rules;
 using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.Discounts.Commands.Delete;
 using ETicaret.Application.Features.Discounts.Commands.Update;
 using ETicaret.Application.Features.Discounts.Constants;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Features.Discounts.Rules;
@@ -16,11 +16,11 @@ public class DiscountMustExistRule :
     IBusinessRule<UpdateDiscountCommand>,
     IBusinessRule<DeleteDiscountCommand>
 {
-    private readonly IRepository<Discount, Guid> _repository;
+    private readonly IDiscountRepository _repository;
 
-    public DiscountMustExistRule(IUnitOfWork unitOfWork)
+    public DiscountMustExistRule(IDiscountRepository discountRepository)
     {
-        _repository = unitOfWork.GetRepository<Discount, Guid>();
+        _repository = discountRepository;
     }
 
     public bool ShouldExecute(UpdateDiscountCommand command) => command.Id != Guid.Empty;

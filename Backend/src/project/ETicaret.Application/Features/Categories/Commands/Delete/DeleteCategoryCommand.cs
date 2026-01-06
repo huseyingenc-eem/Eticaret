@@ -1,10 +1,9 @@
 ﻿using AutoMapper;
-using Core.Application.Abstractions.Repositories;
 using Core.Application.Behaviors.Authorization;
 using Core.Application.Behaviors.Caching;
 using Core.Application.Behaviors.Transactional;
 using ETicaret.Application.Features.Categories.Specifications;
-using ETicaret.Domain.Entities;
+using ETicaret.Application.Services.Repositories;
 using MediatR;
 
 namespace ETicaret.Application.Features.Categories.Commands.Delete;
@@ -22,19 +21,19 @@ public class DeleteCategoryCommand : IRequest<DeleteCategoryResponseDto>, ITrans
 
     public class DeleteCategoryCommandHandler : IRequestHandler<DeleteCategoryCommand, DeleteCategoryResponseDto>
     {
-        private readonly IRepository<Category, int> _categoryRepository;
+        private readonly ICategoryRepository _categoryRepository;
         private readonly IMapper _mapper;
 
-        public DeleteCategoryCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public DeleteCategoryCommandHandler(ICategoryRepository categoryRepository, IMapper mapper)
         {
-            _categoryRepository = unitOfWork.GetRepository<Category, int>();
+            _categoryRepository = categoryRepository;
             _mapper = mapper;
         }
 
         public async Task<DeleteCategoryResponseDto> Handle(DeleteCategoryCommand request, CancellationToken cancellationToken)
         {
             var spec = new CategorySpecifications.ById(request.Id);
-            Category categoryToDelete = (await _categoryRepository.GetAsync(spec, cancellationToken))!;
+            var categoryToDelete = (await _categoryRepository.GetAsync(spec, cancellationToken))!;
 
             await _categoryRepository.DeleteAsync(categoryToDelete, permanent: false, cancellationToken);
 

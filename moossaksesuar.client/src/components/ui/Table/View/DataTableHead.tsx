@@ -1,16 +1,15 @@
-// ===============================
-// File: DataTableHead.tsx (optimized)
-// ===============================
+// src/components/ui/Table/View/DataTableHead.tsx
 import React, { memo } from "react";
-import { type ColumnDef, type SortDir } from "./types";
+import { type ColumnDef, type SortDir } from "../types";
+import { Button } from "@/components/ui";
 
-type HeadProps<T> = {
-    columns: ColumnDef<T>[];
+type DataTableHeadProps<T> = {
+    columns?: ColumnDef<T>[];
     selectableRows?: boolean;
     sortBy: string | null;
     sortDir: SortDir;
     onToggleSort: (col: ColumnDef<T>) => void;
-    variant?: "default" | "minimal" | "elevated";
+    variant?: "default" | "modern" | "minimal";
     density?: "compact" | "normal" | "comfortable";
     onSelectAll?: (checked: boolean) => void;
     allSelected?: boolean;
@@ -18,26 +17,29 @@ type HeadProps<T> = {
 };
 
 const SortIcon = ({ direction, isActive }: { direction?: SortDir; isActive: boolean }) => {
+    const baseClass = "w-3.5 h-3.5 transition-all duration-200";
+    const colorClass = isActive ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600";
+
     if (!isActive) {
         return (
-            <svg className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M5 12l5-5 5 5H5z" />
+            <svg className={`${baseClass} ${colorClass} opacity-0 group-hover:opacity-100`} fill="none" strokeWidth="2" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 9l4-4 4 4M8 15l4 4 4-4" />
             </svg>
         );
     }
 
     if (direction === "asc") {
         return (
-            <svg className="w-3 h-3 text-slate-600" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M5 12l5-5 5 5H5z" />
+            <svg className={`${baseClass} ${colorClass}`} fill="none" strokeWidth="2" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
             </svg>
         );
     }
 
     if (direction === "desc") {
         return (
-            <svg className="w-3 h-3 text-slate-600" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M15 8l-5 5-5-5h10z" />
+            <svg className={`${baseClass} ${colorClass}`} fill="none" strokeWidth="2" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
             </svg>
         );
     }
@@ -54,136 +56,104 @@ function DataTableHeadComponent<T>({
                                        variant = "default",
                                        density = "normal",
                                        onSelectAll,
-                                       allSelected = false,
-                                       someSelected = false,
-                                   }: HeadProps<T>) {
-    const variantStyles = {
-        default: {
-            header: `bg-gradient-to-r from-slate-50 via-gray-50/90 to-slate-50 border-b border-slate-200/60 backdrop-blur-sm`,
-            sticky: "bg-gradient-to-r from-slate-50 to-gray-50/90 backdrop-blur-sm",
-            text: "text-slate-700",
-            sortButton: "hover:bg-slate-100/60 active:bg-slate-200/40",
-        },
-        minimal: {
-            header: "bg-white border-b border-slate-200",
-            sticky: "bg-white",
-            text: "text-slate-600",
-            sortButton: "hover:bg-slate-50 active:bg-slate-100",
-        },
-        elevated: {
-            header: `bg-gradient-to-r from-white via-slate-50/50 to-white border-b border-slate-200/80 shadow-sm backdrop-blur-sm`,
-            sticky: "bg-gradient-to-r from-white to-slate-50/50 backdrop-blur-sm shadow-sm",
-            text: "text-slate-700",
-            sortButton: "hover:bg-slate-100/50 hover:shadow-sm active:bg-slate-200/30",
-        },
-    } as const;
+                                       allSelected,
+                                       someSelected
+                                   }: DataTableHeadProps<T>) {
+    // Columns kontrolü
+    if (!columns || !Array.isArray(columns)) {
+        return null;
+    }
 
-    const densityStyles = { compact: "px-3 py-2", normal: "px-4 py-3", comfortable: "px-5 py-4" } as const;
+    // Density'ye göre padding ayarları
+    const paddingClasses = {
+        compact: "px-3 py-1.5",
+        normal: "px-4 py-2.5",
+        comfortable: "px-6 py-3.5"
+    };
 
-    const currentVariant = variantStyles[variant];
-    const cellPadding = densityStyles[density];
+    // Variant'a göre stil ayarları
+    const variantClasses = {
+        default: "bg-slate-50/50 border-b border-slate-200",
+        modern: "bg-gradient-to-r from-slate-50 to-white border-b border-slate-200",
+        minimal: "border-b border-slate-100"
+    };
+
+    const padding = paddingClasses[density];
+    const headerClass = variantClasses[variant];
 
     return (
-        <thead className={`relative ${currentVariant.header}`}>
-        <tr className="text-left">
+        <thead className={headerClass}>
+        <tr>
             {selectableRows && (
-                <th className={`sticky left-0 z-20 ${currentVariant.sticky} border-r border-slate-200/50 ${cellPadding}`}>
+                <th className={`w-12 text-center ${padding}`}>
                     <div className="flex items-center justify-center">
                         <input
                             type="checkbox"
                             checked={allSelected}
+                            onChange={(e) => onSelectAll?.(e.target.checked)}
+                            className={`
+                                    h-4 w-4 rounded border-slate-300
+                                    text-blue-600 focus:ring-2 focus:ring-offset-0 focus:ring-blue-500/50
+                                    transition-colors cursor-pointer
+                                    ${someSelected && !allSelected ? "indeterminate:bg-blue-600" : ""}
+                                `}
                             ref={(el) => {
                                 if (el) el.indeterminate = someSelected && !allSelected;
                             }}
-                            onChange={(e) => onSelectAll?.(e.target.checked)}
-                            className={`h-4 w-4 rounded border-2 border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-500/20 transition-colors duration-150 ${
-                                allSelected || someSelected ? "bg-blue-600 border-blue-600" : "hover:border-blue-400"
-                            }`}
-                            aria-label="Tüm satırları seç"
                         />
                     </div>
                 </th>
             )}
 
             {columns.map((col) => {
-                const id = (col.id || "").toLowerCase();
-                const isId = id === "id";
-                const isActions = id === "actions";
+                if (!col || !col.id) {
+                    return null;
+                }
+
                 const isSorted = sortBy === col.id;
 
-                const ariaSort: React.ThHTMLAttributes<HTMLTableHeaderCellElement>["aria-sort"] =
-                    isSorted ? (sortDir === "asc" ? "ascending" : sortDir === "desc" ? "descending" : "none") : "none";
-
-                const suggestedWidth = col.width
-                    ? col.width
-                    : isId
-                        ? "w-[80px] max-w-[80px]"
-                        : isActions
-                            ? "w-24 md:w-28"
-                            : "";
-
-                const stickyCls = col.sticky
-                    ? `sticky ${col.sticky === "left" ? "left-0" : "right-0"} z-10 ${currentVariant.sticky} border-r border-slate-200/50`
-                    : "";
-
-                const cellClasses = [
-                    "relative whitespace-nowrap select-none",
-                    cellPadding,
-                    currentVariant.text,
-                    col.className ?? "",
-                    suggestedWidth,
-                    stickyCls,
-                    isId && "text-center",
-                    isActions && "text-right",
-                ]
-                    .filter(Boolean)
-                    .join(" ");
-
-                const headerTextClasses = [
-                    "font-semibold text-xs uppercase tracking-wider",
-                    isId && "font-mono",
-                    isActions && "text-right",
-                ]
-                    .filter(Boolean)
-                    .join(" ");
-
                 return (
-                    <th key={col.id} className={cellClasses} aria-sort={ariaSort}>
+                    <th
+                        key={col.id}
+                        className={`
+                                text-left text-xs font-medium uppercase tracking-wider
+                                text-slate-600 ${padding} ${col.className || ""}
+                            `}
+                        style={{
+                            minWidth: col.minWidth,
+                            width: col.width
+                        }}
+                    >
                         {col.sortable ? (
-                            <button
-                                type="button"
-                                className={`group flex items-center gap-2 w-full rounded-md px-2 py-1 -mx-2 -my-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/20 transition-all duration-150 ease-in-out ${
-                                    currentVariant.sortButton
-                                } ${isActions ? "justify-end text-right" : "justify-start text-left"} ${
-                                    isSorted ? "text-slate-900" : "text-slate-600 hover:text-slate-800"
-                                }`}
+                            <Button
+                                variant="ghost"
+                                size="sm"
                                 onClick={() => onToggleSort(col)}
-                                aria-label={`${col.header} sütununa göre sırala`}
+                                className={`
+                                        group -ml-2 h-auto py-0 px-2
+                                        flex items-center gap-1.5
+                                        hover:bg-transparent hover:text-blue-600
+                                        transition-colors duration-200
+                                        ${isSorted ? "text-blue-600 font-semibold" : ""}
+                                    `}
                             >
-                                <span className={`truncate min-w-0 ${headerTextClasses}`}>{col.header}</span>
-                                <div className="flex-shrink-0 flex items-center">
-                                    <SortIcon direction={sortDir} isActive={isSorted} />
-                                </div>
-                            </button>
+                                    <span className="select-none">
+                                        {col.header || col.id}
+                                    </span>
+                                <SortIcon
+                                    direction={isSorted ? sortDir : undefined}
+                                    isActive={isSorted}
+                                />
+                            </Button>
                         ) : (
-                            <div className={`flex items-center gap-2 min-w-0 ${
-                                isActions ? "justify-end text-right" : "justify-start text-left"
-                            }`}>
-                                <span className={`truncate ${headerTextClasses}`}>{col.header}</span>
-                            </div>
+                            <span className="inline-flex items-center select-none">
+                                    {col.header || col.id}
+                                </span>
                         )}
                     </th>
                 );
             })}
         </tr>
-
-        {variant === "elevated" && (
-            <tr className="absolute inset-x-0 bottom-0 h-px">
-                <td colSpan={columns.length + (selectableRows ? 1 : 0)} className="h-px">
-                    <div className="h-full bg-gradient-to-r from-transparent via-slate-300/40 to-transparent" />
-                </td>
-            </tr>
-        )}
         </thead>
     );
 }

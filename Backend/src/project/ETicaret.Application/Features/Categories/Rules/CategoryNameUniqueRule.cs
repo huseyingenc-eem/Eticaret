@@ -4,6 +4,7 @@ using Core.Application.Behaviors.Rules;
 using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.Categories.Commands.Create;
 using ETicaret.Application.Features.Categories.Commands.Update;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Features.Categories.Rules;
@@ -15,11 +16,11 @@ public class CategoryNameUniqueRule :
     IBusinessRule<CreateCategoryCommand>,
     IBusinessRule<UpdateCategoryCommand>
 {
-    private readonly IRepository<Category, int> _categoryRepository;
+    private readonly ICategoryRepository _categoryRepository;
 
-    public CategoryNameUniqueRule(IUnitOfWork unitOfWork)
+    public CategoryNameUniqueRule(ICategoryRepository categoryRepository)
     {
-        _categoryRepository = unitOfWork.GetRepository<Category, int>();
+        _categoryRepository = categoryRepository;
     }
 
     public bool ShouldExecute(CreateCategoryCommand command) => !string.IsNullOrWhiteSpace(command.Name);

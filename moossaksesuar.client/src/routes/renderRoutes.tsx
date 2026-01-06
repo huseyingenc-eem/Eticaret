@@ -1,12 +1,12 @@
+// src/routes/renderRoutes.tsx
 import { Fragment, Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
-import type { AppRouteObject } from "./types.ts";
+import type { AppRouteObject } from "./types";
 import { RequireAuth } from "@/guards/RequireAuth";
 import { RequireRole } from "@/guards/RequireRole";
 
 function withGuards(element: React.ReactElement, meta?: AppRouteObject["meta"]) {
     let wrapped = element;
-
     if (meta?.roles && meta.roles.length > 0) {
         wrapped = <RequireRole roles={meta.roles}>{wrapped}</RequireRole>;
     }
@@ -16,7 +16,7 @@ function withGuards(element: React.ReactElement, meta?: AppRouteObject["meta"]) 
     return wrapped;
 }
 
-function renderRouteTree(routes: AppRouteObject[]) {
+function renderTree(routes: AppRouteObject[]) {
     const walk = (rts: AppRouteObject[]) =>
         rts.map((r, idx) => {
             const Element = r.element ? (
@@ -25,6 +25,9 @@ function renderRouteTree(routes: AppRouteObject[]) {
                 </Suspense>
             ) : undefined;
 
+            if (r.index) {
+                return <Route key={`index-${idx}`} index element={Element} />;
+            }
             return (
                 <Route key={r.path ?? idx} path={r.path} element={Element}>
                     {r.children ? walk(r.children) : null}
@@ -36,5 +39,5 @@ function renderRouteTree(routes: AppRouteObject[]) {
 }
 
 export function RenderRoutes({ routes }: { routes: AppRouteObject[] }) {
-    return <Routes>{renderRouteTree(routes)}</Routes>;
+    return <Routes>{renderTree(routes)}</Routes>;
 }

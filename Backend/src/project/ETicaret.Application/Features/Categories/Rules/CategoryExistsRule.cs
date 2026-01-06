@@ -1,10 +1,10 @@
-﻿using Core.Application.Abstractions.Repositories;
-using Core.Application.Abstractions.Specifications;
+﻿using Core.Application.Abstractions.Specifications;
 using Core.Application.Behaviors.Rules;
 using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.Categories.Commands.Update;
 using ETicaret.Application.Features.Categories.Commands.Delete;
 using ETicaret.Domain.Entities;
+using ETicaret.Application.Services.Repositories;
 
 namespace ETicaret.Application.Features.Categories.Rules;
 
@@ -15,11 +15,11 @@ public class CategoryExistsRule :
     IBusinessRule<UpdateCategoryCommand>,
     IBusinessRule<DeleteCategoryCommand>
 {
-    private readonly IRepository<Category, int> _categoryRepository;
+    private readonly ICategoryRepository _categoryRepository;
 
-    public CategoryExistsRule(IUnitOfWork unitOfWork)
+    public CategoryExistsRule(ICategoryRepository categoryRepository)
     {
-        _categoryRepository = unitOfWork.GetRepository<Category, int>();
+        _categoryRepository = categoryRepository;
     }
 
     public bool ShouldExecute(UpdateCategoryCommand command) => true;

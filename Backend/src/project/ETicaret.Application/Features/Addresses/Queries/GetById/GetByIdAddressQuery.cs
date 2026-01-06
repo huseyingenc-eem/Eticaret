@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using Core.Application.Abstractions.Repositories;
 using Core.Application.Behaviors.Caching;
 using Core.Application.Behaviors.RequestInfo;
 using ETicaret.Application.Features.Addresses.Specifications;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 using MediatR;
 using System.Text.Json.Serialization;
@@ -11,11 +11,6 @@ namespace ETicaret.Application.Features.Addresses.Queries.GetById;
 
 #region Get By Id Address Query
 
-/// <summary>
-/// Belirli bir ID'ye sahip adresi getirmek için kullanılan sorgu.
-/// ICachableRequest: Bu sorgunun sonucunun önbelleğe alınmasını sağlar.
-/// IRequestInfoRequest: Kullanıcı kimliği middleware tarafından otomatik atanır.
-/// </summary>
 public class GetByIdAddressQuery : IRequest<GetByIdAddressResponseDto>,
     IRequestInfoRequest,
     ICachableRequest
@@ -44,16 +39,16 @@ public class GetByIdAddressQueryHandler : IRequestHandler<GetByIdAddressQuery, G
 {
     #region Fields
 
-    private readonly IRepository<Address, Guid> _addressRepository;
+    private readonly IAddressRepository _addressRepository;
     private readonly IMapper _mapper;
 
     #endregion
 
     #region Constructor
-    public GetByIdAddressQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    public GetByIdAddressQueryHandler(IAddressRepository addressRepository, IMapper mapper)
     {
         _mapper = mapper;
-        _addressRepository = unitOfWork.GetRepository<Address, Guid>();
+        _addressRepository = addressRepository;
     }
 
     #endregion

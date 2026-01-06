@@ -35,10 +35,10 @@ public static class ApplicationServiceRegistration
             configuration.AddOpenBehavior(typeof(AuthorizationBehavior<,>));
             configuration.AddOpenBehavior(typeof(ValidationBehavior<,>));
             configuration.AddOpenBehavior(typeof(BusinessRulesBehavior<,>));
-            configuration.AddOpenBehavior(typeof(CachingBehavior<,>));
+            configuration.AddOpenBehavior(typeof(CacheBehavior<,>));
             configuration.AddOpenBehavior(typeof(CacheRemoveBehavior<,>));
-            configuration.AddOpenBehavior(typeof(PerformanceBehavior<,>));
             configuration.AddOpenBehavior(typeof(TransactionBehavior<,>));
+            configuration.AddOpenBehavior(typeof(PerformanceBehavior<,>));
         });
         
         // FluentValidation validatörlerini bu assembly için ekle

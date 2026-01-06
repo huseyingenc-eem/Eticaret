@@ -4,6 +4,7 @@ using ETicaret.Domain.Entities;
 using ETicaret.Application.Features.OperationClaims.Specifications;
 using MediatR;
 using System.Reflection;
+using ETicaret.Application.Services.Repositories;
 
 namespace ETicaret.Application.Services.Authorization;
 
@@ -11,17 +12,17 @@ public class OperationClaimSeeder : IOperationClaimSeeder
 {
     #region Fields
 
-    private readonly IRepository<OperationClaim, int> _repository;
+    private readonly IOperationClaimRepository _repository;
     private readonly IUnitOfWork _unitOfWork;
 
     #endregion
 
     #region Constructor
 
-    public OperationClaimSeeder(IUnitOfWork unitOfWork)
+    public OperationClaimSeeder(IOperationClaimRepository operationClaimSeeder, IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
-        _repository = _unitOfWork.GetRepository<OperationClaim, int>();
+        _repository = operationClaimSeeder;
     }
 
     #endregion
@@ -96,11 +97,6 @@ public class OperationClaimSeeder : IOperationClaimSeeder
     }
     private async Task ProcessExistingClaimSafely(OperationClaim existingClaim, string defaultRoles, List<OperationClaim> claimsToUpdate)
     {
-        if (string.IsNullOrEmpty(defaultRoles))
-        {
-            Console.WriteLine($"OperationClaimSeeder: '{existingClaim.OperationName}' için varsayılan rol yok, mevcut hali korunuyor.");
-            return;
-        }
         var existingRoles = ParseRoles(existingClaim.RequiredRoles);
         var defaultRolesList = ParseRoles(defaultRoles);
 
@@ -118,10 +114,6 @@ public class OperationClaimSeeder : IOperationClaimSeeder
 
             existingClaim.RequiredRoles = newRequiredRoles;
             claimsToUpdate.Add(existingClaim);
-        }
-        else
-        {
-            Console.WriteLine($"OperationClaimSeeder: '{existingClaim.OperationName}' için eksik rol yok, değişiklik yok.");
         }
     }
     private static List<string> ParseRoles(string rolesString)
@@ -182,7 +174,6 @@ public class OperationClaimSeeder : IOperationClaimSeeder
         return "Admin";
 
         #region Commented Smart Logic - Manuel Aktivasyon Gerekiyor
-        // manuel olarak dosya isimlerine bağlı kurallar eklenebilir. Dikkatli kullanın
 
         #endregion
     }

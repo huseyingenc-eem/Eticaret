@@ -1,9 +1,9 @@
-﻿using Core.Application.Abstractions.Repositories;
-using Core.Application.Abstractions.Specifications;
+﻿using Core.Application.Abstractions.Specifications;
 using Core.Application.Behaviors.Rules;
 using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.Suppliers.Commands.Create;
 using ETicaret.Application.Features.Suppliers.Commands.Update;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Features.Suppliers.Rules;
@@ -16,11 +16,11 @@ public class CompanyNameMustBeUniqueRule :
     IBusinessRule<CreateSupplierCommand>,
     IBusinessRule<UpdateSupplierCommand>
 {
-    private readonly IRepository<Supplier, Guid> _repository;
+    private readonly ISupplierRepository _repository;
 
-    public CompanyNameMustBeUniqueRule(IUnitOfWork unitOfWork)
+    public CompanyNameMustBeUniqueRule(ISupplierRepository supplierRepository)
     {
-        _repository = unitOfWork.GetRepository<Supplier, Guid>();
+        _repository = supplierRepository;
     }
 
     public bool ShouldExecute(CreateSupplierCommand command) => !string.IsNullOrWhiteSpace(command.CompanyName);

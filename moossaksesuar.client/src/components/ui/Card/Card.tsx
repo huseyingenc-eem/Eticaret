@@ -1,4 +1,3 @@
-// src/components/ui/Card/Card.tsx
 import { forwardRef, type HTMLAttributes } from 'react';
 import { cn } from '@/utils/cn';
 

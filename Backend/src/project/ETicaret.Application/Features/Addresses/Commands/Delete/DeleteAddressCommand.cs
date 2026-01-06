@@ -1,10 +1,10 @@
-﻿using Core.Application.Abstractions.Repositories;
-using Core.Application.Behaviors.Authorization;
+﻿using Core.Application.Behaviors.Authorization;
 using Core.Application.Behaviors.Caching;
 using Core.Application.Behaviors.RequestInfo;
 using Core.Application.Behaviors.Transactional;
 using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.Addresses.Specifications;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 using MediatR;
 using System.Text.Json.Serialization;
@@ -13,13 +13,7 @@ namespace ETicaret.Application.Features.Addresses.Commands.Delete;
 
 #region Delete Address Command
 
-/// <summary>
-/// Kullanıcının kendi adresini silme işlemini temsil eden komut.
-/// Sadece belirli kuralları çalıştırır - RuleConfiguration attribute ile kontrol edilir.
-/// FluentValidation: Input validation yapar
-/// BusinessRulesValidationBehavior: Business logic kontrolü yapar
-/// Handler: Sadece core business işlemlerini yapar
-/// </summary>
+
 [DefaultRoles("Admin","User")]
 public class DeleteAddressCommand : IRequest<DeleteAddressResponseDto>,
     ITransactionalRequest,
@@ -45,28 +39,20 @@ public class DeleteAddressCommand : IRequest<DeleteAddressResponseDto>,
 
 #region Delete Address Command Handler
 
-/// <summary>
-/// DeleteAddressCommand komutunu işleyen handler sınıfı.
-/// Business rules artık RuleEngine tarafından otomatik çalıştırılır.
-/// Handler sadece core business logic'e odaklanır.
-/// </summary>
 public class DeleteAddressCommandHandler : IRequestHandler<DeleteAddressCommand, DeleteAddressResponseDto>
 {
     #region Fields
 
-    private readonly IRepository<Address, Guid> _addressRepository;
+    private readonly IAddressRepository _addressRepository;
 
     #endregion
 
     #region Constructor
 
-    /// <summary>
-    /// DeleteAddressCommandHandler sınıfının yeni bir örneğini oluşturur.
-    /// </summary>
-    /// <param name="unitOfWork">Veritabanı işlemleri için Unit of Work implementasyonu.</param>
-    public DeleteAddressCommandHandler(IUnitOfWork unitOfWork)
+
+    public DeleteAddressCommandHandler(IAddressRepository addressRepository)
     {
-        _addressRepository = unitOfWork.GetRepository<Address, Guid>();
+        _addressRepository = addressRepository;
     }
 
     #endregion

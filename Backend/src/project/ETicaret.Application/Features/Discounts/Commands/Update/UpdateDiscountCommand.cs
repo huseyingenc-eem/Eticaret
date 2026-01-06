@@ -5,12 +5,12 @@ using Core.Application.Behaviors.Caching;
 using Core.Application.Behaviors.Transactional;
 using ETicaret.Application.Features.Discounts.Constants;
 using ETicaret.Application.Features.Discounts.Specifications;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 using MediatR;
 
 namespace ETicaret.Application.Features.Discounts.Commands.Update;
 
-/// Mevcut bir indirimi güncellemek için kullanılan komut. Rules Engine tarafından otomatik business rule kontrolü yapılır.
 [DefaultRoles("Admin")]
 public class UpdateDiscountCommand : IRequest<UpdateDiscountResponseDto>,
     ICacheRemoverRequest,
@@ -37,21 +37,21 @@ public class UpdateDiscountCommand : IRequest<UpdateDiscountResponseDto>,
 
 public class UpdateDiscountCommandHandler : IRequestHandler<UpdateDiscountCommand, UpdateDiscountResponseDto>
 {
-    private readonly IRepository<Discount, Guid> _discountRepository;
+    private readonly IDiscountRepository _discountRepository;
     private readonly IMapper _mapper;
     private readonly IUnitOfWork _unitOfWork;
 
-    public UpdateDiscountCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    public UpdateDiscountCommandHandler(IDiscountRepository discountRepository,IUnitOfWork unitOfWork, IMapper mapper)
     {
         _unitOfWork = unitOfWork;
-        _discountRepository = unitOfWork.GetRepository<Discount, Guid>();
+        _discountRepository = discountRepository;
         _mapper = mapper;
     }
 
     public async Task<UpdateDiscountResponseDto> Handle(UpdateDiscountCommand request, CancellationToken cancellationToken)
     {
         var spec = new DiscountSpecifications.ById(request.Id);
-        Discount discount = (await _discountRepository.GetAsync(spec, cancellationToken))!;
+        var discount = (await _discountRepository.GetAsync(spec, cancellationToken))!;
 
         _mapper.Map(request, discount);
 

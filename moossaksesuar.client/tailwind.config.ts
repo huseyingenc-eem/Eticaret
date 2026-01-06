@@ -1,18 +1,21 @@
-// tailwind.config.ts
-import type { Config } from "tailwindcss";
-
 export default {
-    // Bu satır, HTML'de "dark" sınıfı olduğunda
-    // karanlık tema stillerinin çalışmasını sağlar. Bu kalmalı.
-    darkMode: "class",
-
-    content: ["./index.html", "./src/**/*.{ts,tsx}"],
+    darkMode: ['class', '.black'],
+    content: ['./index.html', './src/**/*.{ts,tsx,js,jsx}'],
     theme: {
         extend: {
-            // Özel renkleriniz veya temalarınız yoksa bu alanı
-            // boş bırakabilirsiniz. Projeniz zaten Tailwind'in
-            // varsayılan renklerini (örn: bg-black, text-white) kullanıyor.
+            colors: {
+                border:     'var(--border)',
+                input:      'var(--input)',
+                ring:       'var(--ring)',
+                background: 'var(--background)',
+                foreground: 'var(--foreground)',
+                card:      { DEFAULT: 'var(--card)',     foreground: 'var(--card-foreground)' },
+                popover:   { DEFAULT: 'var(--popover)',  foreground: 'var(--popover-foreground)' },
+                muted:     { DEFAULT: 'var(--muted)',    foreground: 'var(--muted-foreground)' },
+                accent:    { DEFAULT: 'var(--accent)',   foreground: 'var(--accent-foreground)' },
+                primary:   { DEFAULT: 'var(--primary)',  foreground: 'var(--primary-foreground)' },
+            },
         },
     },
     plugins: [],
-} satisfies Config;
+}

@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using Core.Application.Behaviors.Caching;
 using Core.Application.Behaviors.Transactional;
-using Core.Application.Abstractions.Repositories;
 using ETicaret.Domain.Entities;
 using MediatR;
 using Core.Application.Behaviors.Authorization;
+using ETicaret.Application.Services.Repositories;
 
 namespace ETicaret.Application.Features.Categories.Commands.Create;
 
@@ -18,16 +18,14 @@ public class CreateCategoryCommand : IRequest<CreateCategoryResponseDto>, ITrans
 
     public string? CacheKey => null;
     public string? CacheGroupKey => "Categories";
-    public bool BypassCache { get; set; }
 
     public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryCommand, CreateCategoryResponseDto>
     {
-        private readonly IRepository<Category, int> _categoryRepository;
+        private readonly ICategoryRepository _categoryRepository;
         private readonly IMapper _mapper;
-
-        public CreateCategoryCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public CreateCategoryCommandHandler(ICategoryRepository categoryRepository, IMapper mapper)
         {
-            _categoryRepository = unitOfWork.GetRepository<Category, int>();
+            _categoryRepository = categoryRepository;
             _mapper = mapper;
         }
 

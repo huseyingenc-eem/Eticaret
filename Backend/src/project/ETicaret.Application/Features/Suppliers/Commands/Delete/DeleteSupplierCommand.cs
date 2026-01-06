@@ -5,7 +5,8 @@ using Core.Application.Behaviors.Caching;
 using Core.Application.Behaviors.Transactional;
 using ETicaret.Application.Features.Suppliers.Constants;
 using ETicaret.Application.Features.Suppliers.Specifications;
-using ETicaret.Domain.Entities;
+using ETicaret.Application.Services.Repositories;
+
 using MediatR;
 
 namespace ETicaret.Application.Features.Suppliers.Commands.Delete;
@@ -35,17 +36,17 @@ public class DeleteSupplierCommandHandler : IRequestHandler<DeleteSupplierComman
 {
     #region Fields
 
-    private readonly IRepository<Supplier, Guid> _supplierRepository;
+    private readonly ISupplierRepository _supplierRepository;
     private readonly IMapper _mapper;
     private readonly IUnitOfWork _unitOfWork;
 
     #endregion
 
     #region Constructor
-    public DeleteSupplierCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    public DeleteSupplierCommandHandler(ISupplierRepository supplierRepository,IUnitOfWork unitOfWork, IMapper mapper)
     {
         _unitOfWork = unitOfWork;
-        _supplierRepository = unitOfWork.GetRepository<Supplier, Guid>();
+        _supplierRepository = supplierRepository;
         _mapper = mapper;
     }
 
@@ -55,7 +56,7 @@ public class DeleteSupplierCommandHandler : IRequestHandler<DeleteSupplierComman
     public async Task<DeleteSupplierResponseDto> Handle(DeleteSupplierCommand request, CancellationToken cancellationToken)
     {
         var spec = new SupplierSpecifications.ById(request.Id);
-        Supplier supplier = (await _supplierRepository.GetAsync(spec, cancellationToken))!;
+        var supplier = (await _supplierRepository.GetAsync(spec, cancellationToken))!;
 
         await _supplierRepository.DeleteAsync(supplier, permanent: false, cancellationToken);
         await _unitOfWork.CompleteAsync(cancellationToken);

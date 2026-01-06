@@ -1,10 +1,9 @@
 ﻿using AutoMapper;
-using Core.Application.Abstractions.Repositories;
 using Core.Application.Behaviors.Authorization;
 using Core.Application.Behaviors.Caching;
 using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.Categories.Specifications;
-using ETicaret.Domain.Entities;
+using ETicaret.Application.Services.Repositories;
 using MediatR;
 
 namespace ETicaret.Application.Features.Categories.Queries.GetChildCategories;
@@ -14,11 +13,11 @@ public class GetChildCategoriesQuery : IRequest<List<GetChildCategoriesResponseD
     IPublicRequest
 {
     public int ParentId { get; set; }
-    public bool OnlyActive { get; set; } = true;
+    public bool? OnlyActive { get; set; } = null;
 
     #region Cache Settings
     public bool BypassCache { get; set; }
-    public string CacheKey => $"child-categories_parent_{ParentId}_active_{OnlyActive}";
+    public string CacheKey => $"child-categories_parent_{ParentId}_active_{OnlyActive switch { true => "true", false => "false", null => "null" }}";
     public string? CacheGroupKey => "Categories";
     public TimeSpan? SlidingExpiration => TimeSpan.FromHours(1);
     public TimeSpan? AbsoluteExpirationRelativeToNow => TimeSpan.FromHours(4);
@@ -27,12 +26,12 @@ public class GetChildCategoriesQuery : IRequest<List<GetChildCategoriesResponseD
     public class GetChildCategoriesQueryHandler : IRequestHandler<GetChildCategoriesQuery, List<GetChildCategoriesResponseDto>>
     {
         private readonly IMapper _mapper;
-        private readonly IRepository<Category, int> _categoryRepository;
+        private readonly ICategoryRepository _categoryRepository;
 
-        public GetChildCategoriesQueryHandler(IMapper mapper, IUnitOfWork unitOfWork)
+        public GetChildCategoriesQueryHandler(ICategoryRepository categoryRepository, IMapper mapper)
         {
             _mapper = mapper;
-            _categoryRepository = unitOfWork.GetRepository<Category, int>();
+            _categoryRepository = categoryRepository;
         }
 
         public async Task<List<GetChildCategoriesResponseDto>> Handle(GetChildCategoriesQuery request, CancellationToken cancellationToken)
@@ -57,22 +56,9 @@ public class GetChildCategoriesQuery : IRequest<List<GetChildCategoriesResponseD
                     errorCode: "PARENT_CATEGORY_NOT_FOUND"
                 );
             }
+
             var spec = new CategorySpecifications.ByParentId(request.ParentId);
             var categories = await _categoryRepository.GetListAsync(spec, cancellationToken);
-
-            if (request.OnlyActive)
-            {
-                categories = categories.Where(c => c.IsActive).ToList();
-            }
-
-            if (!categories.Any())
-            {
-                throw new NotFoundException(
-                    message: $"No child categories found for parent category with ID {request.ParentId}.",
-                    userFriendlyMessage: "Bu kategorinin alt kategorisi bulunmuyor.",
-                    errorCode: "NO_CHILD_CATEGORIES_FOUND"
-                );
-            }
 
             return _mapper.Map<List<GetChildCategoriesResponseDto>>(categories);
         }

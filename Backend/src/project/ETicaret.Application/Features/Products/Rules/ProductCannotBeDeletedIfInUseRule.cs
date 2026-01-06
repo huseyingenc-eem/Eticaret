@@ -1,9 +1,9 @@
-﻿using Core.Application.Abstractions.Repositories;
-using Core.Application.Abstractions.Specifications;
+﻿using Core.Application.Abstractions.Specifications;
 using Core.Application.Behaviors.Rules;
 using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.Products.Commands.Delete;
 using ETicaret.Application.Features.Products.Constants;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Features.Products.Rules;
@@ -14,11 +14,11 @@ namespace ETicaret.Application.Features.Products.Rules;
 /// </summary>
 public class ProductCannotBeDeletedIfInUseRule : IBusinessRule<DeleteProductCommand>
 {
-    private readonly IRepository<Product, Guid> _repository;
+    private readonly IProductRepository _repository;
 
-    public ProductCannotBeDeletedIfInUseRule(IUnitOfWork unitOfWork)
+    public ProductCannotBeDeletedIfInUseRule(IProductRepository productRepository)
     {
-        _repository = unitOfWork.GetRepository<Product, Guid>();
+        _repository = productRepository;
     }
 
     public bool ShouldExecute(DeleteProductCommand command) => command.Id != Guid.Empty;

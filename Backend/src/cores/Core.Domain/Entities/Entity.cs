@@ -35,8 +35,7 @@ public abstract class Entity<TId> : IEntity<TId>, ISoftDeletable, IEquatable<Ent
 
     #region Properties
 
-    /// <summary>Varlığın benzersiz kimliği. 'init' ile sadece oluşturma anında veya başlatıcıda atanabilir.</summary>
-    public TId Id { get; init; }
+    public TId Id { get; protected set; }
 
     /// <summary>Varlığın oluşturulma zamanı (UTC).</summary>
     public DateTime CreatedTime { get; protected set; }

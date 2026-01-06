@@ -1,21 +1,18 @@
 ﻿
 using AutoMapper;
 using Core.Application.Abstractions.Paging;
-using Core.Application.Abstractions.Repositories;
 using Core.Application.Behaviors.Authorization;
 using Core.Application.Behaviors.Caching;
 using Core.Application.Common.Exceptions;
 using Core.Application.Common.Results;
 using ETicaret.Application.Features.Suppliers.Constants;
 using ETicaret.Application.Features.Suppliers.Specifications;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 using MediatR;
 
 namespace ETicaret.Application.Features.Suppliers.Queries.GetList;
 
-/// <summary>
-/// /// Tedarikçileri sayfalanmış bir liste olarak getiren sorgu.
-/// </summary>
 public class GetListSupplierQuery : IRequest<PagedResult<GetListSupplierResponseDto>>,
     ICachableRequest,
     IPublicRequest
@@ -34,12 +31,12 @@ public class GetListSupplierQuery : IRequest<PagedResult<GetListSupplierResponse
 
 public class GetListSupplierQueryHandler : IRequestHandler<GetListSupplierQuery, PagedResult<GetListSupplierResponseDto>>
 {
-    private readonly IRepository<Supplier, Guid> _supplierRepository;
+    private readonly ISupplierRepository _supplierRepository;
     private readonly IMapper _mapper;
 
-    public GetListSupplierQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    public GetListSupplierQueryHandler(ISupplierRepository supplierRepository, IMapper mapper)
     {
-        _supplierRepository = unitOfWork.GetRepository<Supplier, Guid>();
+        _supplierRepository = supplierRepository;
         _mapper = mapper;
     }
 

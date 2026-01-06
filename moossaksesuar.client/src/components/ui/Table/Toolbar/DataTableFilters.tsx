@@ -1,8 +1,8 @@
-// src/components/ui/Table/DataTableFilters.tsx
 import React from "react";
 import { Search, RefreshCw, X } from "lucide-react";
-import type { ColumnDef, FilterValue } from "./types";
-import { StatusFilter, DateRangeFilter, NumberRangeFilter } from "./FilterComponents";
+import type { ColumnDef, FilterValue } from "../types";
+import { StatusFilter, DateRangeFilter, NumberRangeFilter } from "../FilterComponents";
+import { Button } from "@/components/ui";
 
 interface Props {
     searchValue: string;
@@ -16,22 +16,12 @@ interface Props {
     onRefresh: () => void;
     loading: boolean;
     customFiltersContent?: React.ReactNode;
-    /* Aşağıdakiler DataTableView tarafından gönderiliyordu; opsiyonel ekledik */
-    onExport?: (format: 'csv' | 'xlsx' | 'pdf') => void;
-    onPrint?: () => void;
-    allColumns?: ColumnDef<any>[];
-    visibleColumns?: Record<string, boolean>;
-    onVisibleColumnsChange?: (columns: Record<string, boolean>) => void;
-    pageSize?: number;
-    onPageSizeChange?: (size: number) => void;
-    density?: "compact" | "normal" | "comfortable";
-    customSettingsContent?: React.ReactNode;
 }
 
 export default function DataTableFilters({
                                              searchValue,
                                              onSearchChange,
-                                             searchPlaceholder,
+                                             searchPlaceholder = "Tabloda Ara...",
                                              columns,
                                              filters,
                                              onFilterChange,
@@ -39,7 +29,7 @@ export default function DataTableFilters({
                                              showFilterButtons,
                                              onRefresh,
                                              loading,
-                                             customFiltersContent
+                                             customFiltersContent,
                                          }: Props) {
     const filterColumns = columns.filter(col => col.filter?.showAsButton);
     const hasActiveFilters =
@@ -92,25 +82,32 @@ export default function DataTableFilters({
         <div className="bg-slate-50 border-b border-slate-200 px-6 py-4">
             <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4 flex-1">
+                    {/* Arama Input'u */}
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                         <input
+
                             type="text"
                             value={searchValue}
                             onChange={(e) => onSearchChange(e.target.value)}
                             placeholder={searchPlaceholder}
-                            className="pl-10 pr-4 py-2 w-64 border border-slate-300 rounded-lg bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 outline-none text-sm"
+                            className="pl-10 pr-8 py-2 w-64 border border-slate-300 rounded-lg bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 outline-none text-sm"
                         />
                         {searchValue && (
-                            <button
+                            <Button
+                                isIcon
+                                variant="ghost"
+                                size="xs"
                                 onClick={() => onSearchChange("")}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 rounded transition-colors"
+                                className="absolute right-1 top-1/2 -translate-y-1/2"
+                                title="Aramayı Temizle"
                             >
                                 <X className="h-3 w-3 text-slate-400" />
-                            </button>
+                            </Button>
                         )}
                     </div>
 
+                    {/* Filtre Butonları */}
                     {showFilterButtons && filterColumns.length > 0 && (
                         <div className="flex items-center gap-2 flex-wrap">
                             {filterColumns.map(renderFilterButton)}
@@ -119,26 +116,21 @@ export default function DataTableFilters({
 
                     {customFiltersContent}
 
+                    {/* Temizle Butonu */}
                     {hasActiveFilters && (
-                        <button
-                            onClick={onClearAll}
-                            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
-                        >
+                        <Button variant="outline" color="neutral" size="sm" onClick={onClearAll}>
                             <X className="h-4 w-4" />
-                            Temizle
-                        </button>
+                            <span>Temizle</span>
+                        </Button>
                     )}
                 </div>
 
+                {/* Yenile Butonu */}
                 <div className="flex items-center gap-2">
-                    <button
-                        onClick={onRefresh}
-                        disabled={loading}
-                        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-                        Yenile
-                    </button>
+                    <Button variant="outline" color="neutral" size="sm" onClick={onRefresh} loading={loading}>
+                        <RefreshCw className="h-4 w-4" />
+                        <span>Yenile</span>
+                    </Button>
                 </div>
             </div>
         </div>

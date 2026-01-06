@@ -39,6 +39,13 @@ export default defineConfig(({ mode }) => {
         }
       }
     },
+    proxy: {
+      '/api': {
+        target: `${env.VITE_BACKEND_URL}:${env.VITE_BACKEND_PORT}`,
+        changeOrigin: true,
+        secure: false,
+      }
+    },
     preview: {
       port: frontendPort,
       strictPort: true,

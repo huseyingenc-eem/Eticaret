@@ -1,8 +1,8 @@
-﻿using Core.Application.Abstractions.Repositories;
-using Core.Application.Abstractions.Specifications;
+﻿using Core.Application.Abstractions.Specifications;
 using Core.Application.Behaviors.Rules;
 using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.Suppliers.Commands.Delete;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Features.Suppliers.Rules;
@@ -13,11 +13,11 @@ namespace ETicaret.Application.Features.Suppliers.Rules;
 /// </summary>
 public class SupplierCannotHaveActiveProductsRule : IBusinessRule<DeleteSupplierCommand>
 {
-    private readonly IRepository<Supplier, Guid> _repository;
+    private readonly ISupplierRepository _repository;
 
-    public SupplierCannotHaveActiveProductsRule(IUnitOfWork unitOfWork)
+    public SupplierCannotHaveActiveProductsRule(ISupplierRepository supplierRepository)
     {
-        _repository = unitOfWork.GetRepository<Supplier, Guid>();
+        _repository = supplierRepository;
     }
 
     public bool ShouldExecute(DeleteSupplierCommand command) => command.Id != Guid.Empty;

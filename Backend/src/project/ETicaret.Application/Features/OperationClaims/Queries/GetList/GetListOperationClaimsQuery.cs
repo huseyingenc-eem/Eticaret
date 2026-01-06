@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using Core.Application.Abstractions.Repositories;
 using Core.Application.Abstractions.Specifications;
 using Core.Application.Behaviors.Caching;
 using ETicaret.Application.Features.OperationClaims.Specifications;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 using MediatR;
 
@@ -29,13 +29,13 @@ public class GetListOperationClaimsQuery : IRequest<List<GetListOperationClaimsR
 
 public class GetListOperationClaimsQueryHandler : IRequestHandler<GetListOperationClaimsQuery, List<GetListOperationClaimsResponseDto>>
 {
-    private readonly IRepository<OperationClaim, int> _operationClaimRepository;
+    private readonly IOperationClaimRepository _operationClaimRepository;
     private readonly IMapper _mapper;
 
-    public GetListOperationClaimsQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    public GetListOperationClaimsQueryHandler(IOperationClaimRepository operationClaimRepository, IMapper mapper)
     {
         _mapper = mapper;
-        _operationClaimRepository = unitOfWork.GetRepository<OperationClaim, int>();
+        _operationClaimRepository = operationClaimRepository;
     }
 
     public async Task<List<GetListOperationClaimsResponseDto>> Handle(GetListOperationClaimsQuery request, CancellationToken cancellationToken)
@@ -58,7 +58,6 @@ public class GetListOperationClaimsQueryHandler : IRequestHandler<GetListOperati
             return new OperationClaimSpecifications.All();
         }
 
-        // Öncelik sırasına göre uygun specification'ı seç
         if (!string.IsNullOrWhiteSpace(request.OperationNameFilter))
             return new OperationClaimSpecifications.ByOperationName(request.OperationNameFilter);
 

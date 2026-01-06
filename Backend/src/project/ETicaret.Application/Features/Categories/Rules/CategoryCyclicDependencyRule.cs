@@ -1,8 +1,8 @@
-﻿using Core.Application.Abstractions.Repositories;
-using Core.Application.Abstractions.Specifications;
+﻿using Core.Application.Abstractions.Specifications;
 using Core.Application.Behaviors.Rules;
 using Core.Application.Common.Exceptions;
 using ETicaret.Application.Features.Categories.Commands.Update;
+using ETicaret.Application.Services.Repositories;
 using ETicaret.Domain.Entities;
 
 namespace ETicaret.Application.Features.Categories.Rules;
@@ -12,11 +12,11 @@ namespace ETicaret.Application.Features.Categories.Rules;
 /// </summary>
 public class CategoryCyclicDependencyRule : IBusinessRule<UpdateCategoryCommand>
 {
-    private readonly IRepository<Category, int> _repository;
+    private readonly ICategoryRepository _repository;
 
-    public CategoryCyclicDependencyRule(IUnitOfWork unitOfWork)
+    public CategoryCyclicDependencyRule(ICategoryRepository categoryRepository)
     {
-        _repository = unitOfWork.GetRepository<Category, int>();
+        _repository = categoryRepository;
     }
 
     public bool ShouldExecute(UpdateCategoryCommand command) => command.ParentId.HasValue;

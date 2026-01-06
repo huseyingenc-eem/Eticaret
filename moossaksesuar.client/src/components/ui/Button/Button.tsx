@@ -1,69 +1,100 @@
-// src/components/ui/Button/Button.tsx
-import { forwardRef, type ButtonHTMLAttributes } from 'react';
-import { cn } from '@/utils/cn';
+import React, { forwardRef, type ElementType } from "react";
+import { cn } from "@/utils/cn";
+import type { PolymorphicProps } from "./types";
+import { getButtonClasses } from "./styles";
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive';
-    size?: 'sm' | 'md' | 'lg';
-    fullWidth?: boolean;
-    loading?: boolean;
-    leftIcon?: React.ReactNode;
-    rightIcon?: React.ReactNode;
-}
+const ButtonInner = <C extends ElementType = "button">(
+    {
+        component,
+        className,
+        children,
+        color = "neutral",
+        isIcon = false,
+        variant = "filled",
+        unstyled = false,
+        type,
+        isGlow = false,
+        loading = false,
+        disabled,
+        size = "md",
+        ...rest
+    }: PolymorphicProps<C>,
+    ref: React.Ref<unknown>
+) => {
+    const Comp = (component || "button") as ElementType;
 
-const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
-                                                               className,
-                                                               variant = 'primary',
-                                                               size = 'md',
-                                                               fullWidth = false,
-                                                               loading = false,
-                                                               leftIcon,
-                                                               rightIcon,
-                                                               children,
-                                                               disabled,
-                                                               ...props
-                                                           }, ref) => {
-    const baseStyles = "inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
+    const computedType =
+        (Comp === "button" ? (type ?? "button") : type) as
+            | "button"
+            | "submit"
+            | "reset"
+            | undefined;
 
-    const variantStyles = {
-        primary: "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500",
-        secondary: "bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500",
-        outline: "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:ring-blue-500",
-        ghost: "text-gray-700 hover:bg-gray-100 focus:ring-gray-500",
-        destructive: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500"
-    };
+    if (unstyled) {
+        return (
+            <Comp
+                ref={ref}
+                type={computedType as unknown}
+                className={className}
+                disabled={disabled || loading}
+                aria-disabled={disabled || loading || undefined}
+                aria-busy={loading || undefined}
+                {...rest}
+            >
+                {children}
+            </Comp>
+        );
+    }
 
-    const sizeStyles = {
-        sm: "px-3 py-1.5 text-sm",
-        md: "px-4 py-2 text-base",
-        lg: "px-6 py-3 text-lg"
-    };
+    const classes = getButtonClasses({
+        color,
+        variant,
+        isGlow,
+        isIcon,
+        className,
+        size, // 🔧 eklendi
+    });
 
-    const buttonClasses = cn(
-        baseStyles,
-        variantStyles[variant],
-        sizeStyles[size],
-        fullWidth && "w-full",
-        className
-    );
+    const spinnerSize =
+        {
+            xs: "h-3 w-3",
+            sm: "h-3.5 w-3.5",
+            md: "h-4 w-4",
+            lg: "h-5 w-5",
+            xl: "h-5 w-5",
+        }[size] || "h-4 w-4";
 
     return (
-        <button
+        <Comp
             ref={ref}
-            className={buttonClasses}
+            type={computedType as unknown}
+            className={classes}
             disabled={disabled || loading}
-            {...props}
+            aria-disabled={disabled || loading || undefined}
+            aria-busy={loading || undefined}
+            data-variant={variant}
+            data-color={color}
+            data-size={size}
+            {...rest}
         >
             {loading && (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2" />
+                <span
+                    className={cn(
+                        "mr-1 inline-flex animate-spin rounded-full border-2 border-current border-r-transparent",
+                        spinnerSize
+                    )}
+                />
             )}
-            {!loading && leftIcon && <span className="mr-2">{leftIcon}</span>}
-            {children}
-            {!loading && rightIcon && <span className="ml-2">{rightIcon}</span>}
-        </button>
+            <span className={cn("inline-flex items-center gap-2 whitespace-nowrap overflow-hidden", "[&>svg]:shrink-0 [&>svg]:inline-block", loading && "opacity-80")}>
+                {children}
+            </span>
+        </Comp>
     );
-});
+};
 
-Button.displayName = 'Button';
+const Button = forwardRef(ButtonInner) as <C extends ElementType = "button">(
+    props: PolymorphicProps<C>
+) => React.ReactElement | null;
+
 
 export default Button;
